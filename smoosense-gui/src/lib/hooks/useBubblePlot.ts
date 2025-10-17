@@ -1,0 +1,74 @@
+import { useAppSelector } from '@/lib/hooks'
+import { fetchBubblePlot, setNeedRefresh as setNeedRefreshAction, type BubblePlotGroup } from '@/lib/features/bubblePlot/bubblePlotSlice'
+import { useAsyncData } from './useAsyncData'
+import { useColFilteredStats } from './useColFilteredStats'
+import { extractSqlFilterFromState } from '@/lib/utils/state/filterUtils'
+import { useMemo } from 'react'
+
+interface UseBubblePlotResult {
+  data: BubblePlotGroup[]
+  loading: boolean
+  error: string | null
+  setNeedRefresh: (needRefresh: boolean) => void
+}
+
+/**
+ * Hook to get bubble plot chart data
+ * Depends on bubble plot column selection and column stats
+ */
+export function useBubblePlot(): UseBubblePlotResult {
+  const filePath = useAppSelector((state) => state.ui.filePath)
+  const bubblePlotXColumn = useAppSelector((state) => state.ui.bubblePlotXColumn)
+  const bubblePlotYColumn = useAppSelector((state) => state.ui.bubblePlotYColumn)
+  const bubblePlotBreakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
+  const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
+  
+  // Get stats for X and Y columns to determine bins
+  const { data: xStatsData, loading: xStatsLoading, error: xStatsError } = useColFilteredStats(bubblePlotXColumn)
+  const { data: yStatsData, loading: yStatsLoading, error: yStatsError } = useColFilteredStats(bubblePlotYColumn)
+  
+  // Build parameters for bubble plot fetching
+  const params = useMemo(() => {
+    if (!filePath || !bubblePlotXColumn || !bubblePlotYColumn || !xStatsData || !yStatsData) {
+      return null
+    }
+    
+    // Get bin data for X and Y columns
+    const xBin = (xStatsData as unknown as Record<string, unknown>)?.bin as { min: number; step: number; round_to: number } | null
+    const yBin = (yStatsData as unknown as Record<string, unknown>)?.bin as { min: number; step: number; round_to: number } | null
+    
+    // Only return params if we have valid bin data for both columns
+    if (!xBin || !yBin) {
+      return null
+    }
+    
+    return {
+      bubblePlotXColumn,
+      bubblePlotYColumn,
+      bubblePlotBreakdownColumn,
+      filePath,
+      filterCondition,
+      xBin,
+      yBin
+    }
+  }, [filePath, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
+
+  const { data, loading, error, setNeedRefresh } = useAsyncData({
+    stateSelector: (state) => state.bubblePlot,
+    fetchAction: fetchBubblePlot,
+    setNeedRefreshAction: setNeedRefreshAction,
+    buildParams: () => params,
+    dependencies: [params]
+  })
+
+  // Combine loading states and errors
+  const combinedLoading = loading || xStatsLoading || yStatsLoading
+  const combinedError = error || xStatsError || yStatsError
+
+  return {
+    data: (data || []) as BubblePlotGroup[],
+    loading: combinedLoading,
+    error: combinedError,
+    setNeedRefresh
+  }
+}

@@ -1,0 +1,111 @@
+[project]
+name = "smoosense"
+version = "0.0.1rc29"
+description = "Smoothly make sense of your large multi-modal datasets"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "boto3>=1.39.11",
+    "click>=8.1.8",
+    "duckdb>=1.2.1",
+    "flask>=3.1.0",
+    "pydantic>=2.11.7",
+    "pytz>=2025.2",
+    "requests>=2.32.3",
+]
+
+[project.optional-dependencies]
+jupyter = [
+    "pandas>=2.3.0",
+    "pyarrow>=20.0.0",
+    "ipython>=8.0.0",
+]
+daft = [
+    "smoosense[jupyter]",
+    "daft>=0.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "rich>=14.0.0",
+    "datamodel-code-generator>=0.31.2",
+    "pytest>=8.0.0",
+    "twine>=6.1.0",
+    "numpy>=2.0.2",
+    "pandas>=2.3.0",
+    "playwright>=1.53.0",
+    "pyarrow>=20.0.0",
+    "zappa>=0.60.2",
+    "ruff>=0.12.9",
+    "mypy>=1.17.1",
+    "types-requests>=2.31.0.6",
+    "pandas-stubs>=2.0.0",
+]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["smoosense*"]
+exclude = ["smoosense.statics*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+smoosense = ["statics/**/*", "statics/**/.*"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+sense = "smoosense.cli:main"
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+exclude = [
+    "tests_integration/doc_*.py",  # Skip doc test files
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by formatter
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+exclude = [
+]
+
+[[tool.mypy.overrides]]
+module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*"]
+ignore_missing_imports = true

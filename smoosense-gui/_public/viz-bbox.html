@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bounding Box Visualization</title>
+    <script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent !important;
+            font-family: Arial, sans-serif;
+        }
+
+        #title {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2px;
+            border-radius: 1px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            z-index: 1000;
+        }
+
+        #plot {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="title"></div>
+    <div id="plot"></div>
+    
+    <script>
+        const traceHoverWidth = 8;
+        const traceNormalWidth = 5;
+
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                image: params.get('image'),
+                bboxes: JSON.parse(params.get('bboxes')),
+                autorange: params.get('autorange') === 'true',
+                name: params.get('name') || ''
+            };
+        }
+
+        function drawBoundingBox() {
+            const { image, bboxes, name, autorange } = getQueryParams();
+            const size = Math.min(window.innerWidth, window.innerHeight);
+            const plotlyConfig = {
+                displaylogo: false,
+                modeBarButtonsToRemove: ['autoScale2d', 'resetScale2d', 'select2d', 'zoom2d'],
+                displayModeBar: size >= 150,
+            };
+            const isMiniIcon = size < 100;
+            const isLargeView = size > 500;
+            // Update title with bbox count
+            const validBboxCount = _.filter(bboxes, ({bbox}) => !_.isNil(bbox)).length;
+            if (validBboxCount === 0 || !isMiniIcon) {
+                const titleElement = document.getElementById('title');
+                const content = `cnt: ${validBboxCount}`;
+                const prefix = (!isMiniIcon && name) ? `${name} | ` : '';
+                titleElement.textContent = `${prefix}${content}`;
+            }
+            const imgElement = new Image();
+            imgElement.crossOrigin = "anonymous"; 
+            
+            imgElement.src = image;
+
+            imgElement.onload = function() {
+                const imageWidth = imgElement.naturalWidth;
+                const imageHeight = imgElement.naturalHeight;
+
+                // Create a canvas to draw the image
+                const canvas = document.createElement('canvas');
+                canvas.width = imageWidth;
+                canvas.height = imageHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgElement, 0, 0);
+
+                // Get the data URL of the image
+                const dataURL = canvas.toDataURL();
+
+                const traces = _.filter(bboxes, ({bbox}) => !_.isNil(bbox)).map(({bbox, label}) => {
+
+                    const [x, y, w, h] = bbox;
+
+                    const trace = {
+                        x: [x, x + w, x + w, x, x],
+                        y: [y, y, y + h, y + h, y],
+                        text: label,
+                        name: label,
+                        hoverinfo: 'text',
+                        mode: 'lines',
+                        line: {
+                            width: traceNormalWidth
+                        },
+                        type: 'scatter'
+                    };
+                    return trace;
+                });
+                const ratio = size / Math.max(imageWidth, imageHeight);
+                const layout = {
+                    width: window.innerWidth, //imageWidth * ratio,
+                    height: window.innerHeight, //imageHeight * ratio,
+                    dragmode: 'pan',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    showlegend: isLargeView,
+                    legend: {
+                        orientation: 'h',
+                        x: 0,
+                        y: 0.98,
+                        bgcolor: 'rgba(239, 239, 240, 0.7)',
+                        bordercolor: 'black',
+                        borderwidth: 1,
+                    },
+                    xaxis: {range: [0, imageWidth], showgrid: false, zeroline: false},
+                    yaxis: {range: [imageHeight, 0], showgrid: false, zeroline: false, scaleanchor: 'x'},
+                    margin: {l: 0, r: 0, t: 0, b: 0},
+                    images: [
+                        {
+                            source: dataURL, sizing: 'stretch',
+                            x: 0, y: 0, sizex: imageWidth, sizey: imageHeight, xref: 'x', yref: 'y', opacity: 1.0, layer: 'below'
+                        }
+                    ]
+                };
+
+                Plotly.newPlot('plot', traces, layout, {staticPlot: isMiniIcon, scrollZoom: isLargeView, ...plotlyConfig});
+                
+                // Add hover effects to change trace width
+                if (!isMiniIcon) {
+                    const plotElement = document.getElementById('plot');
+                    
+                    plotElement.on('plotly_hover', function(data) {
+                        const pointIndex = data.points[0].curveNumber;
+                        const update = {
+                            'line.width': traces.map((trace, index) => 
+                                index === pointIndex ? traceHoverWidth : traceNormalWidth
+                            )
+                        };
+                        
+                        Plotly.restyle('plot', update);
+                    });
+                    
+                    plotElement.on('plotly_unhover', function(data) {
+                        const update = {
+                            'line.width': traces.map(() => traceNormalWidth)
+                        };
+                        
+                        Plotly.restyle('plot', update);
+                    });
+                }
+                
+                if (autorange && !isLargeView) {
+                    Plotly.relayout('plot', {
+                        'xaxis.autorange': true,
+                        'yaxis.autorange': true
+                    }, {
+                        ...plotlyConfig,
+                        scrollZoom: isLargeView,
+                    });
+                }
+            };
+        }
+
+        window.onload = drawBoundingBox;
+    </script>
+</body>
+</html>
