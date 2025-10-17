@@ -3,13 +3,12 @@
 This file contains development notes and reminders for Claude when working on this project.
 
 ## Project structure
-There are 3 main folders of source code:
-- `docs`: Docoumentation for both Claude and developers
-- `landing`: The landing page.
+
+There are 2 project folders of source code:
 - `smoosense-gui`: Frontend GUI
 - `smoosense-py`: Python backend.
 
-In the root folder and each sub-folder:
+In each sub-project:
 - `Makefile`: commands for builds and tests. They should implement the following targets:
     - `env`: install dependencies
     - `dev`: start the app for local development
@@ -17,8 +16,11 @@ In the root folder and each sub-folder:
     - `test`: run all tests
 - `CLAUDE.MD`: Memory file for Claude Code
 
+Additionally:
+- `docs`: Docoumentation for both Claude and developers
+
 ### Build process
-The `make build` command in root Makefile will do the following:
+The `make build-release` command in root Makefile will do the following:
 
 ```mermaid
 graph
@@ -26,7 +28,4 @@ graph
     gui-dist --copy--> py-statics[py/smoosense/statics]
     py --> pip[pip artifacts: tar.gz + whl]
     py-statics --> pip
-    gui-dist --copy--> node-statics[nodejs/src/statics]
-    node-statics --> mac[Mac OS app: dmg]
-    node --> mac
 ```
