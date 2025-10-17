@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import Logo from '@/components/common/Logo'
 import FilterStatusChips from '@/components/common/FilterStatusChips'
 import GlobalSettingsDropdown from '@/components/settings/GlobalSettings'
+import HelpPopover from '@/components/common/HelpPopover'
 
 export default function MiniTableTopBar() {
   const handleOpenFullView = () => {
@@ -36,6 +37,7 @@ export default function MiniTableTopBar() {
           <ExternalLink className="h-4 w-4" />
         </Button>
 
+        <HelpPopover />
         <GlobalSettingsDropdown context="MiniTable" />
       </div>
     </div>

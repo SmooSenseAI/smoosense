@@ -5,6 +5,7 @@ import { useEffect, ReactNode } from 'react'
 import React from 'react'
 import Logo from '@/components/common/Logo'
 import GlobalSettingsDropdown from '@/components/settings/GlobalSettings'
+import HelpPopover from '@/components/common/HelpPopover'
 
 interface NavbarSkeletonProps {
   className?: string
@@ -45,11 +46,12 @@ export default function NavbarSkeleton({
           <div className="flex-1" />
         )}
 
-        {/* Icon buttons + Global Settings - rightmost */}
+        {/* Icon buttons + Help + Global Settings - rightmost */}
         <div className="flex items-center space-x-2">
           {iconButtons.map((button, index) => (
             <React.Fragment key={index}>{button}</React.Fragment>
           ))}
+          <HelpPopover />
           <GlobalSettingsDropdown context={globalSettingsContext} />
         </div>
       </div>
