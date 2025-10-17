@@ -7,10 +7,12 @@ import { CLS } from '@/lib/utils/styles'
 
 interface CopyToClipboardProps {
   value: unknown
+  className?: string
 }
 
-export default function CopyToClipboard({ 
-  value
+export default function CopyToClipboard({
+  value,
+  className = ''
 }: CopyToClipboardProps) {
   const [copied, setCopied] = useState(false)
 
@@ -36,7 +38,7 @@ export default function CopyToClipboard({
   }
 
   const iconSize = 'h-3 w-3'
-  const buttonClass = CLS.ICON_BUTTON_SM_SUBTLE
+  const buttonClass = `${CLS.ICON_BUTTON_SM_SUBTLE} ${className}`
 
   return (
     <button

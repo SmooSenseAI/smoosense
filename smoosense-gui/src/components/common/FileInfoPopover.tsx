@@ -1,12 +1,13 @@
 'use client'
 
-import { Info, Loader2, AlertCircle } from 'lucide-react'
+import { Info, Loader2, AlertCircle, Download } from 'lucide-react'
 import IconPopover from '@/components/common/IconPopover'
 import { useFileInfo } from '@/lib/hooks/useFileInfo'
 import { useAppSelector } from '@/lib/hooks'
 import CopyToClipboard from '@/components/ui/CopyToClipboard'
 import { pathBasename } from '@/lib/utils/pathUtils'
 import { CLS } from '@/lib/utils/styles'
+import { getFileUrl } from '@/lib/utils/apiUtils'
 
 export default function FileInfoPopover() {
   const filePath = useAppSelector((state) => state.ui.filePath)
@@ -15,6 +16,13 @@ export default function FileInfoPopover() {
   // Don't show the popover if no file is selected
   if (!filePath) {
     return null
+  }
+
+  const handleDownload = () => {
+    if (filePath) {
+      const url = getFileUrl(filePath, true)
+      window.open(url, '_blank')
+    }
   }
 
   const renderContent = () => {
@@ -62,6 +70,13 @@ export default function FileInfoPopover() {
               <span className="text-muted-foreground">Name:</span>
               <div className="flex items-center gap-1">
                 <span className="truncate max-w-[150px]">{pathBasename(filePath)}</span>
+                <button
+                  onClick={handleDownload}
+                  className={CLS.ICON_BUTTON_SM_SUBTLE}
+                  title="Download file"
+                >
+                  <Download className="h-3 w-3" />
+                </button>
                 <CopyToClipboard value={pathBasename(filePath)} />
               </div>
             </div>

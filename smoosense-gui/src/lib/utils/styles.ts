@@ -14,7 +14,7 @@ const BUTTON_SECONDARY = 'bg-secondary text-secondary-foreground hover:bg-primar
 const BUTTON_DESTRUCTIVE = 'bg-secondary text-secondary-foreground hover:bg-destructive/30'
 
 // Icon button variants
-const ICON_BUTTON_SUBTLE = 'bg-background/80 hover:bg-accent border border-border shadow-sm opacity-80 hover:opacity-100'
+const ICON_BUTTON_SUBTLE = ' border border-border shadow-sm opacity-80 hover:opacity-100'
 
 // Hyperlink styles
 const HYPERLINK = 'dark:text-sky-400 dark:hover:text-sky-300 text-blue-600 hover:text-blue-800 underline underline-offset-4 transition-colors'

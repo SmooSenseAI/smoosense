@@ -89,7 +89,7 @@ export default function CellPopover({
       {cellContent}
       {isHovered && copyValue && (
         <div className="absolute top-0 right-0 z-10">
-          <CopyToClipboard value={copyValue} />
+          <CopyToClipboard value={copyValue} className="bg-background/80" />
         </div>
       )}
     </div>
