@@ -69,7 +69,7 @@ export default function FSItemPreview() {
 
   const handleOpenInTable = () => {
     if (viewingItem) {
-      const url = `./Table?filePath=${encodeURIComponent(viewingItem.path)}`
+      const url = `./Table?tablePath=${encodeURIComponent(viewingItem.path)}`
       window.open(url, '_blank')
     }
   }

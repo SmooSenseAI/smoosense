@@ -37,7 +37,7 @@ export function useColBaseStats(columnName: string) {
   const columnState = useAppSelector((state) => state.columns.baseStats[safeColumnName])
   
   // Get dependencies
-  const { columnMeta: currentColumnMeta, loading: metaLoading, filePath } = useSingleColumnMeta(columnName)
+  const { columnMeta: currentColumnMeta, loading: metaLoading, tablePath } = useSingleColumnMeta(columnName)
   const { isCategorical, loading: isCategoricalLoading, error: isCategoricalError } = useIsCategorical(columnName)
 
   // Derived state
@@ -52,7 +52,7 @@ export function useColBaseStats(columnName: string) {
 
   // Build query for this column (null filter for base stats)
   const query = useAppSelector((state) => {
-    if (!filePath || !isValid) return null
+    if (!tablePath || !isValid) return null
     return buildColStatsQueryFromState({
       columnName,
       addFilter: false,
@@ -71,7 +71,7 @@ export function useColBaseStats(columnName: string) {
                       !isCategoricalLoading &&
                       !!currentColumnMeta &&
                       isCategorical !== null &&
-                      !!filePath &&
+                      !!tablePath &&
                       !!query &&
                       !error  // Don't retry if there's any error
 
@@ -111,7 +111,7 @@ export function useColBaseStats(columnName: string) {
     // Dependencies (shared with other hooks)
     columnMeta: currentColumnMeta,
     isCategorical,
-    filePath,
+    tablePath,
 
     // Type-safe getters
     getCategoricalStats: getCategoricalStatsCallback,

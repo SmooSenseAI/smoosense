@@ -131,8 +131,8 @@ describe('getColumnMetadata', () => {
   })
 
   it('should handle empty file path', async () => {
-    await expect(getColumnMetadata('', mockDispatch)).rejects.toThrow('File path cannot be empty')
-    await expect(getColumnMetadata('   ', mockDispatch)).rejects.toThrow('File path cannot be empty')
+    await expect(getColumnMetadata('', mockDispatch)).rejects.toThrow('Table path cannot be empty')
+    await expect(getColumnMetadata('   ', mockDispatch)).rejects.toThrow('Table path cannot be empty')
   })
 
   it('should handle API errors', async () => {

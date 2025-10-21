@@ -22,7 +22,7 @@ make unittest   # Run Jest tests only
 ## Project Structure
 - `/` - Home page with navigation links
 - `/FolderBrowser` - Folder browsing interface
-- `/Table?filePath=<path>` - Data table viewer (requires filePath parameter)
+- `/Table?tablePath=<path>` - Data table viewer (requires tablePath parameter)
 
 ## Important Implementation Details
 
@@ -32,8 +32,8 @@ make unittest   # Run Jest tests only
 - Uses `suppressHydrationWarning` on html element to avoid hydration errors
 
 ### URL Parameters
-- `filePath` parameter captured automatically by `UrlParamsProvider`
-- Stored in Redux state at `state.ui.filePath`
+- `tablePath` parameter captured automatically by `UrlParamsProvider`
+- Stored in Redux state at `state.ui.tablePath`
 - Required for `/Table` route - shows error if missing
 
 ### Navbar Behavior
@@ -48,7 +48,7 @@ make unittest   # Run Jest tests only
 - Uses Jest + React Testing Library
 - Mocks Next.js navigation hooks
 - Minimal tests - just ensure components render without errors
-- Table page tests both with/without filePath parameter
+- Table page tests both with/without tablePath parameter
 
 ## Redux State Structure
 ```typescript
@@ -57,7 +57,7 @@ make unittest   # Run Jest tests only
     darkMode: boolean,
     fontSize: number,
     activeTab: string,
-    filePath: string | null
+    tablePath: string | null
   }
 }
 ```

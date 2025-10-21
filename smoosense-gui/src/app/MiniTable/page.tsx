@@ -23,18 +23,18 @@ const MainTable = dynamic(() => import('@/components/table/MainTable'), {
 
 function MiniTablePageInner() {
   const searchParams = useSearchParams()
-  const filePath = useAppSelector((state) => state.ui.filePath)
-  const urlFilePath = searchParams.get('filePath')
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const urlTablePath = searchParams.get('tablePath')
 
-  // Show error if no filePath provided
-  if (!urlFilePath && !filePath) {
+  // Show error if no tablePath provided
+  if (!urlTablePath && !tablePath) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">No File Path</h3>
           <p className="text-muted-foreground">
-            Please provide a filePath parameter in the URL
+            Please provide a tablePath parameter in the URL
           </p>
         </div>
       </div>

@@ -30,18 +30,18 @@ describe('Table Page', () => {
     jest.clearAllMocks()
   })
 
-  it('should render without error when filePath is provided', () => {
-    // Mock URLSearchParams to return a filePath
-    mockUseSearchParams.mockReturnValue(new URLSearchParams('filePath=/test/file.csv'))
+  it('should render without error when tablePath is provided', () => {
+    // Mock URLSearchParams to return a tablePath
+    mockUseSearchParams.mockReturnValue(new URLSearchParams('tablePath=/test/file.csv'))
 
     expect(() => renderWithProvider(<Table />, { 
-      ui: { filePath: '/test/file.csv' },
+      ui: { tablePath: '/test/file.csv' },
       rowData: { data: [], loading: false, error: null }
     })).not.toThrow()
   })
 
-  it('should render without error when filePath is not provided', () => {
-    // Mock URLSearchParams to return no filePath
+  it('should render without error when tablePath is not provided', () => {
+    // Mock URLSearchParams to return no tablePath
     mockUseSearchParams.mockReturnValue(new URLSearchParams())
 
     expect(() => renderWithProvider(<Table />)).not.toThrow()

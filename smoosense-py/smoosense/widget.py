@@ -141,8 +141,8 @@ class Sense:
     def _repr_html_(self) -> str:
         """Return HTML representation for Jupyter display."""
         # Construct URL for MiniTable
-        file_path = Path(self.temp_file).as_posix()
-        url = f"{self.server.base_url}/MiniTable?filePath={file_path}"
+        table_path = Path(self.temp_file).as_posix()
+        url = f"{self.server.base_url}/MiniTable?tablePath={table_path}"
 
         # Return IFrame HTML
         return f'''
@@ -157,8 +157,8 @@ class Sense:
 
     def show(self) -> "IFrame":
         """Explicitly show the widget (alternative to automatic display)."""
-        file_path = Path(self.temp_file).as_posix()
-        url = f"{self.server.base_url}/MiniTable?filePath={file_path}"
+        table_path = Path(self.temp_file).as_posix()
+        url = f"{self.server.base_url}/MiniTable?tablePath={table_path}"
         return IFrame(url, width="100%", height=self.height)
 
     def __del__(self) -> None:
@@ -190,12 +190,12 @@ class Sense:
         return IFrame(url, width="100%", height=height)
 
     @staticmethod
-    def table(file_path: str, height: int = 800) -> "IFrame":
+    def table(table_path: str, height: int = 800) -> "IFrame":
         """
         Open the Table interface for a given file.
 
         Args:
-            file_path: Path to the file to display in table view
+            table_path: Path to the table file to display in table view
             height: Height of the IFrame in pixels
 
         Returns:
@@ -204,9 +204,9 @@ class Sense:
         server = _SmooSenseServer()
         server.start_if_needed()
 
-        # Construct URL for Table with filePath parameter
-        filepath = Path(file_path).as_posix()
-        url = f"{server.base_url}/MiniTable?filePath={filepath}"
+        # Construct URL for Table with tablePath parameter
+        tablepath = Path(table_path).as_posix()
+        url = f"{server.base_url}/MiniTable?tablePath={tablepath}"
 
         return IFrame(url, width="100%", height=height)
 

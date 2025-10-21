@@ -30,7 +30,7 @@ interface FetchBalanceMapParams {
   bubblePlotXColumn: string
   bubblePlotYColumn: string
   bubblePlotBreakdownColumn: string // Required - BalanceMap needs breakdown column for color mapping
-  filePath: string
+  tablePath: string
   filterCondition: string | null
   xBin: {
     min: number
@@ -54,7 +54,7 @@ const fetchBalanceMapFunction = async (
     bubblePlotXColumn,
     bubblePlotYColumn,
     bubblePlotBreakdownColumn,
-    filePath,
+    tablePath,
     filterCondition,
     xBin,
     yBin
@@ -71,7 +71,7 @@ const fetchBalanceMapFunction = async (
         ${sanitizeName(bubblePlotXColumn)} AS x,
         ${sanitizeName(bubblePlotYColumn)} AS y,
         ${sanitizeName(bubblePlotBreakdownColumn)} AS breakdown
-      FROM '${filePath}'
+      FROM '${tablePath}'
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
       SELECT
@@ -135,7 +135,7 @@ const balanceMapShouldWait = (params: FetchBalanceMapParams) => {
   return !!(params.bubblePlotXColumn &&
            params.bubblePlotYColumn &&
            params.bubblePlotBreakdownColumn &&
-           params.filePath &&
+           params.tablePath &&
            params.xBin &&
            params.yBin)
 }

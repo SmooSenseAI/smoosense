@@ -88,11 +88,11 @@ export function inferCardinalityFromMetadata(column: ColumnMeta): ColumnCardinal
 // Async thunk to query cardinality
 export const queryCardinality = createAsyncThunk<
   { columnName: string; cardinality: ColumnCardinality },
-  { columnName: string; filePath: string },
+  { columnName: string; tablePath: string },
   { dispatch: AppDispatch }
 >(
   'cardinality/queryCardinality',
-  async ({ columnName, filePath }, { dispatch }) => {
+  async ({ columnName, tablePath }, { dispatch }) => {
     const cutoff = 1000
     const sqlQuery = `
       SELECT 
@@ -106,7 +106,7 @@ export const queryCardinality = createAsyncThunk<
           WHEN approx_count_distinct(${sanitizeName(columnName)}) <= ${cutoff} THEN 'low' 
           ELSE 'high' 
         END AS cardinality
-      FROM '${filePath}' 
+      FROM '${tablePath}' 
       WHERE ${sanitizeName(columnName)} IS NOT NULL
     `.trim()
 

@@ -8,40 +8,40 @@ interface UseColumnMetaResult {
   columns: ColumnMeta[]
   loading: boolean
   error: string | null
-  filePath: string
+  tablePath: string
 }
 
 interface UseSingleColumnMetaResult {
   columnMeta: ColumnMeta | undefined
   loading: boolean
   error: string | null
-  filePath: string
+  tablePath: string
 }
 
 export function useColumnMeta(): UseColumnMetaResult {
   const dispatch = useDispatch<AppDispatch>()
-  const filePath = useSelector((state: RootState) => state.ui.filePath)
+  const tablePath = useSelector((state: RootState) => state.ui.tablePath)
   const { data, loading, error } = useSelector((state: RootState) => state.columnMeta, shallowEqual)
 
 
 
   useEffect(() => {
-    if (filePath) {
+    if (tablePath) {
       // Always try to dispatch - let the thunk handle the condition logic
-      dispatch(fetchColumnMetadata(filePath))
+      dispatch(fetchColumnMetadata(tablePath))
     }
-  }, [dispatch, filePath])
+  }, [dispatch, tablePath])
 
   return useMemo(() => ({
     columns: (data || []) as ColumnMeta[],
     loading,
     error,
-    filePath: filePath || ''
-  }), [data, loading, error, filePath])
+    tablePath: tablePath || ''
+  }), [data, loading, error, tablePath])
 }
 
 export function useSingleColumnMeta(columnName: string): UseSingleColumnMetaResult {
-  const { columns, loading, error, filePath } = useColumnMeta()
+  const { columns, loading, error, tablePath } = useColumnMeta()
   
   const columnMeta = columns.find(col => col.column_name === columnName)
   
@@ -49,6 +49,6 @@ export function useSingleColumnMeta(columnName: string): UseSingleColumnMetaResu
     columnMeta,
     loading,
     error,
-    filePath
+    tablePath
   }
 }

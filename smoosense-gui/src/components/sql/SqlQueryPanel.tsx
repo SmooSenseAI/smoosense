@@ -16,7 +16,7 @@ import { CLS } from '@/lib/utils/styles'
 import { useTheme } from 'next-themes'
 
 export default function SqlQueryPanel() {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const { theme, systemTheme } = useTheme()
   const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
   const sqlQuery = useAppSelector((state) => state.ui.sqlQuery)
@@ -69,12 +69,12 @@ export default function SqlQueryPanel() {
     }
   }
 
-  // Initialize default query when no query exists and filePath is available
+  // Initialize default query when no query exists and tablePath is available
   useEffect(() => {
-    if (filePath && !sqlQuery) {
-      dispatch(setSqlQuery(`SELECT * FROM '${filePath}' LIMIT 10`))
+    if (tablePath && !sqlQuery) {
+      dispatch(setSqlQuery(`SELECT * FROM '${tablePath}' LIMIT 10`))
     }
-  }, [filePath, sqlQuery, dispatch])
+  }, [tablePath, sqlQuery, dispatch])
 
   const handleExecuteQuery = async () => {
     if (!sqlQuery.trim()) return

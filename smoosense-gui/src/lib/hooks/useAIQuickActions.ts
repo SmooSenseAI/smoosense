@@ -4,31 +4,31 @@ import { initializeQuickActions, type AIQuickAction } from '@/lib/features/aiQui
 
 /**
  * Hook to get AI quick actions based on the current file
- * Automatically initializes quick actions when filePath changes
+ * Automatically initializes quick actions when tablePath changes
  * 
  * @returns Object with quick actions data and state
  */
 export function useAIQuickActions() {
   const dispatch = useAppDispatch()
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   
   const aiQuickActionsState = useAppSelector((state) => state.aiQuickActions)
   const { actions, initialized } = aiQuickActionsState
   
-  // Initialize quick actions when file path is available
+  // Initialize quick actions when table path is available
   useEffect(() => {
-    if (filePath && (!initialized || filePath)) {
-      // Reset and reinitialize when filePath changes
-      dispatch(initializeQuickActions({ fileName: filePath }))
+    if (tablePath && (!initialized || tablePath)) {
+      // Reset and reinitialize when tablePath changes
+      dispatch(initializeQuickActions({ fileName: tablePath }))
     }
-  }, [dispatch, filePath, initialized])
+  }, [dispatch, tablePath, initialized])
   
   return {
     quickActions: actions || [],
-    initialized: initialized && !!filePath,
-    loading: !filePath || !initialized,
+    initialized: initialized && !!tablePath,
+    loading: !tablePath || !initialized,
     hasData: (actions || []).length > 0,
-    filePath
+    tablePath
   }
 }
 

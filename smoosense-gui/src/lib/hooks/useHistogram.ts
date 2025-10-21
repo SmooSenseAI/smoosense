@@ -17,7 +17,7 @@ interface UseHistogramResult {
  * Depends on histogram column selection and histogram stats
  */
 export function useHistogram(): UseHistogramResult {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const histogramColumn = useAppSelector((state) => state.ui.histogramColumn)
   const histogramBreakdownColumn = useAppSelector((state) => state.ui.histogramBreakdownColumn)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
@@ -27,7 +27,7 @@ export function useHistogram(): UseHistogramResult {
   
   // Build parameters for histogram fetching
   const params = useMemo(() => {
-    if (!filePath || !histogramColumn || !histogramStatsData) {
+    if (!tablePath || !histogramColumn || !histogramStatsData) {
       return null
     }
     
@@ -44,13 +44,13 @@ export function useHistogram(): UseHistogramResult {
     return {
       histogramColumn,
       histogramBreakdownColumn,
-      filePath,
+      tablePath,
       filterCondition,
       histogramStatsData: {
         bin: histogramStats.bin
       }
     }
-  }, [filePath, histogramColumn, histogramBreakdownColumn, filterCondition, histogramStatsData])
+  }, [tablePath, histogramColumn, histogramBreakdownColumn, filterCondition, histogramStatsData])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.histogram,

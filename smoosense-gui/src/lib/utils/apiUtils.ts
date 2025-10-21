@@ -24,13 +24,13 @@ export async function postApi({ url, data }: { url: string; data: unknown }): Pr
 
 /**
  * Generates the API URL for getting a file from the backend
- * @param filePath - The path to the file
+ * @param tablePath - The path to the file
  * @param redirect - Whether to redirect to signed URL (for S3 files only)
  * @returns The properly encoded API URL
  */
-export function getFileUrl(filePath: string, redirect: boolean = false): string {
+export function getFileUrl(tablePath: string, redirect: boolean = false): string {
   const params = new URLSearchParams({
-    path: filePath,
+    path: tablePath,
     redirect: redirect.toString()
   })
   return `${API_PREFIX}/get-file?${params.toString()}`

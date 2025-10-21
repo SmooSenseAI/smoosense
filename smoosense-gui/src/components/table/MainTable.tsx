@@ -30,10 +30,10 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
   const theme = useAGGridTheme()
 
   // Combine UI selectors to reduce re-renders
-  const { rowHeight, headerPlotHeight, filePath, sorting, samplingCondition } = useAppSelector((state) => ({
+  const { rowHeight, headerPlotHeight, tablePath, sorting, samplingCondition } = useAppSelector((state) => ({
     rowHeight: state.ui.rowHeight,
     headerPlotHeight: state.ui.headerPlotHeight,
-    filePath: state.ui.filePath,
+    tablePath: state.ui.tablePath,
     sorting: state.ag.sorting,
     samplingCondition: state.viewing.samplingCondition
   }), shallowEqual)
@@ -51,7 +51,7 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
   }), [samplingCondition])
   const gridApiRef = useRef<GridApi | null>(null)
   
-  // Always call hooks - but handle null filePath gracefully in the hooks
+  // Always call hooks - but handle null tablePath gracefully in the hooks
   const { data, error: dataError } = useProcessedRowData()
   const { ag: baseColumnDefs } = useAg()
   const renderTypeColumns = useRenderType()
@@ -203,8 +203,8 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
     scrollToColumn
   }), [scrollToColumn])
   
-  // Early return if no filePath - this should be handled at Table level
-  if (!filePath) {
+  // Early return if no tablePath - this should be handled at Table level
+  if (!tablePath) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">

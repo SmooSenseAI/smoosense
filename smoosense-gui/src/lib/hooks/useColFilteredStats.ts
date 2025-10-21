@@ -38,7 +38,7 @@ export function useColFilteredStats(columnName: string) {
 
   // Get base stats and all shared dependencies
   const baseStats = useColBaseStats(columnName)
-  const {filePath, columnMeta, isCategorical, loading: baseLoading, error: baseError } = baseStats
+  const {tablePath, columnMeta, isCategorical, loading: baseLoading, error: baseError } = baseStats
   
   // Get current filtered stats state for this column (use safeColumnName to avoid empty key issues)
   const columnState = useAppSelector((state) => state.columns.filteredStats[safeColumnName])
@@ -49,7 +49,7 @@ export function useColFilteredStats(columnName: string) {
 
   // Build query for this column (with filter if active)
   const query = useAppSelector((state) => {
-    if (!filePath || !isValid) return null
+    if (!tablePath || !isValid) return null
     return buildColStatsQueryFromState({ 
       columnName, 
       addFilter: hasActiveFilters, 
@@ -78,7 +78,7 @@ export function useColFilteredStats(columnName: string) {
                              !baseLoading &&
                              !!columnMeta &&
                              isCategorical !== null &&
-                             !!filePath &&
+                             !!tablePath &&
                              !!query &&
                              !error  // Don't retry if there's any error
 
@@ -137,7 +137,7 @@ export function useColFilteredStats(columnName: string) {
     // Dependencies (shared from baseStats)
     columnMeta,
     isCategorical,
-    filePath,
+    tablePath,
     
     // Filter information
     hasActiveFilters,

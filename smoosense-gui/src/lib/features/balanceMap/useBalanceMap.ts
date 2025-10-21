@@ -13,7 +13,7 @@ interface UseBalanceMapResult {
 }
 
 export function useBalanceMap(): UseBalanceMapResult {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const bubblePlotXColumn = useAppSelector((state) => state.ui.bubblePlotXColumn)
   const bubblePlotYColumn = useAppSelector((state) => state.ui.bubblePlotYColumn)
   const bubblePlotBreakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
@@ -25,7 +25,7 @@ export function useBalanceMap(): UseBalanceMapResult {
 
   // Build parameters for balance map fetching
   const params = useMemo(() => {
-    if (!filePath || !bubblePlotXColumn || !bubblePlotYColumn || !bubblePlotBreakdownColumn || !xStatsData || !yStatsData) {
+    if (!tablePath || !bubblePlotXColumn || !bubblePlotYColumn || !bubblePlotBreakdownColumn || !xStatsData || !yStatsData) {
       return null
     }
 
@@ -42,12 +42,12 @@ export function useBalanceMap(): UseBalanceMapResult {
       bubblePlotXColumn,
       bubblePlotYColumn,
       bubblePlotBreakdownColumn,
-      filePath,
+      tablePath,
       filterCondition,
       xBin,
       yBin
     }
-  }, [filePath, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
+  }, [tablePath, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.balanceMap,

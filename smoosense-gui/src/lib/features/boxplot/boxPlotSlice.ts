@@ -15,7 +15,7 @@ export type BoxPlotState = BaseAsyncDataState<BoxPlotDataPoint[]>
 interface FetchBoxPlotParams {
   boxPlotColumns: string[]
   boxPlotBreakdownColumn: string | null
-  filePath: string
+  tablePath: string
   filterCondition: string | null
 }
 
@@ -25,7 +25,7 @@ const fetchBoxPlotFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<BoxPlotDataPoint[]> => {
-  const { boxPlotColumns, boxPlotBreakdownColumn, filePath, filterCondition } = params
+  const { boxPlotColumns, boxPlotBreakdownColumn, tablePath, filterCondition } = params
   
   if (boxPlotColumns.length === 0) {
     return []
@@ -47,7 +47,7 @@ const fetchBoxPlotFunction = async (
   }
 
   // Build FROM clause
-  const fromClause = `FROM '${filePath}'`
+  const fromClause = `FROM '${tablePath}'`
   
   // Build WHERE clause
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
@@ -72,7 +72,7 @@ const fetchBoxPlotFunction = async (
 
 // Should wait condition
 const boxPlotShouldWait = (params: FetchBoxPlotParams) => {
-  return !!(params.boxPlotColumns.length > 0 && params.filePath)
+  return !!(params.boxPlotColumns.length > 0 && params.tablePath)
 }
 
 // Create the slice using the factory

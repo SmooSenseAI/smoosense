@@ -271,7 +271,7 @@ class TestCustomServerConfig(unittest.TestCase):
                     "/Table", new_url, f"New page URL does not contain '/Table': {new_url}"
                 )
                 self.assertIn(
-                    "filePath=", new_url, f"New page URL does not contain 'filePath=': {new_url}"
+                    "tablePath=", new_url, f"New page URL does not contain 'tablePath=': {new_url}"
                 )
                 logger.info(f"Table view opened with correct URL: {new_url}")
 

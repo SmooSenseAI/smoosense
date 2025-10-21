@@ -165,7 +165,7 @@ interface ColumnNavigationProps {
 
 const ColumnNavigation = ({ onColumnClick }: ColumnNavigationProps) => {
   const dispatch = useAppDispatch()
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const debugMode = useAppSelector((state) => state.ui.debugMode)
   const { ag: colDefs, loading, error, columns } = useAg()
   const [searchTerm, setSearchTerm] = useState('')
@@ -236,7 +236,7 @@ const ColumnNavigation = ({ onColumnClick }: ColumnNavigationProps) => {
     }
   }
 
-  if (!filePath) {
+  if (!tablePath) {
     return (
       <div className="h-full flex items-center justify-center p-4">
         <div className="text-center text-muted-foreground">

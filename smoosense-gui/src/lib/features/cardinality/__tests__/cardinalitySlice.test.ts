@@ -173,11 +173,11 @@ describe('cardinalitySlice', () => {
     // Simulate a failed query by dispatching the rejected action
     const rejectedAction = {
       type: 'cardinality/queryCardinality/rejected',
-      meta: { arg: { columnName: 'failed_col', filePath: '/test/path' } },
+      meta: { arg: { columnName: 'failed_col', tablePath: '/test/path' } },
       error: { message: 'SQL query failed' }
     }
     
-    store.dispatch(rejectedAction as unknown as { type: string; meta: { arg: { columnName: string; filePath: string } }; error: { message: string } })
+    store.dispatch(rejectedAction as unknown as { type: string; meta: { arg: { columnName: string; tablePath: string } }; error: { message: string } })
     const state = store.getState().cardinality
 
     // Should set error cardinality to prevent retries

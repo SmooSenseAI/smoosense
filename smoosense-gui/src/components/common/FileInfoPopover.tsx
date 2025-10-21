@@ -10,17 +10,17 @@ import { CLS } from '@/lib/utils/styles'
 import { getFileUrl } from '@/lib/utils/apiUtils'
 
 export default function FileInfoPopover() {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const { data, loading, error } = useFileInfo()
 
   // Don't show the popover if no file is selected
-  if (!filePath) {
+  if (!tablePath) {
     return null
   }
 
   const handleDownload = () => {
-    if (filePath) {
-      const url = getFileUrl(filePath, true)
+    if (tablePath) {
+      const url = getFileUrl(tablePath, true)
       window.open(url, '_blank')
     }
   }
@@ -69,7 +69,7 @@ export default function FileInfoPopover() {
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Name:</span>
               <div className="flex items-center gap-1">
-                <span className="truncate max-w-[150px]">{pathBasename(filePath)}</span>
+                <span className="truncate max-w-[150px]">{pathBasename(tablePath)}</span>
                 <button
                   onClick={handleDownload}
                   className={CLS.ICON_BUTTON_SM_SUBTLE}
@@ -77,14 +77,14 @@ export default function FileInfoPopover() {
                 >
                   <Download className="h-3 w-3" />
                 </button>
-                <CopyToClipboard value={pathBasename(filePath)} />
+                <CopyToClipboard value={pathBasename(tablePath)} />
               </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Path:</span>
               <div className="flex items-center gap-1">
-                <span className="truncate max-w-[150px]">{filePath}</span>
-                <CopyToClipboard value={filePath} />
+                <span className="truncate max-w-[150px]">{tablePath}</span>
+                <CopyToClipboard value={tablePath} />
               </div>
             </div>
             {metadata?.source && (

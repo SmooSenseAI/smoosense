@@ -16,24 +16,24 @@ interface UseHeatMapResult {
  * Depends on heatmap X and Y column selection
  */
 export function useHeatMap(): UseHeatMapResult {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const heatmapXColumn = useAppSelector((state) => state.ui.heatmapXColumn)
   const heatmapYColumn = useAppSelector((state) => state.ui.heatmapYColumn)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
   
   // Build parameters for heatmap fetching
   const params = useMemo(() => {
-    if (!filePath || !heatmapXColumn || !heatmapYColumn) {
+    if (!tablePath || !heatmapXColumn || !heatmapYColumn) {
       return null
     }
     
     return {
       heatmapXColumn,
       heatmapYColumn,
-      filePath,
+      tablePath,
       filterCondition
     }
-  }, [filePath, heatmapXColumn, heatmapYColumn, filterCondition])
+  }, [tablePath, heatmapXColumn, heatmapYColumn, filterCondition])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.heatmap,

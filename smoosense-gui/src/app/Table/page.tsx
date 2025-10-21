@@ -25,9 +25,9 @@ const getActiveContent = (activeTab: string) => {
 function TablePageInner() {
   const searchParams = useSearchParams()
   const activeTab = useAppSelector((state) => state.ui.activeTab)
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const showRowDetailsPanel = useAppSelector((state) => state.ui.showRowDetailsPanel)
-  const urlFilePath = searchParams.get('filePath')
+  const urlTablePath = searchParams.get('tablePath')
 
   // Show row details panel only if both conditions are met
   const shouldShowRowDetailsPanel = showRowDetailsPanel
@@ -37,19 +37,19 @@ function TablePageInner() {
     mainTableRef.current?.scrollToColumn(columnName)
   }, [])
 
-  // Set document title based on filePath
+  // Set document title based on tablePath
   useEffect(() => {
-    const currentPath = filePath || urlFilePath
+    const currentPath = tablePath || urlTablePath
     if (currentPath) {
       const fileName = pathBasename(currentPath)
       document.title = fileName ? `${fileName} - SmooSense` : 'SmooSense'
     } else {
       document.title = 'SmooSense'
     }
-  }, [filePath, urlFilePath])
+  }, [tablePath, urlTablePath])
 
-  // If both filePath and urlFilePath are nil, show error
-  if (!filePath && !urlFilePath) {
+  // If both tablePath and urlTablePath are nil, show error
+  if (!tablePath && !urlTablePath) {
     return (
       <div className="min-h-screen bg-background">
         <TableNavbar />
@@ -59,10 +59,10 @@ function TablePageInner() {
               Error: Missing File Path
             </h1>
             <p className="text-lg text-muted-foreground text-center max-w-md">
-              This page requires a <code className="bg-muted px-2 py-1 rounded">filePath</code> parameter in the URL.
+              This page requires a <code className="bg-muted px-2 py-1 rounded">tablePath</code> parameter in the URL.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
-              Example: <code className="bg-muted px-2 py-1 rounded">/Table?filePath=/path/to/file.csv</code>
+              Example: <code className="bg-muted px-2 py-1 rounded">/Table?tablePath=/path/to/file.csv</code>
             </p>
           </div>
         </main>
@@ -70,8 +70,8 @@ function TablePageInner() {
     )
   }
 
-  // If filePath is nil but urlFilePath exists, show loading spinner
-  if (!filePath && urlFilePath) {
+  // If tablePath is nil but urlTablePath exists, show loading spinner
+  if (!tablePath && urlTablePath) {
     return (
       <div className="min-h-screen bg-background">
         <TableNavbar />
@@ -82,7 +82,7 @@ function TablePageInner() {
               <span className="text-lg text-muted-foreground">Loading...</span>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              Processing file path: <code className="bg-muted px-2 py-1 rounded">{urlFilePath}</code>
+              Processing file path: <code className="bg-muted px-2 py-1 rounded">{urlTablePath}</code>
             </p>
           </div>
         </main>

@@ -14,7 +14,7 @@ export function useCardinality(columnName: string) {
   const columnState = useAppSelector((state) => state.columns.cardinality[columnName])
   
   // Get metadata state using hook that auto-fetches
-  const { columnMeta, loading: metaLoading, error: metaError, filePath } = useSingleColumnMeta(columnName)
+  const { columnMeta, loading: metaLoading, error: metaError, tablePath } = useSingleColumnMeta(columnName)
 
   // Get current cardinality state with defaults
   const data = columnState?.data || null
@@ -42,11 +42,11 @@ export function useCardinality(columnName: string) {
       return
     }
 
-    // Cannot infer from metadata, need to query if filePath is available
-    if (filePath) {
-      dispatch(queryCardinality({ columnName, filePath }))
+    // Cannot infer from metadata, need to query if tablePath is available
+    if (tablePath) {
+      dispatch(queryCardinality({ columnName, tablePath }))
     }
-  }, [dispatch, columnName, columnMeta, metaLoading, metaError, hasData, loading, filePath])
+  }, [dispatch, columnName, columnMeta, metaLoading, metaError, hasData, loading, tablePath])
 
 
   // Determine overall loading state
@@ -60,7 +60,7 @@ export function useCardinality(columnName: string) {
     error: overallError,
     // Passover
     columnMeta,
-    filePath
+    tablePath
   }
 }
 

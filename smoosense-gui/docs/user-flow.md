@@ -3,7 +3,7 @@ This doc is about layout design and user interaction
 
 We have 3 routes:
 - `/`: Home
-- `/Table?filePath=xxx`: browse table in a given file
+- `/Table?tablePath=xxx`: browse table in a given file
 - `/FolderBrowser?rootFolder=xxx`: browse folder tree structure and preview data files.
 
 ## [Route] Home

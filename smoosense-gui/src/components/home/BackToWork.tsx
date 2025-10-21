@@ -8,7 +8,7 @@ import type { RootState } from '@/lib/store'
 
 export default function BackToWork() {
   const rootFolder = useSelector((state: RootState) => state.ui.rootFolder)
-  const filePath = useSelector((state: RootState) => state.ui.filePath)
+  const tablePath = useSelector((state: RootState) => state.ui.tablePath)
 
   // Get basename from path
   const pathBasename = (path: string) => {
@@ -16,7 +16,7 @@ export default function BackToWork() {
   }
 
   // Don't render if no work to return to
-  if (!rootFolder && !filePath) {
+  if (!rootFolder && !tablePath) {
     return null
   }
 
@@ -33,11 +33,11 @@ export default function BackToWork() {
           </Button>
         )}
 
-        {filePath && (
+        {tablePath && (
           <Button asChild size="lg" variant="outline">
-            <Link href={`./Table?filePath=${encodeURIComponent(filePath)}`}>
+            <Link href={`./Table?tablePath=${encodeURIComponent(tablePath)}`}>
               <Table className="mr-2 h-4 w-4" />
-              {pathBasename(filePath)}
+              {pathBasename(tablePath)}
             </Link>
           </Button>
         )}

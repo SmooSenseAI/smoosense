@@ -26,7 +26,7 @@ jest.mock('@/lib/hooks/useColumnMeta', () => ({
     columns: [{ column_name: 'col1', data_type: 'string', null_count: 0, non_null_count: 100 }],
     loading: false,
     error: null,
-    filePath: '/test/file.csv'
+    tablePath: '/test/file.csv'
   }))
 }))
 
@@ -99,9 +99,9 @@ describe('TableNavbar', () => {
     expect(tableTab).toHaveAttribute('data-state', 'active')
   })
 
-  it('renders status information when filePath is provided', () => {
+  it('renders status information when tablePath is provided', () => {
     renderWithProvider(<TableNavbar />, { 
-      ui: { filePath: '/test/file.csv' },
+      ui: { tablePath: '/test/file.csv' },
       viewing: { totalRows: 100 },
       columnMeta: { 
         data: [{ column_name: 'col1', data_type: 'string', null_count: 0, non_null_count: 100 }], 

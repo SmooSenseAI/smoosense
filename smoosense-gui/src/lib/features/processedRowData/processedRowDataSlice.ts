@@ -11,18 +11,18 @@ interface FetchProcessedRowDataParams {
 }
 
 /**
- * Convert a file path to a URL, handling relative paths and baseUrl
- * @param url - The URL or file path to convert
- * @param filePath - The current file path (for resolving relative paths like ./)
+ * Convert a table path to a URL, handling relative paths and baseUrl
+ * @param url - The URL or table path to convert
+ * @param tablePath - The current table path (for resolving relative paths like ./)
  * @param baseUrl - The base URL to prepend (for absolute paths like / or ~/)
  * @returns The converted URL
  */
-export const filePathToUrl = (url: string, filePath: string, baseUrl: string): string => {
+export const tablePathToUrl = (url: string, tablePath: string, baseUrl: string): string => {
   let fullUrl = url
 
-  // If URL starts with "./", resolve it relative to filePath
+  // If URL starts with "./", resolve it relative to tablePath
   if (url.startsWith('./')) {
-    const dirPath = pathDirname(filePath)
+    const dirPath = pathDirname(tablePath)
     const relativePath = url.substring(2) // Remove './' prefix
     fullUrl = pathJoin(dirPath, relativePath)
   }
@@ -57,14 +57,14 @@ const fetchProcessedRowDataFunction = async (
 
   let processedRowData = [...rawData]
 
-  // 1. Convert relative URLs to absolute URLs using baseUrl and filePath
+  // 1. Convert relative URLs to absolute URLs using baseUrl and tablePath
   if (urlColumns && urlColumns.length > 0 && getState) {
     const state = getState()
-    const filePath = state.ui?.filePath
+    const tablePath = state.ui?.tablePath
     const baseUrl = state.ui?.baseUrl
 
-    // Only process if both filePath and baseUrl are available
-    if (filePath && baseUrl) {
+    // Only process if both tablePath and baseUrl are available
+    if (tablePath && baseUrl) {
       // Clone the data to avoid mutation
       processedRowData = cloneDeep(processedRowData)
 
@@ -73,8 +73,8 @@ const fetchProcessedRowDataFunction = async (
         urlColumns.forEach((col) => {
           const value = row[col]
           if (value && typeof value === 'string') {
-            // Use filePathToUrl to convert relative URLs to absolute URLs
-            row[col] = filePathToUrl(value, filePath, baseUrl)
+            // Use tablePathToUrl to convert relative URLs to absolute URLs
+            row[col] = tablePathToUrl(value, tablePath, baseUrl)
           }
         })
       })

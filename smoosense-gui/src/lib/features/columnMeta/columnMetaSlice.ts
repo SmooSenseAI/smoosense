@@ -17,14 +17,14 @@ const initialState: ColumnMetaState = {
 // Async thunk for fetching column metadata
 export const fetchColumnMetadata = createAsyncThunk(
   'columnMeta/fetchColumnMetadata',
-  async (filePath: string, { dispatch }) => {
-    const result = await getColumnMetadata(filePath, dispatch)
+  async (tablePath: string, { dispatch }) => {
+    const result = await getColumnMetadata(tablePath, dispatch)
     return result
   },
   {
-    condition: (filePath, { getState }) => {
-      // Only proceed if we have a valid filePath
-      if (!filePath || filePath.trim() === '') {
+    condition: (tablePath, { getState }) => {
+      // Only proceed if we have a valid tablePath
+      if (!tablePath || tablePath.trim() === '') {
         return false
       }
       

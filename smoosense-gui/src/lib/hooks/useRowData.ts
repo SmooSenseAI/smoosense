@@ -13,7 +13,7 @@ interface UseRowDataResult {
 }
 
 export function useRowData(): UseRowDataResult {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const pageSize = useAppSelector((state) => state.viewing.pageSize)
   const pageNumber = useAppSelector((state) => state.viewing.pageNumber)
   const sorting = useAppSelector((state) => state.ag.sorting)
@@ -22,7 +22,7 @@ export function useRowData(): UseRowDataResult {
 
   // Build the SQL query
   const query = useMemo(() => {
-    if (!filePath) return null
+    if (!tablePath) return null
 
     const offset = (pageNumber - 1) * pageSize
     
@@ -39,7 +39,7 @@ export function useRowData(): UseRowDataResult {
     // When samplingCondition is not null, use reservoir sampling
     if (samplingCondition !== null) {
       return `SELECT *
-    FROM (SELECT * FROM '${filePath}'${combinedCondition})
+    FROM (SELECT * FROM '${tablePath}'${combinedCondition})
     ORDER BY random()  --- Changed from reservoir to random. Reservoir does not work for large dataset.
     LIMIT ${pageSize}`
     }
@@ -51,8 +51,8 @@ export function useRowData(): UseRowDataResult {
       orderByClause = ` ORDER BY ${sortClauses.join(', ')}`
     }
     
-    return `SELECT * FROM '${filePath}'${combinedCondition}${orderByClause} LIMIT ${pageSize} OFFSET ${offset}`
-  }, [filePath, pageSize, pageNumber, sqlCondition, samplingCondition, sorting])
+    return `SELECT * FROM '${tablePath}'${combinedCondition}${orderByClause} LIMIT ${pageSize} OFFSET ${offset}`
+  }, [tablePath, pageSize, pageNumber, sqlCondition, samplingCondition, sorting])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.rowData,

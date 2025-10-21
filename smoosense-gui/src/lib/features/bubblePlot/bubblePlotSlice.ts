@@ -27,7 +27,7 @@ interface FetchBubblePlotParams {
   bubblePlotXColumn: string
   bubblePlotYColumn: string
   bubblePlotBreakdownColumn: string | null // Optional - BubblePlot can work without breakdown column
-  filePath: string
+  tablePath: string
   filterCondition: string | null
   xBin: {
     min: number
@@ -51,7 +51,7 @@ const fetchBubblePlotFunction = async (
     bubblePlotXColumn, 
     bubblePlotYColumn, 
     bubblePlotBreakdownColumn, 
-    filePath, 
+    tablePath, 
     filterCondition,
     xBin,
     yBin
@@ -68,7 +68,7 @@ const fetchBubblePlotFunction = async (
         ${sanitizeName(bubblePlotXColumn)} AS x,
         ${sanitizeName(bubblePlotYColumn)} AS y,
         ${isNil(bubblePlotBreakdownColumn) ? 'NULL' : sanitizeName(bubblePlotBreakdownColumn)} AS breakdown
-      FROM '${filePath}'
+      FROM '${tablePath}'
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
       SELECT
@@ -126,7 +126,7 @@ const fetchBubblePlotFunction = async (
 const bubblePlotShouldWait = (params: FetchBubblePlotParams) => {
   return !!(params.bubblePlotXColumn && 
            params.bubblePlotYColumn &&
-           params.filePath && 
+           params.tablePath && 
            params.xBin &&
            params.yBin)
 }

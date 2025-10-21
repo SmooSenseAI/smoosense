@@ -104,7 +104,7 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
       
       // Open table files in Table view
       if (fileType === FileType.ColumnarTable || fileType === FileType.RowTable) {
-        const url = `./Table?filePath=${encodeURIComponent(nodeData.path)}`
+        const url = `./Table?tablePath=${encodeURIComponent(nodeData.path)}`
         window.open(url, '_blank')
       }
     }

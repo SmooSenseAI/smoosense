@@ -35,19 +35,19 @@ describe('MiniTable', () => {
     jest.clearAllMocks()
   })
 
-  it('should render without error when filePath is provided', () => {
-    // Mock URLSearchParams to return a filePath
+  it('should render without error when tablePath is provided', () => {
+    // Mock URLSearchParams to return a tablePath
     mockUseSearchParams.mockReturnValue({
-      get: (key: string) => key === 'filePath' ? '/test/file.csv' : null
+      get: (key: string) => key === 'tablePath' ? '/test/file.csv' : null
     })
 
     expect(() => renderWithProvider(<MiniTable />, {
-      ui: { filePath: '/test/file.csv' }
+      ui: { tablePath: '/test/file.csv' }
     })).not.toThrow()
   })
 
-  it('should render without error when filePath is not provided', () => {
-    // Mock URLSearchParams to return no filePath
+  it('should render without error when tablePath is not provided', () => {
+    // Mock URLSearchParams to return no tablePath
     mockUseSearchParams.mockReturnValue({
       get: () => null
     })

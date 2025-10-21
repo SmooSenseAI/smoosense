@@ -31,7 +31,7 @@ export type HeatmapState = BaseAsyncDataState<HeatmapResult>
 interface FetchHeatmapParams {
   heatmapXColumn: string
   heatmapYColumn: string
-  filePath: string
+  tablePath: string
   filterCondition: string | null
 }
 
@@ -80,9 +80,9 @@ const fetchHeatmapFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<HeatmapResult> => {
-  const { heatmapXColumn, heatmapYColumn, filePath, filterCondition } = params
+  const { heatmapXColumn, heatmapYColumn, tablePath, filterCondition } = params
   
-  if (!heatmapXColumn || !heatmapYColumn || !filePath) {
+  if (!heatmapXColumn || !heatmapYColumn || !tablePath) {
     throw new Error('Missing required parameters for heatmap')
   }
 
@@ -95,7 +95,7 @@ WITH filtered AS (
       SELECT 
         ${sanitizeName(heatmapXColumn)} AS x, 
         ${sanitizeName(heatmapYColumn)} AS y
-      FROM '${filePath}'
+      FROM '${tablePath}'
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
   ) SELECT x, y, COUNT(*) AS cnt 
    FROM filtered
@@ -112,7 +112,7 @@ WITH filtered AS (
 const heatmapShouldWait = (params: FetchHeatmapParams) => {
   return !!(params.heatmapXColumn && 
            params.heatmapYColumn &&
-           params.filePath)
+           params.tablePath)
 }
 
 // Create the slice using the factory

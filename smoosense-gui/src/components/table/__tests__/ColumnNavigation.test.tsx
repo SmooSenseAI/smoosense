@@ -16,7 +16,7 @@ jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest.fn((selector) => {
     const mockState = {
-      ui: { filePath: '/test/file.csv', debugMode: false },
+      ui: { tablePath: '/test/file.csv', debugMode: false },
       ag: { columnDefs: [], columnDefsInitialized: false },
       derivedColumns: { columns: [], initialized: false }
     }

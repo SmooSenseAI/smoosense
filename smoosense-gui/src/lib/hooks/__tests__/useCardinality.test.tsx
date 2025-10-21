@@ -23,7 +23,7 @@ jest.mock('../useColumnMeta', () => ({
     },
     loading: false,
     error: null,
-    filePath: '/test/file.csv'
+    tablePath: '/test/file.csv'
   }))
 }))
 
@@ -34,7 +34,7 @@ const mockUseSingleColumnMeta = useSingleColumnMeta as jest.MockedFunction<typeo
 describe('useCardinality', () => {
   it('should return column-specific cardinality data', () => {
     const store = createTestStore({
-      ui: { filePath: '/test/file.csv' },
+      ui: { tablePath: '/test/file.csv' },
       columns: {
         cardinality: {
           'error_col': {
@@ -65,7 +65,7 @@ describe('useCardinality', () => {
 
   it('should return column-specific cardinality data for success case', () => {
     const store = createTestStore({
-      ui: { filePath: '/test/file.csv' },
+      ui: { tablePath: '/test/file.csv' },
       columns: {
         cardinality: {
           'success_col': {
@@ -98,7 +98,7 @@ describe('useCardinality', () => {
   })
 
   it('should work with no file path (no auto-fetching)', () => {
-    // Configure mock to return empty filePath for this test
+    // Configure mock to return empty tablePath for this test
     mockUseSingleColumnMeta.mockReturnValueOnce({
       columnMeta: {
         column_name: 'test_col',
@@ -118,11 +118,11 @@ describe('useCardinality', () => {
       },
       loading: false,
       error: null,
-      filePath: ''
+      tablePath: ''
     })
 
     const store = createTestStore({
-      ui: { filePath: null } // No file path to prevent auto-fetching
+      ui: { tablePath: null } // No file path to prevent auto-fetching
     })
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -132,14 +132,14 @@ describe('useCardinality', () => {
     const { result } = renderHook(() => useCardinality('any_col'), { wrapper })
 
     expect(result.current.data).toBeNull()
-    // loading should be false when no filePath is available
+    // loading should be false when no tablePath is available
     expect(result.current.loading).toBe(false)
     expect(result.current.error).toBeNull()
   })
 
   it('should test bulk cardinality access', () => {
     const store = createTestStore({
-      ui: { filePath: '/test/file.csv' },
+      ui: { tablePath: '/test/file.csv' },
       columns: {
         cardinality: {
           'test_col': {

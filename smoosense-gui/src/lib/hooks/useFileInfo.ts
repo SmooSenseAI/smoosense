@@ -23,14 +23,14 @@ interface UseFileInfoResult {
 }
 
 export function useFileInfo(): UseFileInfoResult {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const dispatch = useAppDispatch()
   const [data, setData] = useState<FileInfoResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!filePath) {
+    if (!tablePath) {
       setData(null)
       setLoading(false)
       setError(null)
@@ -46,9 +46,9 @@ export function useFileInfo(): UseFileInfoResult {
         const metadata: FileMetadata = {}
 
         // For parquet files, get key-value metadata using SQL query
-        if (filePath.toLowerCase().endsWith('.parquet')) {
+        if (tablePath.toLowerCase().endsWith('.parquet')) {
           try {
-            const metadataQuery = `SELECT CAST(key AS VARCHAR) AS key, CAST(value AS VARCHAR) AS value FROM parquet_kv_metadata('${filePath}')`
+            const metadataQuery = `SELECT CAST(key AS VARCHAR) AS key, CAST(value AS VARCHAR) AS value FROM parquet_kv_metadata('${tablePath}')`
             const sqlKey = generateSqlKey('parquet_kv_metadata')
             const metadataResult = await executeQueryAsListOfDict(metadataQuery, sqlKey, dispatch)
 
@@ -70,7 +70,7 @@ export function useFileInfo(): UseFileInfoResult {
 
         // Create file info with just the path (since we don't have size/modified from SQL)
         const fileInfo: FileInfo = {
-          path: filePath
+          path: tablePath
         }
 
         const responseData: FileInfoResponse = {
@@ -89,7 +89,7 @@ export function useFileInfo(): UseFileInfoResult {
     }
 
     fetchFileInfo()
-  }, [filePath, dispatch])
+  }, [tablePath, dispatch])
 
   return { data, loading, error }
 }

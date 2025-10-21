@@ -16,24 +16,24 @@ interface UseBoxPlotResult {
  * Depends on box plot column selection and breakdown column
  */
 export function useBoxPlot(): UseBoxPlotResult {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const boxPlotColumns = useAppSelector((state) => state.ui.boxPlotColumns)
   const boxPlotBreakdownColumn = useAppSelector((state) => state.ui.boxPlotBreakdownColumn)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
   
   // Build parameters for box plot fetching
   const params = useMemo(() => {
-    if (!filePath || boxPlotColumns.length === 0) {
+    if (!tablePath || boxPlotColumns.length === 0) {
       return null
     }
     
     return {
       boxPlotColumns,
       boxPlotBreakdownColumn,
-      filePath,
+      tablePath,
       filterCondition
     }
-  }, [filePath, boxPlotColumns, boxPlotBreakdownColumn, filterCondition])
+  }, [tablePath, boxPlotColumns, boxPlotBreakdownColumn, filterCondition])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.boxPlot,

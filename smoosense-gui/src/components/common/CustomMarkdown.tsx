@@ -97,10 +97,10 @@ export default function CustomMarkdown({ children }: CustomMarkdownProps) {
     },
     // Custom component mapping - using lowercase to match HTML tag
     fileshortcut: ({ ...props }: Record<string, string>) => {
-      const filePath = props['filepath'] || ''
+      const tablePath = props['filepath'] || ''
       const description = props['description'] || ''
 
-      return <FileShortcut filePath={filePath} description={description} />
+      return <FileShortcut tablePath={tablePath} description={description} />
     },
     headerstatscellrendererimpl: ({ ...props }: Record<string, string>) => {
       const columnname = props['columnname'] || ''

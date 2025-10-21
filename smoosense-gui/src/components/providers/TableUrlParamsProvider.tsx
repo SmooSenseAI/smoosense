@@ -8,7 +8,7 @@ import * as uiSliceActions from '@/lib/features/ui/uiSlice'
 function TableUrlParamsProviderInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams()
   const dispatch = useAppDispatch()
-  const currentFilePath = useAppSelector((state) => state.ui.filePath)
+  const currentTablePath = useAppSelector((state) => state.ui.tablePath)
 
 
   useEffect(() => {
@@ -29,14 +29,20 @@ function TableUrlParamsProviderInner({ children }: { children: React.ReactNode }
       dispatch(uiSliceActions.setBaseUrl(baseUrl))
     }
 
-    // Handle filePath specifically
-    const filePath = searchParams.get('filePath')
-    if (filePath !== currentFilePath) {
-      dispatch(uiSliceActions.setFilePath(filePath))
+    // Handle queryEngine parameter
+    const queryEngine = searchParams.get('queryEngine')
+    if (queryEngine && (queryEngine === 'duckdb' || queryEngine === 'athena' || queryEngine === 'lance')) {
+      dispatch(uiSliceActions.setQueryEngine(queryEngine))
+    }
+
+    // Handle tablePath specifically
+    const urlTablePath = searchParams.get('tablePath')
+    if (urlTablePath !== currentTablePath) {
+      dispatch(uiSliceActions.setTablePath(urlTablePath))
 
       // Set root folder to the directory containing the file
-      if (filePath) {
-        const folderPath = filePath.substring(0, filePath.lastIndexOf('/'))
+      if (urlTablePath) {
+        const folderPath = urlTablePath.substring(0, urlTablePath.lastIndexOf('/'))
         dispatch(uiSliceActions.setRootFolder(folderPath || '/'))
       }
     }
@@ -47,7 +53,7 @@ function TableUrlParamsProviderInner({ children }: { children: React.ReactNode }
     // Check if searchParams has forEach method (URLSearchParams) or handle as mock object
     if (searchParams && typeof searchParams.forEach === 'function') {
       searchParams.forEach((value, key) => {
-        if (key !== 'filePath') {
+        if (key !== 'tablePath' && key !== 'queryEngine') {
           try {
             // Try to parse value based on expected type
             let parsedValue: unknown = value
@@ -81,7 +87,7 @@ function TableUrlParamsProviderInner({ children }: { children: React.ReactNode }
     if (Object.keys(batchUpdates).length > 0) {
       dispatch(uiSliceActions.setBatchUISettings(batchUpdates))
     }
-  }, [searchParams, dispatch, currentFilePath])
+  }, [searchParams, dispatch, currentTablePath])
 
   return <>{children}</>
 }

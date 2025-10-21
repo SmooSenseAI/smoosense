@@ -6,9 +6,10 @@ interface UiState {
   debugMode: boolean
   activeTab: string
   activePlotTab: string
-  filePath: string | null
+  tablePath: string | null
   rootFolder: string | null
   baseUrl: string | null
+  queryEngine: 'duckdb' | 'athena' | 'lance'
   sqlQuery: string
   sqlResult: QueryResult | null
   rowHeight: number
@@ -47,9 +48,10 @@ const initialState: UiState = {
   debugMode: false,
   activeTab: 'Table',
   activePlotTab: 'BubblePlot',
-  filePath: null,
+  tablePath: null,
   rootFolder: null,
   baseUrl: null,
+  queryEngine: 'duckdb',
   sqlQuery: '',
   sqlResult: null,
   rowHeight: 80,
@@ -103,10 +105,10 @@ export const uiSlice = createSlice({
     setActivePlotTab: (state, action: PayloadAction<string>) => {
       state.activePlotTab = action.payload
     },
-    setFilePath: (state, action: PayloadAction<string | null>) => {
-      state.filePath = action.payload
-      // Reset SQL query when file path changes
-      if (action.payload && action.payload !== state.filePath) {
+    setTablePath: (state, action: PayloadAction<string | null>) => {
+      state.tablePath = action.payload
+      // Reset SQL query when table path changes
+      if (action.payload && action.payload !== state.tablePath) {
         state.sqlQuery = `SELECT * FROM '${action.payload}' LIMIT 10`
         state.sqlResult = null
       }
@@ -116,6 +118,9 @@ export const uiSlice = createSlice({
     },
     setBaseUrl: (state, action: PayloadAction<string | null>) => {
       state.baseUrl = action.payload
+    },
+    setQueryEngine: (state, action: PayloadAction<'duckdb' | 'athena' | 'lance'>) => {
+      state.queryEngine = action.payload
     },
     setSqlQuery: (state, action: PayloadAction<string>) => {
       state.sqlQuery = action.payload
@@ -248,9 +253,10 @@ export const {
   setDebugMode,
   setActiveTab,
   setActivePlotTab,
-  setFilePath,
+  setTablePath,
   setRootFolder,
   setBaseUrl,
+  setQueryEngine,
   setSqlQuery,
   setSqlResult,
   setRowHeight,

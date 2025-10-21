@@ -17,7 +17,7 @@ interface UseBubblePlotResult {
  * Depends on bubble plot column selection and column stats
  */
 export function useBubblePlot(): UseBubblePlotResult {
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const bubblePlotXColumn = useAppSelector((state) => state.ui.bubblePlotXColumn)
   const bubblePlotYColumn = useAppSelector((state) => state.ui.bubblePlotYColumn)
   const bubblePlotBreakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
@@ -29,7 +29,7 @@ export function useBubblePlot(): UseBubblePlotResult {
   
   // Build parameters for bubble plot fetching
   const params = useMemo(() => {
-    if (!filePath || !bubblePlotXColumn || !bubblePlotYColumn || !xStatsData || !yStatsData) {
+    if (!tablePath || !bubblePlotXColumn || !bubblePlotYColumn || !xStatsData || !yStatsData) {
       return null
     }
     
@@ -46,12 +46,12 @@ export function useBubblePlot(): UseBubblePlotResult {
       bubblePlotXColumn,
       bubblePlotYColumn,
       bubblePlotBreakdownColumn,
-      filePath,
+      tablePath,
       filterCondition,
       xBin,
       yBin
     }
-  }, [filePath, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
+  }, [tablePath, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.bubblePlot,

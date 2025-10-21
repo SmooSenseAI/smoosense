@@ -2,15 +2,15 @@ import { ExternalLink } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 interface FileShortcutProps {
-  filePath: string
+  tablePath: string
   description: string
 }
 
-export default function FileShortcut({ filePath, description }: FileShortcutProps) {
-  const pathBasename = filePath.split('/').pop() || filePath
+export default function FileShortcut({ tablePath, description }: FileShortcutProps) {
+  const pathBasename = tablePath.split('/').pop() || tablePath
 
   const handleClick = () => {
-    const url = `./Table?filePath=${encodeURIComponent(filePath)}`
+    const url = `./Table?tablePath=${encodeURIComponent(tablePath)}`
     window.open(url, '_blank')
   }
 

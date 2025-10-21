@@ -7,7 +7,7 @@ const renderWithProvider = (stateOverrides = {}) => {
   const store = createTestStore({
     ui: {
       debugMode: true,
-      filePath: '/test/file.csv',
+      tablePath: '/test/file.csv',
       ...stateOverrides,
     },
   })

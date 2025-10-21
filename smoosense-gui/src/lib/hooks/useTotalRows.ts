@@ -6,14 +6,14 @@ import { extractSqlFilterFromState } from '@/lib/utils/state/filterUtils'
 
 export function useTotalRows(): number | null {
   const dispatch = useAppDispatch()
-  const filePath = useAppSelector((state) => state.ui.filePath)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const totalRows = useAppSelector((state) => state.viewing.totalRows)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
   
   useEffect(() => {
     const fetchTotalRows = async () => {
-      if (!filePath) {
-        // Clear total rows if no file path
+      if (!tablePath) {
+        // Clear total rows if no table path
         dispatch(setTotalRows(null))
         return
       }
@@ -21,7 +21,7 @@ export function useTotalRows(): number | null {
       try {
         // Build COUNT query with filter conditions
         const whereCondition = filterCondition ? ` WHERE ${filterCondition}` : ''
-        const countQuery = `SELECT COUNT(*) as total FROM '${filePath}'${whereCondition}`
+        const countQuery = `SELECT COUNT(*) as total FROM '${tablePath}'${whereCondition}`
         const result = await executeQueryAsListOfDict(countQuery, 'totalRows', dispatch)
         
         if (result && result.length > 0) {
@@ -35,9 +35,9 @@ export function useTotalRows(): number | null {
       }
     }
 
-    // Fetch total rows whenever filePath or filter conditions change
+    // Fetch total rows whenever tablePath or filter conditions change
     fetchTotalRows()
-  }, [filePath, filterCondition, dispatch])
+  }, [tablePath, filterCondition, dispatch])
   
   return totalRows
 }

@@ -139,10 +139,10 @@ export function buildColStatsQueryFromState({
     throw new Error('Invalid column name provided to buildColStatsQueryFromState')
   }
 
-  // Get file path from UI state
-  const filePath = state.ui.filePath
-  if (!filePath) {
-    throw new Error('No file path found in state')
+  // Get table path from UI state
+  const tablePath = state.ui.tablePath
+  if (!tablePath) {
+    throw new Error('No table path found in state')
   }
 
   // Get histogram bins from UI state
@@ -165,11 +165,11 @@ export function buildColStatsQueryFromState({
 
   // Build and return appropriate query
   if (filterType === FilterType.ENUM) {
-    return buildCategoricalStatsQuery(columnName, filePath, whereClause)
+    return buildCategoricalStatsQuery(columnName, tablePath, whereClause)
   } else if (filterType === FilterType.RANGE) {
-    return buildHistogramStatsQuery(columnName, filePath, histogramNumberOfBins, whereClause)
+    return buildHistogramStatsQuery(columnName, tablePath, histogramNumberOfBins, whereClause)
   } else {
     // TEXT or NONE - default to text query
-    return buildTextStatsQuery(columnName, filePath, whereClause)
+    return buildTextStatsQuery(columnName, tablePath, whereClause)
   }
 }

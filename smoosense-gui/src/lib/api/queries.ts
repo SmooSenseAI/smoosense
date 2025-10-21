@@ -128,9 +128,9 @@ export async function executeQueryAsDictOfList(
   ) as DictOfList
 }
 
-async function getParquetStats(filePath: string, dispatch: AppDispatch): Promise<Record<string, Stats> | null> {
+async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promise<Record<string, Stats> | null> {
   // Check if the file is a Parquet file
-  if (!filePath.toLowerCase().endsWith('.parquet')) {
+  if (!tablePath.toLowerCase().endsWith('.parquet')) {
     return null
   }
 
@@ -145,7 +145,7 @@ async function getParquetStats(filePath: string, dispatch: AppDispatch): Promise
         (CASE WHEN (MIN(stats_min_value) IS NULL AND MAX(stats_max_value) IS NULL) 
          THEN SUM(num_values) 
          ELSE SUM(stats_null_count) END) AS cntNull
-      FROM parquet_metadata('${filePath}')
+      FROM parquet_metadata('${tablePath}')
       GROUP BY path_in_schema
     `
 
@@ -179,19 +179,19 @@ async function getParquetStats(filePath: string, dispatch: AppDispatch): Promise
 }
 
 export async function getColumnMetadata(
-  filePath: string, 
+  tablePath: string, 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<ColumnMeta[]> {
-  if (!filePath.trim()) {
-    throw new Error('File path cannot be empty')
+  if (!tablePath.trim()) {
+    throw new Error('Table path cannot be empty')
   }
 
-  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '${filePath}')`
+  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '${tablePath}')`
   const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch)
   
   // Get Parquet stats if available
-  const parquetStats = await getParquetStats(filePath, dispatch)
+  const parquetStats = await getParquetStats(tablePath, dispatch)
   
   const columns: ColumnMeta[] = []
   

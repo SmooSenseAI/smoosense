@@ -13,7 +13,7 @@ jest.mock('../useColBaseStats', () => ({
     hasData: false,
     columnMeta: null,
     isCategorical: false,
-    filePath: '/test/path',
+    tablePath: '/test/path',
     metaLoading: false,
     dispatch: jest.fn(),
     queryStats: jest.fn(),
@@ -26,7 +26,7 @@ jest.mock('../useColBaseStats', () => ({
 const renderHookWithProvider = (columnName: string, stateOverrides?: Parameters<typeof createTestStore>[0]) => {
   const store = createTestStore({
     ui: {
-      filePath: '/test/path'
+      tablePath: '/test/path'
     },
     ...stateOverrides
   })
@@ -56,7 +56,7 @@ describe('useColFilteredStats', () => {
   it('should detect active filters', () => {
     const { result } = renderHookWithProvider(columnName, {
       ui: {
-        filePath: '/test/path'
+        tablePath: '/test/path'
       },
       ag: {
         filters: {
@@ -91,6 +91,6 @@ describe('useColFilteredStats', () => {
     
     expect(result.current.columnMeta).toBe(null)
     expect(result.current.isCategorical).toBe(false)
-    expect(result.current.filePath).toBe('/test/path')
+    expect(result.current.tablePath).toBe('/test/path')
   })
 })

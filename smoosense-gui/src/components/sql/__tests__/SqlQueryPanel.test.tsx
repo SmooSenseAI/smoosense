@@ -6,7 +6,7 @@ import { createTestStore } from '@/lib/test-utils'
 
 
 const renderWithProvider = (component: ReactElement) => {
-  const store = createTestStore({ ui: { filePath: '/test/file.csv' } })
+  const store = createTestStore({ ui: { tablePath: '/test/file.csv' } })
   return act(() => {
     return render(
       <Provider store={store}>
