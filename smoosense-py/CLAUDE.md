@@ -20,6 +20,17 @@ uv add flask
 ```
 
 ### Running the Application
+
+**For development:**
+```bash
+# Start development server with rich logging
+make dev
+
+# Or directly:
+uv run app_dev.py
+```
+
+**For production:**
 ```bash
 # Start the web interface (auto-selects port, opens browser)
 sense
@@ -27,6 +38,8 @@ sense
 # Show version
 sense --version
 ```
+
+**Note**: `app_dev.py` is excluded from the package build and only used for local development. It provides enhanced logging with rich formatting.
 
 ### Testing
 ```bash
@@ -70,7 +83,21 @@ smoosense/
 ├── cli.py              # CLI entry point and main function
 ├── app.py              # Flask application core
 └── ...
+app_dev.py              # Development server with rich logging (excluded from package)
 pyproject.toml          # Python project configuration
 uv.lock                 # Dependency lock file
 ```
+
+## Development vs Production
+
+- **Development** (`app_dev.py`):
+  - Rich logging with colored output and tracebacks
+  - Custom formatter showing elapsed time in milliseconds
+  - Configured with boto3 session for S3 access
+  - Not included in package build
+
+- **Production** (`smoosense/app.py`):
+  - Clean Flask application class
+  - No logging configuration (left to deployment environment)
+  - Importable as a library
 

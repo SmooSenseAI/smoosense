@@ -80,16 +80,3 @@ class SmooSenseApp:
         app = self.create_app()
         # Enable threaded mode for concurrent requests in development
         app.run(host=host, port=port, threaded=threaded, debug=debug)
-
-
-if __name__ == "__main__":
-    session = boto3.Session(profile_name="readonly")
-    s3_client = session.client("s3")
-    SmooSenseApp(
-        s3_client=s3_client,
-        folder_shortcuts={
-            "Downloads": os.path.expanduser("~/Downloads"),
-            "Work": "~/Work",
-            "S3 bucket": "s3://sense-table-demo",
-        },
-    ).run(threaded=True, debug=True)

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"pnpm run next-dev\" \"pnpm run flask-dev\"",
     "next-dev": "NODE_ENV=development next dev",
-    "flask-dev": "cd ../smoosense-py && FLASK_DEBUG=1 PYTHONPATH=$(pwd) uv run smoosense/app.py",
+    "flask-dev": "cd ../smoosense-py && FLASK_DEBUG=1 PYTHONPATH=$(pwd) uv run app_dev.py",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
