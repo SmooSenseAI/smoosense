@@ -50,6 +50,9 @@ export function useColBaseStats(columnName: string) {
   const overallLoading = loading || metaLoading || isCategoricalLoading
   const overallError = error || isCategoricalError
 
+  // Get query engine from UI state
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
+
   // Build query for this column (null filter for base stats)
   const query = useAppSelector((state) => {
     if (!tablePath || !isValid) return null
@@ -78,13 +81,14 @@ export function useColBaseStats(columnName: string) {
   // Auto-query stats when dependencies are ready
   useEffect(() => {
     if (shouldFetch && query && filterType !== null) {
-      dispatch(queryBaseColumnStats({ 
-        columnName, 
-        sqlQuery: query, 
-        filterType 
+      dispatch(queryBaseColumnStats({
+        columnName,
+        sqlQuery: query,
+        filterType,
+        queryEngine
       }))
     }
-  }, [shouldFetch, dispatch, columnName, query, filterType])
+  }, [shouldFetch, dispatch, columnName, query, filterType, queryEngine])
 
 
 

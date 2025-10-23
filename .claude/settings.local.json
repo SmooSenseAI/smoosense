@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(FLASK_DEBUG=1 timeout 3 uv run:*)",
+      "Bash(uv run python:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv run mypy:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm run lint:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

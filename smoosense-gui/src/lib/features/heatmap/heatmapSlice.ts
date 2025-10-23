@@ -33,6 +33,7 @@ interface FetchHeatmapParams {
   heatmapYColumn: string
   tablePath: string
   filterCondition: string | null
+  queryEngine?: 'duckdb' | 'athena' | 'lance'
 }
 
 const computeStats = (data: number[]) => {
@@ -80,8 +81,8 @@ const fetchHeatmapFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<HeatmapResult> => {
-  const { heatmapXColumn, heatmapYColumn, tablePath, filterCondition } = params
-  
+  const { heatmapXColumn, heatmapYColumn, tablePath, filterCondition, queryEngine = 'duckdb' } = params
+
   if (!heatmapXColumn || !heatmapYColumn || !tablePath) {
     throw new Error('Missing required parameters for heatmap')
   }
@@ -90,19 +91,22 @@ const fetchHeatmapFunction = async (
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
 
+  // Format table reference: DuckDB uses quotes, Athena doesn't
+  const tableRef = queryEngine === 'athena' ? tablePath : `'${tablePath}'`
+
   const query = `
 WITH filtered AS (
-      SELECT 
-        ${sanitizeName(heatmapXColumn)} AS x, 
+      SELECT
+        ${sanitizeName(heatmapXColumn)} AS x,
         ${sanitizeName(heatmapYColumn)} AS y
-      FROM '${tablePath}'
+      FROM ${tableRef}
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
-  ) SELECT x, y, COUNT(*) AS cnt 
+  ) SELECT x, y, COUNT(*) AS cnt
    FROM filtered
    GROUP BY x, y
   `
 
-  const data = (await executeQueryAsListOfDict(query, 'heatMap', dispatch) as unknown) as HeatmapDataPoint[]
+  const data = (await executeQueryAsListOfDict(query, 'heatMap', dispatch, queryEngine) as unknown) as HeatmapDataPoint[]
 
   const heatMap = pivotData(data)
   return heatMap

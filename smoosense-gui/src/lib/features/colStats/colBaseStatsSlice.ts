@@ -29,17 +29,18 @@ const initialState: ColStatsState = {}
 // Async thunk to query base column statistics
 export const queryBaseColumnStats = createAsyncThunk<
   { columnName: string; stats: ColumnStats },
-  { columnName: string; sqlQuery: string; filterType: FilterType },
+  { columnName: string; sqlQuery: string; filterType: FilterType; queryEngine?: 'duckdb' | 'athena' | 'lance' },
   { dispatch: AppDispatch; state: RootState }
 >(
   'colBaseStats/queryBaseColumnStats',
-  async ({ columnName, sqlQuery, filterType }, { dispatch }) => {
+  async ({ columnName, sqlQuery, filterType, queryEngine = 'duckdb' }, { dispatch }) => {
     return queryColumnStats({
       columnName,
       dispatch,
       keyPrefix: 'colstats',
       sqlQuery,
-      filterType
+      filterType,
+      queryEngine
     })
   }
 )

@@ -17,6 +17,7 @@ import { useTheme } from 'next-themes'
 
 export default function SqlQueryPanel() {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
   const { theme, systemTheme } = useTheme()
   const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
   const sqlQuery = useAppSelector((state) => state.ui.sqlQuery)
@@ -72,9 +73,11 @@ export default function SqlQueryPanel() {
   // Initialize default query when no query exists and tablePath is available
   useEffect(() => {
     if (tablePath && !sqlQuery) {
-      dispatch(setSqlQuery(`SELECT * FROM '${tablePath}' LIMIT 10`))
+      // Format table reference: DuckDB uses quotes, Athena doesn't
+      const tableRef = queryEngine === 'athena' ? tablePath : `'${tablePath}'`
+      dispatch(setSqlQuery(`SELECT * FROM ${tableRef} LIMIT 10`))
     }
-  }, [tablePath, sqlQuery, dispatch])
+  }, [tablePath, sqlQuery, dispatch, queryEngine])
 
   const handleExecuteQuery = async () => {
     if (!sqlQuery.trim()) return
@@ -88,8 +91,8 @@ export default function SqlQueryPanel() {
     
     try {
       const sqlKey = generateSqlKey('user_query')
-      const result = await executeQuery(sqlQuery, sqlKey, dispatch)
-      
+      const result = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine)
+
       // Save to Redux store
       dispatch(setSqlResult(result))
       

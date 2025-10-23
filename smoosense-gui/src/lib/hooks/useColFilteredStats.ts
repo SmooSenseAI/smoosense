@@ -47,13 +47,16 @@ export function useColFilteredStats(columnName: string) {
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
   const hasActiveFilters = !isNil(filterCondition)
 
+  // Get query engine from UI state
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
+
   // Build query for this column (with filter if active)
   const query = useAppSelector((state) => {
     if (!tablePath || !isValid) return null
-    return buildColStatsQueryFromState({ 
-      columnName, 
-      addFilter: hasActiveFilters, 
-      state 
+    return buildColStatsQueryFromState({
+      columnName,
+      addFilter: hasActiveFilters,
+      state
     })
   })
 
@@ -98,15 +101,16 @@ export function useColFilteredStats(columnName: string) {
       return
     }
 
-    // All dependencies ready and filters are active - query filtered stats  
+    // All dependencies ready and filters are active - query filtered stats
     if (shouldFetchFiltered && filterType !== null) {
-      dispatch(queryFilteredColumnStats({ 
-        columnName, 
-        sqlQuery: query, 
-        filterType 
+      dispatch(queryFilteredColumnStats({
+        columnName,
+        sqlQuery: query,
+        filterType,
+        queryEngine
       }))
     }
-  }, [shouldCopyBaseToFiltered, shouldFetchFiltered, baseStats.hasData, baseStats.data, dispatch, columnName, query, filterType])
+  }, [shouldCopyBaseToFiltered, shouldFetchFiltered, baseStats.hasData, baseStats.data, dispatch, columnName, query, filterType, queryEngine])
 
 
   // Type-safe getters - only return filtered slice data

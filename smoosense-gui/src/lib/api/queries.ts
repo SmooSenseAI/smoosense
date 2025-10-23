@@ -39,7 +39,8 @@ interface ColumnMeta {
 export async function executeQuery(
   sqlQuery: string,
   sqlKey: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  queryEngine: 'duckdb' | 'athena' | 'lance' = 'duckdb'
 ): Promise<QueryResult> {
   if (!sqlQuery.trim()) {
     throw new Error('Query cannot be empty')
@@ -54,7 +55,7 @@ export async function executeQuery(
   }
   dispatch(addExecution({ sqlKey, query: sqlQuery.trim(), result: runningResult }))
 
-  const requestData = { query: sqlQuery.trim() }
+  const requestData = { query: sqlQuery.trim(), queryEngine }
   // Executing SQL query
 
   try {
@@ -74,7 +75,7 @@ export async function executeQuery(
 
     // Save successful result to Redux store
     dispatch(addExecution({ sqlKey, query: sqlQuery.trim(), result: data }))
-    
+
     return data
   } catch (error) {
     // Query execution failed
@@ -85,10 +86,10 @@ export async function executeQuery(
       status: 'error' as const,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     }
-    
+
     // Save error result to Redux store
     dispatch(addExecution({ sqlKey, query: sqlQuery.trim(), result: errorResult }))
-    
+
     return errorResult
   }
 }
@@ -97,10 +98,11 @@ export async function executeQueryAsListOfDict(
   sqlQuery: string,
   sqlKey: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatch: any
+  dispatch: any,
+  queryEngine: 'duckdb' | 'athena' | 'lance' = 'duckdb'
 ): Promise<RowObject[]> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
-  
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine)
+
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
   }
@@ -114,16 +116,17 @@ export async function executeQueryAsListOfDict(
 export async function executeQueryAsDictOfList(
   sqlQuery: string,
   sqlKey: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  queryEngine: 'duckdb' | 'athena' | 'lance' = 'duckdb'
 ): Promise<DictOfList> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
-  
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine)
+
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
   }
 
   return _.zipObject(
-    rawResult.column_names, 
+    rawResult.column_names,
     _.zip(...rawResult.rows)
   ) as DictOfList
 }
@@ -179,26 +182,37 @@ async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promis
 }
 
 export async function getColumnMetadata(
-  tablePath: string, 
+  tablePath: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatch: any
+  dispatch: any,
+  queryEngine: 'duckdb' | 'athena' | 'lance' = 'duckdb'
 ): Promise<ColumnMeta[]> {
   if (!tablePath.trim()) {
     throw new Error('Table path cannot be empty')
   }
 
-  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '${tablePath}')`
-  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch)
-  
-  // Get Parquet stats if available
-  const parquetStats = await getParquetStats(tablePath, dispatch)
-  
+  let metaQuery: string
+
+  if (queryEngine === 'athena') {
+    // For Athena, use DESCRIBE directly on the table
+    // tablePath should be in format: catalog.database.table or database.table
+    metaQuery = `DESCRIBE ${tablePath}`
+  } else {
+    // For DuckDB, use DESCRIBE SELECT * FROM
+    metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '${tablePath}')`
+  }
+
+  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch, queryEngine)
+
+  // Get Parquet stats if available (only for DuckDB)
+  const parquetStats = queryEngine === 'duckdb' ? await getParquetStats(tablePath, dispatch) : null
+
   const columns: ColumnMeta[] = []
-  
+
   for (const row of rows) {
-    const columnName = String(row.column_name)
-    const duckdbType = String(row.column_type)
-    
+    const columnName = String(row.column_name || row.col_name)
+    const duckdbType = String(row.column_type || row.data_type)
+
     // Add the original column
     columns.push({
       column_name: columnName,
@@ -206,12 +220,13 @@ export async function getColumnMetadata(
       typeShortcuts: computeTypeShortcuts(duckdbType),
       stats: parquetStats?.[columnName] || null
     })
-    
+
     // If it's a struct type, flatten the fields and add them as separate columns
-    if (isStructType(duckdbType)) {
+    // (only for DuckDB - Athena handles structs differently)
+    if (queryEngine === 'duckdb' && isStructType(duckdbType)) {
       try {
         const flattenedFields = flattenStructFields(columnName, duckdbType)
-        
+
         for (const field of flattenedFields) {
           columns.push({
             column_name: field.column_name,
@@ -227,7 +242,7 @@ export async function getColumnMetadata(
     }
   }
 
-  
+
   return columns
 }
 

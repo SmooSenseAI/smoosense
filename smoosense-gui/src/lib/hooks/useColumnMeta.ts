@@ -21,6 +21,7 @@ interface UseSingleColumnMetaResult {
 export function useColumnMeta(): UseColumnMetaResult {
   const dispatch = useDispatch<AppDispatch>()
   const tablePath = useSelector((state: RootState) => state.ui.tablePath)
+  const queryEngine = useSelector((state: RootState) => state.ui.queryEngine)
   const { data, loading, error } = useSelector((state: RootState) => state.columnMeta, shallowEqual)
 
 
@@ -28,9 +29,9 @@ export function useColumnMeta(): UseColumnMetaResult {
   useEffect(() => {
     if (tablePath) {
       // Always try to dispatch - let the thunk handle the condition logic
-      dispatch(fetchColumnMetadata(tablePath))
+      dispatch(fetchColumnMetadata({ tablePath, queryEngine }))
     }
-  }, [dispatch, tablePath])
+  }, [dispatch, tablePath, queryEngine])
 
   return useMemo(() => ({
     columns: (data || []) as ColumnMeta[],

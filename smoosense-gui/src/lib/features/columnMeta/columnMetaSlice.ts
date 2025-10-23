@@ -17,21 +17,24 @@ const initialState: ColumnMetaState = {
 // Async thunk for fetching column metadata
 export const fetchColumnMetadata = createAsyncThunk(
   'columnMeta/fetchColumnMetadata',
-  async (tablePath: string, { dispatch }) => {
-    const result = await getColumnMetadata(tablePath, dispatch)
+  async (
+    { tablePath, queryEngine }: { tablePath: string; queryEngine?: 'duckdb' | 'athena' | 'lance' },
+    { dispatch }
+  ) => {
+    const result = await getColumnMetadata(tablePath, dispatch, queryEngine)
     return result
   },
   {
-    condition: (tablePath, { getState }) => {
+    condition: ({ tablePath }, { getState }) => {
       // Only proceed if we have a valid tablePath
       if (!tablePath || tablePath.trim() === '') {
         return false
       }
-      
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const state = getState() as any
       const currentState = state.columnMeta
-      
+
       // Only allow if we don't have data yet and not currently loading
       return !currentState.data && !currentState.loading
     }

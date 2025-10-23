@@ -32,4 +32,4 @@ test:
 	make build
 
 dev:
-	FLASK_DEBUG=1 uv run smoosense/app.py
+	FLASK_DEBUG=1 uv run app_dev.py

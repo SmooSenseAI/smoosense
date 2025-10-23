@@ -12,7 +12,8 @@ import {
 export function useCardinality(columnName: string) {
   const dispatch = useAppDispatch()
   const columnState = useAppSelector((state) => state.columns.cardinality[columnName])
-  
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
+
   // Get metadata state using hook that auto-fetches
   const { columnMeta, loading: metaLoading, error: metaError, tablePath } = useSingleColumnMeta(columnName)
 
@@ -44,9 +45,9 @@ export function useCardinality(columnName: string) {
 
     // Cannot infer from metadata, need to query if tablePath is available
     if (tablePath) {
-      dispatch(queryCardinality({ columnName, tablePath }))
+      dispatch(queryCardinality({ columnName, tablePath, queryEngine }))
     }
-  }, [dispatch, columnName, columnMeta, metaLoading, metaError, hasData, loading, tablePath])
+  }, [dispatch, columnName, columnMeta, metaLoading, metaError, hasData, loading, tablePath, queryEngine])
 
 
   // Determine overall loading state

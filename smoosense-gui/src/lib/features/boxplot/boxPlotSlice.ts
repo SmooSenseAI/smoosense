@@ -17,6 +17,7 @@ interface FetchBoxPlotParams {
   boxPlotBreakdownColumn: string | null
   tablePath: string
   filterCondition: string | null
+  queryEngine?: 'duckdb' | 'athena' | 'lance'
 }
 
 // BoxPlot fetch function
@@ -25,8 +26,8 @@ const fetchBoxPlotFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<BoxPlotDataPoint[]> => {
-  const { boxPlotColumns, boxPlotBreakdownColumn, tablePath, filterCondition } = params
-  
+  const { boxPlotColumns, boxPlotBreakdownColumn, tablePath, filterCondition, queryEngine = 'duckdb' } = params
+
   if (boxPlotColumns.length === 0) {
     return []
   }
@@ -46,16 +47,19 @@ const fetchBoxPlotFunction = async (
     } AS ${e}`
   }
 
+  // Format table reference: DuckDB uses quotes, Athena doesn't
+  const tableRef = queryEngine === 'athena' ? tablePath : `'${tablePath}'`
+
   // Build FROM clause
-  const fromClause = `FROM '${tablePath}'`
-  
+  const fromClause = `FROM ${tableRef}`
+
   // Build WHERE clause
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
 
   // Build query
   const query = `
     WITH filtered AS (
-      SELECT ${isNil(boxPlotBreakdownColumn) ? 'NULL' : sanitizeName(boxPlotBreakdownColumn)} AS breakdown, 
+      SELECT ${isNil(boxPlotBreakdownColumn) ? 'NULL' : sanitizeName(boxPlotBreakdownColumn)} AS breakdown,
       ${boxPlotColumns.map(sanitizeName).join(', ')}
       ${fromClause}
       ${whereClause}
@@ -64,7 +68,7 @@ const fetchBoxPlotFunction = async (
     GROUP BY breakdown
   `
 
-  const data = await executeQueryAsListOfDict(query, 'boxPlot', dispatch)
+  const data = await executeQueryAsListOfDict(query, 'boxPlot', dispatch, queryEngine)
 
   // Return raw data directly without grouping
   return data as unknown as BoxPlotDataPoint[]

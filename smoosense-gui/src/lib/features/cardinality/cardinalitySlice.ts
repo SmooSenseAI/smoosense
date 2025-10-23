@@ -88,25 +88,34 @@ export function inferCardinalityFromMetadata(column: ColumnMeta): ColumnCardinal
 // Async thunk to query cardinality
 export const queryCardinality = createAsyncThunk<
   { columnName: string; cardinality: ColumnCardinality },
-  { columnName: string; tablePath: string },
+  { columnName: string; tablePath: string; queryEngine?: 'duckdb' | 'athena' | 'lance' },
   { dispatch: AppDispatch }
 >(
   'cardinality/queryCardinality',
-  async ({ columnName, tablePath }, { dispatch }) => {
+  async ({ columnName, tablePath, queryEngine = 'duckdb' }, { dispatch }) => {
     const cutoff = 1000
+
+    // Use appropriate function based on query engine
+    // DuckDB: approx_count_distinct
+    // Athena: approx_distinct
+    const approxFunc = queryEngine === 'athena' ? 'approx_distinct' : 'approx_count_distinct'
+
+    // Format table reference: DuckDB uses quotes, Athena doesn't
+    const tableRef = queryEngine === 'athena' ? tablePath : `'${tablePath}'`
+
     const sqlQuery = `
-      SELECT 
-        approx_count_distinct(${sanitizeName(columnName)}) AS approxCntD,
-        approxCntD / COUNT(*) AS distinctRatio, 
+      SELECT
+        ${approxFunc}(${sanitizeName(columnName)}) AS approxCntD,
+        ${approxFunc}(${sanitizeName(columnName)}) / COUNT(*) AS distinctRatio,
         CASE
-          WHEN approx_count_distinct(${sanitizeName(columnName)}) <= ${cutoff} THEN COUNT(DISTINCT ${sanitizeName(columnName)})
+          WHEN ${approxFunc}(${sanitizeName(columnName)}) <= ${cutoff} THEN COUNT(DISTINCT ${sanitizeName(columnName)})
           ELSE NULL
         END AS cntD,
-        CASE 
-          WHEN approx_count_distinct(${sanitizeName(columnName)}) <= ${cutoff} THEN 'low' 
-          ELSE 'high' 
+        CASE
+          WHEN ${approxFunc}(${sanitizeName(columnName)}) <= ${cutoff} THEN 'low'
+          ELSE 'high'
         END AS cardinality
-      FROM '${tablePath}' 
+      FROM ${tableRef}
       WHERE ${sanitizeName(columnName)} IS NOT NULL
     `.trim()
 
@@ -119,7 +128,7 @@ export const queryCardinality = createAsyncThunk<
       }, 5000) // 5 second timeout
 
       const sqlKey = generateSqlKey(`cardinality_${columnName}`)
-      const result = await executeQuery(sqlQuery, sqlKey, dispatch)
+      const result = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine)
       clearTimeout(timeoutId)
 
       if (controller.signal.aborted) {

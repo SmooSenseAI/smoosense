@@ -39,6 +39,7 @@ interface FetchBubblePlotParams {
     step: number
     round_to: number
   }
+  queryEngine?: 'duckdb' | 'athena' | 'lance'
 }
 
 // BubblePlot fetch function
@@ -47,28 +48,32 @@ const fetchBubblePlotFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<BubblePlotGroup[]> => {
-  const { 
-    bubblePlotXColumn, 
-    bubblePlotYColumn, 
-    bubblePlotBreakdownColumn, 
-    tablePath, 
+  const {
+    bubblePlotXColumn,
+    bubblePlotYColumn,
+    bubblePlotBreakdownColumn,
+    tablePath,
     filterCondition,
     xBin,
-    yBin
+    yBin,
+    queryEngine = 'duckdb'
   } = params
-  
+
   // Use filter condition from parameters
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
 
+  // Format table reference: DuckDB uses quotes, Athena doesn't
+  const tableRef = queryEngine === 'athena' ? tablePath : `'${tablePath}'`
+
   // Build query
   const query = `
     WITH filtered AS (
-      SELECT 
+      SELECT
         ${sanitizeName(bubblePlotXColumn)} AS x,
         ${sanitizeName(bubblePlotYColumn)} AS y,
         ${isNil(bubblePlotBreakdownColumn) ? 'NULL' : sanitizeName(bubblePlotBreakdownColumn)} AS breakdown
-      FROM '${tablePath}'
+      FROM ${tableRef}
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
       SELECT
@@ -87,7 +92,7 @@ const fetchBubblePlotFunction = async (
     ORDER BY 1, 2, 3
   `
 
-  const data = await executeQueryAsListOfDict(query, 'bubblePlot', dispatch)
+  const data = await executeQueryAsListOfDict(query, 'bubblePlot', dispatch, queryEngine)
 
   // Process data into bubble plot groups
   const grouped = _(data as unknown as BubblePlotDataPoint[])

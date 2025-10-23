@@ -32,6 +32,7 @@ interface FetchHistogramParams {
       round_to: number
     }
   } | null
+  queryEngine?: 'duckdb' | 'athena' | 'lance'
 }
 
 // Histogram fetch function
@@ -40,35 +41,38 @@ const fetchHistogramFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<HistogramGroup[]> => {
-  const { histogramColumn, histogramBreakdownColumn, tablePath, filterCondition, histogramStatsData } = params
-  
+  const { histogramColumn, histogramBreakdownColumn, tablePath, filterCondition, histogramStatsData, queryEngine = 'duckdb' } = params
+
   if (!histogramStatsData?.bin) {
     throw new Error('Missing histogram bin data')
   }
 
   const { min, step, round_to } = histogramStatsData.bin
-  
+
   // Use filter condition from parameters
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
 
+  // Format table reference: DuckDB uses quotes, Athena doesn't
+  const tableRef = queryEngine === 'athena' ? tablePath : `'${tablePath}'`
+
   // Build query
   const query = `
     WITH filtered AS (
-      SELECT 
-        ${sanitizeName(histogramColumn)} AS value, 
+      SELECT
+        ${sanitizeName(histogramColumn)} AS value,
         ${isNil(histogramBreakdownColumn) ? 'NULL' : sanitizeName(histogramBreakdownColumn)} AS breakdown
-      FROM '${tablePath}'
-      ${additionalWhere} value IS NOT NULL  
+      FROM ${tableRef}
+      ${additionalWhere} value IS NOT NULL
     )
-    SELECT breakdown, FLOOR((value - ${min}) / ${step}) AS binIdx, 
+    SELECT breakdown, FLOOR((value - ${min}) / ${step}) AS binIdx,
         COUNT(*) AS cnt
     FROM filtered
     GROUP BY 1, 2
     ORDER BY 1, 2
   `
 
-  const data = await executeQueryAsListOfDict(query, 'histogram', dispatch)
+  const data = await executeQueryAsListOfDict(query, 'histogram', dispatch, queryEngine)
 
   // Process data into histogram groups
   const grouped = _(data as unknown as HistogramDataPoint[])

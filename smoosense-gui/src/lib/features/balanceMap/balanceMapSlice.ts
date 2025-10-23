@@ -42,6 +42,7 @@ interface FetchBalanceMapParams {
     step: number
     round_to: number
   }
+  queryEngine?: 'duckdb' | 'athena' | 'lance'
 }
 
 // BalanceMap fetch function
@@ -57,12 +58,16 @@ const fetchBalanceMapFunction = async (
     tablePath,
     filterCondition,
     xBin,
-    yBin
+    yBin,
+    queryEngine = 'duckdb'
   } = params
 
   // Use filter condition from parameters
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
+
+  // Format table reference: DuckDB uses quotes, Athena doesn't
+  const tableRef = queryEngine === 'athena' ? tablePath : `'${tablePath}'`
 
   // Build query
   const query = `
@@ -71,7 +76,7 @@ const fetchBalanceMapFunction = async (
         ${sanitizeName(bubblePlotXColumn)} AS x,
         ${sanitizeName(bubblePlotYColumn)} AS y,
         ${sanitizeName(bubblePlotBreakdownColumn)} AS breakdown
-      FROM '${tablePath}'
+      FROM ${tableRef}
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
       SELECT
@@ -91,7 +96,7 @@ const fetchBalanceMapFunction = async (
     ORDER BY 1, 2
   `
 
-  const data = await executeQueryAsListOfDict(query, 'balanceMap', dispatch)
+  const data = await executeQueryAsListOfDict(query, 'balanceMap', dispatch, queryEngine)
 
   // Process data into a single balance map group (no grouping by breakdown anymore)
   const items = data as unknown as BalanceMapDataPoint[]

@@ -45,7 +45,7 @@ interface UiState {
 
 const initialState: UiState = {
   fontSize: 14,
-  debugMode: false,
+  debugMode: true,
   activeTab: 'Table',
   activePlotTab: 'BubblePlot',
   tablePath: null,

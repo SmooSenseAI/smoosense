@@ -9,26 +9,52 @@ import type {
   TextStats
 } from './types'
 
+// Helper to parse JSON if string, otherwise return as-is
+function parseIfJson<T>(value: unknown): T {
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T
+    } catch {
+      return value as T
+    }
+  }
+  return value as T
+}
+
 // Result transformers
-const categoricalTransformer = (result: Record<string, unknown>[]) => result[0]
+const categoricalTransformer = (result: Record<string, unknown>[]) => {
+  const data = result[0]
+  return {
+    ...data,
+    range: parseIfJson(data.range),
+    cnt_values: parseIfJson(data.cnt_values)
+  }
+}
 
 const histogramTransformer = (result: Record<string, unknown>[]) => {
   const data = result[0]
-  const bin = data.bin as { min: number; step: number; round_to: number; max: number; count: number }
+  const bin = parseIfJson<{ min: number; step: number; round_to: number; max: number; count: number }>(data.bin)
   const { min, step, round_to } = bin
-  const cnt_values = padItems({ 
-    min, 
-    step, 
-    round_to, 
-    cntValues: data.cnt_values as Array<{ binIdx: number; cnt?: number }> 
+  const rawCntValues = parseIfJson<Array<{ binIdx: number; cnt?: number }>>(data.cnt_values)
+  const cnt_values = padItems({
+    min,
+    step,
+    round_to,
+    cntValues: rawCntValues
   })
-  return { ...data, cnt_values }
+  return {
+    ...data,
+    bin,
+    range: parseIfJson(data.range),
+    cnt_values
+  }
 }
 
 const textTransformer = (result: Record<string, unknown>[]) => {
   const data = result[0]
   return {
     ...data,
+    range: parseIfJson(data.range),
     cnt_values: [] // Ensure empty array for text stats
   }
 }
@@ -75,13 +101,15 @@ export async function queryColumnStats({
   dispatch,
   keyPrefix,
   sqlQuery,
-  filterType
+  filterType,
+  queryEngine = 'duckdb'
 }: {
   columnName: string
   dispatch: AppDispatch
   keyPrefix: string
   sqlQuery: string
   filterType: FilterType
+  queryEngine?: 'duckdb' | 'athena' | 'lance'
 }): Promise<{ columnName: string; stats: ColumnStats }> {
   // Set up timeout controller
   const controller = new AbortController()
@@ -92,7 +120,7 @@ export async function queryColumnStats({
     }, 15000) // 15 second timeout
 
     const sqlKey = generateSqlKey(`${keyPrefix}_${columnName}`)
-    const result = await executeQueryAsListOfDict(sqlQuery, sqlKey, dispatch)
+    const result = await executeQueryAsListOfDict(sqlQuery, sqlKey, dispatch, queryEngine)
     clearTimeout(timeoutId)
 
     if (controller.signal.aborted) {

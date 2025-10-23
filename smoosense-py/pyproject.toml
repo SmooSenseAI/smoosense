@@ -5,6 +5,7 @@ description = "Smoothly make sense of your large multi-modal datasets"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+    "awswrangler>=3.13.0",
     "boto3>=1.39.11",
     "click>=8.1.8",
     "duckdb>=1.2.1",
