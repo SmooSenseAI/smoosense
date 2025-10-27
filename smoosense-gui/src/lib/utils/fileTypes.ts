@@ -14,7 +14,14 @@ export enum FileType {
  */
 export function getFileType(fileName: string): FileType {
   const extension = fileName.toLowerCase().split('.').pop() || ''
-  
+
+  // Handle compressed files
+  if (extension === 'gz') {
+    if (fileName.toLowerCase().endsWith('.csv.gz')) {
+      return FileType.RowTable
+    }
+  }
+
   // Json files (including YAML)
   if (['json', 'yaml', 'yml'].includes(extension)) {
     return FileType.Json
