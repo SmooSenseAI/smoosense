@@ -1,8 +1,6 @@
 # ![SmooSense](https://cdn.smoosense.ai/SmooSense-dark.svg)
 
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/smoosense?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/smoosense)
-
-
+[**Landing Page**](https://smoosense.ai) | [**Read Docs**](https://smoosense.ai/docs) | [![License](https://img.shields.io/github/license/SmooSenseAI/smoosense)](https://github.com/SmooSenseAI/smoosense/blob/main/LICENSE) | [![CI Status](https://github.com/SmooSenseAI/smoosense/actions/workflows/ci.yml/badge.svg)](https://github.com/SmooSenseAI/smoosense/actions/workflows/ci.yml) | [![Latest version](https://img.shields.io/pypi/v/smoosense?label=pypi-latest)](https://pypi.org/project/smoosense/) | [![Downloads](https://static.pepy.tech/personalized-badge/smoosense?period=total&units=international_system&left_color=black&right_color=MAGENTA&left_text=downloads)](https://pepy.tech/project/smoosense)
 
 SmooSense is a web-based application for exploring and analyzing large-scale multi-modal tabular data. 
 It provides an intuitive interface for working with CSV, Parquet, and other data formats with powerful SQL querying capabilities.

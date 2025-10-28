@@ -47,6 +47,11 @@ export default function HelpPopover() {
           alt: 'Issues',
           src: 'https://img.shields.io/github/issues/SmooSenseAI/smoosense',
           url: 'https://github.com/SmooSenseAI/smoosense/issues'
+        },
+        {
+          alt: 'Stars',
+          src: 'https://img.shields.io/github/stars/SmooSenseAI/smoosense',
+          url: 'https://github.com/SmooSenseAI/smoosense/stargazers'
         }
       ]
     },
