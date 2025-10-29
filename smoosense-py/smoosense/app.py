@@ -9,6 +9,7 @@ from flask import Flask
 from pydantic import ConfigDict, validate_call
 
 from smoosense.handlers.fs import fs_bp
+from smoosense.handlers.lance import lance_bp
 from smoosense.handlers.pages import pages_bp
 from smoosense.handlers.query import query_bp
 from smoosense.handlers.s3 import s3_bp
@@ -64,6 +65,7 @@ class SmooSenseApp:
         # Register blueprints with url_prefix
         app.register_blueprint(query_bp, url_prefix=f"{self.url_prefix}/api")
         app.register_blueprint(fs_bp, url_prefix=f"{self.url_prefix}/api")
+        app.register_blueprint(lance_bp, url_prefix=f"{self.url_prefix}/api")
         app.register_blueprint(pages_bp, url_prefix=self.url_prefix)
         app.register_blueprint(s3_bp, url_prefix=f"{self.url_prefix}/api")
 
