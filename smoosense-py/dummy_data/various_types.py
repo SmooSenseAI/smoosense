@@ -1,13 +1,21 @@
 import os
 import random
+import shutil
 import string
+import sys
 from datetime import datetime, timedelta
 
+import lancedb
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+# Add parent directory to path to import my_logging
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from tests.my_logging import getLogger
+
 PWD = os.path.dirname(os.path.abspath(__file__))
+logger = getLogger(__name__)
 
 
 class DummyDataGenerator:
@@ -25,6 +33,7 @@ class DummyDataGenerator:
         self.seed = seed
         self.output_dir = os.path.join(PWD, "../../data")
         self._set_random_seed()
+        logger.info(f"Initialized DummyDataGenerator with n_rows={n_rows}, seed={seed}")
 
     def _set_random_seed(self):
         """Set random seeds for reproducibility"""
@@ -189,7 +198,9 @@ class DummyDataGenerator:
 
     def create_table(self):
         """Create PyArrow table from generated arrays"""
+        logger.info("Generating arrays...")
         arrays = self.generate_arrays()
+        logger.info(f"Creating table with {len(arrays)} columns and {self.n_rows} rows")
         return pa.Table.from_arrays(list(arrays.values()), names=list(arrays.keys()))
 
     def ensure_output_directory(self):
@@ -197,13 +208,45 @@ class DummyDataGenerator:
         os.makedirs(self.output_dir, exist_ok=True)
 
     def save_files(self, filename="dummy_data_various_types"):
-        """Save the generated data as a parquet file"""
+        """Save the generated data as parquet, csv, and lance files"""
+        logger.info(f"Saving files with base name: {filename}")
         self.ensure_output_directory()
         table = self.create_table()
+
+        # Save as Parquet
         parquet_path = os.path.join(self.output_dir, f"{filename}.parquet")
+        logger.info(f"Writing Parquet file to {parquet_path}")
         pq.write_table(table, parquet_path)
+        logger.info("Parquet file written successfully")
+
+        # Save as CSV
         csv_path = os.path.join(self.output_dir, f"{filename}.csv")
+        logger.info(f"Writing CSV file to {csv_path}")
         table.to_pandas().to_csv(csv_path, index=False)
+        logger.info("CSV file written successfully")
+
+        # Save as Lance (excluding struct and map columns which are unsupported)
+        lance_path = os.path.join(self.output_dir, "lance")
+
+        # Clear the target folder if it exists
+        if os.path.exists(lance_path):
+            logger.info(f"Removing existing Lance directory: {lance_path}")
+            shutil.rmtree(lance_path)
+
+        logger.info(f"Writing Lance database to {lance_path}")
+        # Filter out struct and map columns for Lance
+        lance_columns = []
+        lance_column_names = []
+        for i, field in enumerate(table.schema):
+            if not (pa.types.is_struct(field.type) or pa.types.is_map(field.type)):
+                lance_columns.append(table.column(i))
+                lance_column_names.append(field.name)
+            else:
+                logger.info(f"Skipping column '{field.name}' (type: {field.type}) for Lance - unsupported type")
+        lance_table = pa.Table.from_arrays(lance_columns, names=lance_column_names)
+        db = lancedb.connect(lance_path)
+        db.create_table(filename, data=lance_table, mode="overwrite")
+        logger.info(f"Lance database written successfully with table name: {filename}")
 
     def get_schema(self):
         """Get the schema of the generated data"""
@@ -212,11 +255,12 @@ class DummyDataGenerator:
 
 if __name__ == "__main__":
     # Example usage
+    logger.info("Starting dummy data generation")
     generator = DummyDataGenerator(n_rows=200, seed=42)
 
     # Generate and save data
     generator.save_files()
 
     # Print schema
-    print("\nSchema:")
-    print(generator.get_schema())
+    logger.info("Data generation complete")
+    logger.info(f"Schema: \n{generator.get_schema()}")

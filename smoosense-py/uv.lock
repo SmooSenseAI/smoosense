@@ -409,6 +409,18 @@ wheels = [
 ]
 
 [[package]]
+name = "deprecation"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/d3/8ae2869247df154b64c1884d7346d412fed0c49df84db635aab2d1c40e62/deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff", size = 173788, upload-time = "2020-04-20T14:23:38.738Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl", hash = "sha256:a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a", size = 11178, upload-time = "2020-04-20T14:23:36.581Z" },
+]
+
+[[package]]
 name = "docutils"
 version = "0.22"
 source = { registry = "https://pypi.org/simple" }
@@ -869,6 +881,63 @@ wheels = [
 ]
 
 [[package]]
+name = "lance-namespace"
+version = "0.0.20"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "lance-namespace-urllib3-client" },
+    { name = "pyarrow" },
+    { name = "pylance" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6e/d6/169b3f0dc4af453e34b9963c3b5665de2e7f74f8abc0c2cbc5baf03a7bdd/lance_namespace-0.0.20.tar.gz", hash = "sha256:d031168e5784392f8cdf174721a0878fcb12f06049643eafebfd7bcbece66742", size = 41051, upload-time = "2025-10-27T04:48:25.357Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/46/1090d94c91a96c23f27262ff44672005eef81966b846aeb66f56cc04dcde/lance_namespace-0.0.20-py3-none-any.whl", hash = "sha256:9a06c9d8756ba711895f430cc0a3b809c1c71d86b92063e2f34ad73e635f3a50", size = 31208, upload-time = "2025-10-27T04:48:24.19Z" },
+]
+
+[[package]]
+name = "lance-namespace-urllib3-client"
+version = "0.0.20"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "python-dateutil" },
+    { name = "typing-extensions" },
+    { name = "urllib3", version = "1.26.20", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "urllib3", version = "2.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/00/4f/bba4bff0b22d53ee89edd63d1eb638b3b0a2587ca84394779cdb7c14fe17/lance_namespace_urllib3_client-0.0.20.tar.gz", hash = "sha256:662234efa27849b92e6cb186a0bd49c048bcda2d158972f23631a7659ea53c1c", size = 134502, upload-time = "2025-10-27T04:48:27.313Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f1/ca/6fa57c5de32a2f8ceffcd1afdf929274c21c2425cf6a64a7c59413580b07/lance_namespace_urllib3_client-0.0.20-py3-none-any.whl", hash = "sha256:e1e4c9b5769adc3fcad5532b6f961c7b139eab9522b7143295719eaeeeb98d0d", size = 229637, upload-time = "2025-10-27T04:48:25.979Z" },
+]
+
+[[package]]
+name = "lancedb"
+version = "0.25.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "deprecation" },
+    { name = "lance-namespace" },
+    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "numpy", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "overrides", marker = "python_full_version < '3.12'" },
+    { name = "packaging" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "tqdm" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9a/6b/a01f83c10d2e8743cd4629537e7117c8a6728c30b1dfbffe09079b7b8168/lancedb-0.25.2-cp39-abi3-macosx_10_15_x86_64.whl", hash = "sha256:fc3ab86cd95ace8f3d10d1b9f228c5493b7f3b957b752844f83381c60ef08acc", size = 37365341, upload-time = "2025-10-08T19:14:13.158Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/a4/b395b7f4df0b6b3f62f280a061bd65f28e9082f3c41583ae728bb9c2bfe5/lancedb-0.25.2-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:9c0ac06d5377363e7fddea59a4df9541eccef7d33a10913dc07ccd12c76f5e5b", size = 34005214, upload-time = "2025-10-08T18:30:30.018Z" },
+    { url = "https://files.pythonhosted.org/packages/24/30/06148694a04c5a3607352ed177f5a2dddbca3c31d13f4cad5e939232849b/lancedb-0.25.2-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6dbbe2d8ee120742ef3649c9b982da1091b322e1557aa01e7a5aa00f2c19da43", size = 34982654, upload-time = "2025-10-08T18:32:31.973Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/94/6f9e16a8895f2e322d77f81c0f6fd82768e6da7671d6b65ae4974da9e95d/lancedb-0.25.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:512d01c0a283651e8ab3cec3d876f6caa08b4dabc366a72ce1d59c6a8b812008", size = 38671944, upload-time = "2025-10-08T18:39:13.237Z" },
+    { url = "https://files.pythonhosted.org/packages/76/54/3808fd493db43ec5d2bee45aebfcd55255b9b202242d68a9367c6885b9c3/lancedb-0.25.2-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:1342db839f05abd1d40ce92262fd8223ef9f38af6e0fb54be95b6bbd62e81019", size = 34987178, upload-time = "2025-10-08T18:33:33.338Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/73/194847ad48eb11c31ac44bec0cc3e638de0132fe33b1385111ccb8803096/lancedb-0.25.2-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:a0c2fb7bcf069e409d2000a5119b008107dc15cab37707c3a3e6eabfe46eae27", size = 38708484, upload-time = "2025-10-08T18:38:52.532Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/0a/36d753b01198b0590eb45e283b07d54feaaab89d528cf7bb048eeeaf2dce/lancedb-0.25.2-cp39-abi3-win_amd64.whl", hash = "sha256:9bd990f27667d37cec0f41686e9c83e8051bb45cb4b6d48355fcc9f8e2c6b0f7", size = 41081428, upload-time = "2025-10-08T18:59:54.832Z" },
+]
+
+[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1297,6 +1366,15 @@ wheels = [
 ]
 
 [[package]]
+name = "overrides"
+version = "7.7.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/86/b585f53236dec60aba864e050778b25045f857e17f6e5ea0ae95fe80edd2/overrides-7.7.0.tar.gz", hash = "sha256:55158fa3d93b98cc75299b1e67078ad9003ca27945c76162c1c0766d6f91820a", size = 22812, upload-time = "2024-01-27T21:01:33.423Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/ab/fc8290c6a4c722e5514d80f62b2dc4c4df1a68a41d1364e625c35990fcf3/overrides-7.7.0-py3-none-any.whl", hash = "sha256:c7ed9d062f78b8e4c1a7b70bd8796b35ead4d9f510227ef9c5dc7626c60d7e49", size = 17832, upload-time = "2024-01-27T21:01:31.393Z" },
+]
+
+[[package]]
 name = "packaging"
 version = "25.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1714,6 +1792,26 @@ wheels = [
 ]
 
 [[package]]
+name = "pylance"
+version = "0.38.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "numpy", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyarrow" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3d/fd/1584088917524acd974c86a1addaa679e7201b9073cfed3ef7e495315fd7/pylance-0.38.3-cp39-abi3-macosx_10_15_x86_64.whl", hash = "sha256:f6c42a8b1c3ffa3ab55cc608351775d537b96ab0fa283075a96495fdf47e1920", size = 46482483, upload-time = "2025-10-28T12:01:46.109Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/f9/5e5bcd547c7cc7a126fec2b32ebc42c22ecad3fcd73620793904bc8667bb/pylance-0.38.3-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:14329be831e3de21149f40a1437ad4bc6e5b7427e019586c0115fe05d2f016c1", size = 42459485, upload-time = "2025-10-28T11:38:51.793Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/69/8ccd88ca597bb5c1f0b8f8ec4491cafbe388ef867328c07b29fb467f1e34/pylance-0.38.3-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:77a872b99c9c4b6a84ff6f4254fd9405ec7672413edd3b4ce3b4ed232fdf1ac3", size = 44575863, upload-time = "2025-10-28T11:34:54.118Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/b4/78edb7e2c5a2e604b035a38d35857e5cdb242cec4171f386eed0920941c4/pylance-0.38.3-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:88c87a0ada27856e9917dbf9eb59879891339a37d0cfb05b5df81caab2b11f31", size = 48011877, upload-time = "2025-10-28T11:38:20.902Z" },
+    { url = "https://files.pythonhosted.org/packages/19/9b/45539c0724be34455655e70a4a6a3123ad338719687391dc037db0f7462d/pylance-0.38.3-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:b6a3c786f80d0bf8a2da379b89211d3ad9f3c723394bd9e78e5a234d65701b59", size = 44592430, upload-time = "2025-10-28T11:35:19.708Z" },
+    { url = "https://files.pythonhosted.org/packages/6d/f3/8bed7707fc4b5bc6032ba1b7af8f2211af9d39f6fe925ae78961a14c85c7/pylance-0.38.3-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:a169b2a254b8cb26399a0cc570784995280d2900d0ed8e50fbd3c38f21a3af76", size = 48024285, upload-time = "2025-10-28T11:38:53.192Z" },
+    { url = "https://files.pythonhosted.org/packages/06/49/84966b5e28648740b157bd90e7a89ec99a835cb66a0a619e41c60ec71073/pylance-0.38.3-cp39-abi3-win_amd64.whl", hash = "sha256:ea106742c2032d3ed8aa9232923eed2054aabf683a769ddc564c285ce20b950d", size = 49747295, upload-time = "2025-10-28T11:56:25.262Z" },
+]
+
+[[package]]
 name = "pytest"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1991,6 +2089,7 @@ dependencies = [
     { name = "click", version = "8.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "duckdb" },
     { name = "flask" },
+    { name = "lancedb" },
     { name = "pydantic" },
     { name = "pytz" },
     { name = "requests" },
@@ -2042,6 +2141,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.2.1" },
     { name = "flask", specifier = ">=3.1.0" },
     { name = "ipython", marker = "extra == 'jupyter'", specifier = ">=8.0.0" },
+    { name = "lancedb", specifier = ">=0.25.2" },
     { name = "pandas", marker = "extra == 'jupyter'", specifier = ">=2.3.0" },
     { name = "pyarrow", marker = "extra == 'jupyter'", specifier = ">=20.0.0" },
     { name = "pydantic", specifier = ">=2.11.7" },
