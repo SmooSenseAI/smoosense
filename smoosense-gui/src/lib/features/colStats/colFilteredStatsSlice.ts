@@ -29,13 +29,26 @@ export const queryFilteredColumnStats = createAsyncThunk<
   { dispatch: AppDispatch; state: RootState }
 >(
   'colFilteredStats/queryFilteredColumnStats',
-  async ({ columnName, sqlQuery, filterType }, { dispatch }) => {
+  async ({ columnName, sqlQuery, filterType }, { dispatch, getState }) => {
+    const state = getState()
+    const queryEngine = state.ui.queryEngine
+    const tablePath = state.ui.tablePath
+
+    if (!queryEngine) {
+      throw new Error('queryEngine is required')
+    }
+    if (!tablePath) {
+      throw new Error('tablePath is required')
+    }
+
     return queryColumnStats({
       columnName,
       dispatch,
       keyPrefix: 'colFilteredStats',
       sqlQuery,
-      filterType
+      filterType,
+      queryEngine,
+      tablePath
     })
   }
 )

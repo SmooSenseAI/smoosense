@@ -35,7 +35,7 @@ describe('getColumnMetadata', () => {
       json: async () => mockApiResponse,
     } as Response)
 
-    const result = await getColumnMetadata('/test/file.csv', mockDispatch)
+    const result = await getColumnMetadata('/test/file.csv', mockDispatch, 'duckdb')
 
     expect(result).toHaveLength(5)
     
@@ -131,8 +131,8 @@ describe('getColumnMetadata', () => {
   })
 
   it('should handle empty file path', async () => {
-    await expect(getColumnMetadata('', mockDispatch)).rejects.toThrow('Table path cannot be empty')
-    await expect(getColumnMetadata('   ', mockDispatch)).rejects.toThrow('Table path cannot be empty')
+    await expect(getColumnMetadata('', mockDispatch, 'duckdb')).rejects.toThrow('Table path cannot be empty')
+    await expect(getColumnMetadata('   ', mockDispatch, 'duckdb')).rejects.toThrow('Table path cannot be empty')
   })
 
   it('should handle API errors', async () => {
@@ -149,7 +149,7 @@ describe('getColumnMetadata', () => {
       json: async () => mockErrorResponse,
     } as Response)
 
-    await expect(getColumnMetadata('/nonexistent/file.csv', mockDispatch)).rejects.toThrow('Table not found')
+    await expect(getColumnMetadata('/nonexistent/file.csv', mockDispatch, 'duckdb')).rejects.toThrow('Table not found')
   })
 
   it('should call the correct SQL query', async () => {
@@ -165,7 +165,7 @@ describe('getColumnMetadata', () => {
       json: async () => mockApiResponse,
     } as Response)
 
-    await getColumnMetadata('/test/file.csv', mockDispatch)
+    await getColumnMetadata('/test/file.csv', mockDispatch, 'duckdb')
 
     expect(mockFetch).toHaveBeenCalledWith(`${API_PREFIX}/query`, {
       method: 'POST',
@@ -173,7 +173,9 @@ describe('getColumnMetadata', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        query: "SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '/test/file.csv')"
+        query: "SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '/test/file.csv')",
+        queryEngine: 'duckdb',
+        tablePath: '/test/file.csv'
       }),
     })
   })
@@ -196,7 +198,7 @@ describe('getColumnMetadata', () => {
       json: async () => mockApiResponse,
     } as Response)
 
-    const result = await getColumnMetadata('/test/file.csv', mockDispatch)
+    const result = await getColumnMetadata('/test/file.csv', mockDispatch, 'duckdb')
 
     // Should have original columns plus flattened struct fields
     expect(result).toHaveLength(6) // 3 original + 3 flattened struct fields
@@ -252,7 +254,7 @@ describe('getColumnMetadata', () => {
       json: async () => mockApiResponse,
     } as Response)
 
-    const result = await getColumnMetadata('/test/file.csv', mockDispatch)
+    const result = await getColumnMetadata('/test/file.csv', mockDispatch, 'duckdb')
 
     expect(result).toHaveLength(4) // 1 original + 3 flattened fields
     
@@ -298,7 +300,7 @@ describe('getColumnMetadata', () => {
           json: async () => mockStatsResponse,
         } as Response)
 
-      const result = await getColumnMetadata('/test/file.parquet', mockDispatch)
+      const result = await getColumnMetadata('/test/file.parquet', mockDispatch, 'duckdb')
 
       expect(result).toHaveLength(2)
       
@@ -361,7 +363,7 @@ describe('getColumnMetadata', () => {
         json: async () => mockMetadataResponse,
       } as Response)
 
-      const result = await getColumnMetadata('/test/file.csv', mockDispatch)
+      const result = await getColumnMetadata('/test/file.csv', mockDispatch, 'duckdb')
 
       expect(result).toHaveLength(1)
       expect(result[0].stats).toBeNull()
@@ -395,7 +397,7 @@ describe('getColumnMetadata', () => {
           json: async () => mockStatsResponse,
         } as Response)
 
-      const result = await getColumnMetadata('/test/file.parquet', mockDispatch)
+      const result = await getColumnMetadata('/test/file.parquet', mockDispatch, 'duckdb')
 
       expect(result[0].stats).toEqual({
         min: 'active',
@@ -433,7 +435,7 @@ describe('getColumnMetadata', () => {
           json: async () => mockStatsResponse,
         } as Response)
 
-      const result = await getColumnMetadata('/test/file.parquet', mockDispatch)
+      const result = await getColumnMetadata('/test/file.parquet', mockDispatch, 'duckdb')
 
       expect(result[0].stats).toEqual({
         min: null,
@@ -479,7 +481,7 @@ describe('getColumnMetadata', () => {
           json: async () => mockStatsResponse,
         } as Response)
 
-      const result = await getColumnMetadata('/test/file.parquet', mockDispatch)
+      const result = await getColumnMetadata('/test/file.parquet', mockDispatch, 'duckdb')
 
       expect(result[0].stats?.allNull).toBe(true)   // col_all_null: 100 nulls out of 100
       expect(result[1].stats?.allNull).toBe(false)  // col_some_null: 25 nulls out of 100
@@ -512,7 +514,7 @@ describe('getColumnMetadata', () => {
           json: async () => mockStatsErrorResponse,
         } as Response)
 
-      const result = await getColumnMetadata('/test/file.parquet', mockDispatch)
+      const result = await getColumnMetadata('/test/file.parquet', mockDispatch, 'duckdb')
 
       expect(result).toHaveLength(1)
       expect(result[0].stats).toBeNull()

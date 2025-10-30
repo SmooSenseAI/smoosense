@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { executeQuery, generateSqlKey } from '@/lib/api/queries'
 import type { ColumnMeta } from '@/lib/api/queries'
-import type { AppDispatch } from '@/lib/store'
+import type { AppDispatch, RootState } from '@/lib/store'
 import { sanitizeName } from '@/lib/utils/sql/helpers'
 
 // Cardinality levels
@@ -89,37 +89,41 @@ export function inferCardinalityFromMetadata(column: ColumnMeta): ColumnCardinal
 export const queryCardinality = createAsyncThunk<
   { columnName: string; cardinality: ColumnCardinality },
   { columnName: string; tablePath: string },
-  { dispatch: AppDispatch }
+  { dispatch: AppDispatch; state: RootState }
 >(
   'cardinality/queryCardinality',
-  async ({ columnName, tablePath }, { dispatch }) => {
+  async ({ columnName, tablePath }, { dispatch, getState }) => {
+    const state = getState()
+    const queryEngine = state.ui.queryEngine
     const cutoff = 1000
+    // Use lance_table when queryEngine is lance, otherwise use tablePath
+    const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
     const sqlQuery = `
-      SELECT 
+      SELECT
         approx_count_distinct(${sanitizeName(columnName)}) AS approxCntD,
-        approxCntD / COUNT(*) AS distinctRatio, 
+        approxCntD / COUNT(*) AS distinctRatio,
         CASE
           WHEN approx_count_distinct(${sanitizeName(columnName)}) <= ${cutoff} THEN COUNT(DISTINCT ${sanitizeName(columnName)})
           ELSE NULL
         END AS cntD,
-        CASE 
-          WHEN approx_count_distinct(${sanitizeName(columnName)}) <= ${cutoff} THEN 'low' 
-          ELSE 'high' 
+        CASE
+          WHEN approx_count_distinct(${sanitizeName(columnName)}) <= ${cutoff} THEN 'low'
+          ELSE 'high'
         END AS cardinality
-      FROM '${tablePath}' 
+      FROM ${tableRef}
       WHERE ${sanitizeName(columnName)} IS NOT NULL
     `.trim()
 
     // Set up timeout controller
     const controller = new AbortController()
-    
+
     try {
       const timeoutId = setTimeout(() => {
         controller.abort()
       }, 5000) // 5 second timeout
 
       const sqlKey = generateSqlKey(`cardinality_${columnName}`)
-      const result = await executeQuery(sqlQuery, sqlKey, dispatch)
+      const result = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
       clearTimeout(timeoutId)
 
       if (controller.signal.aborted) {

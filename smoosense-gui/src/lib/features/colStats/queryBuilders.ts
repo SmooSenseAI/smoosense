@@ -6,15 +6,17 @@ import { INVALID_COLUMN_NAME } from '@/lib/utils/columnNameUtils'
 
 // Helper function to build categorical stats query
 export function buildCategoricalStatsQuery(
-  columnName: string, 
-  tablePath: string, 
-  filterCondition?: string | null
+  columnName: string,
+  tablePath: string,
+  filterCondition: string | null | undefined,
+  queryEngine: string
 ): string {
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
-  
+  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+
   return `
     WITH filtered AS (
-      SELECT * FROM '${tablePath}' ${whereClause}
+      SELECT * FROM ${tableRef} ${whereClause}
     ), stats AS (
       SELECT
         COUNT(*) AS cnt_all,
@@ -45,16 +47,18 @@ export function buildCategoricalStatsQuery(
 
 // Helper function to build histogram stats query
 export function buildHistogramStatsQuery(
-  columnName: string, 
-  tablePath: string, 
-  histogramNumberOfBins: number, 
-  filterCondition?: string | null
+  columnName: string,
+  tablePath: string,
+  histogramNumberOfBins: number,
+  filterCondition: string | null | undefined,
+  queryEngine: string
 ): string {
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
-  
+  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+
   return `
     WITH filtered AS (
-      SELECT * FROM '${tablePath}' ${whereClause}
+      SELECT * FROM ${tableRef} ${whereClause}
     ), stats AS (
       SELECT
         COUNT(*) AS cnt_all,
@@ -103,14 +107,16 @@ export function buildHistogramStatsQuery(
 
 // Helper function to build text stats query
 export function buildTextStatsQuery(
-  columnName: string, 
-  tablePath: string, 
-  filterCondition?: string | null
+  columnName: string,
+  tablePath: string,
+  filterCondition: string | null | undefined,
+  queryEngine: string
 ): string {
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
-  
+  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+
   return `
-    SELECT 
+    SELECT
       STRUCT_PACK(
         min := MIN(${sanitizeName(columnName)}),
         max := MAX(${sanitizeName(columnName)})
@@ -119,7 +125,7 @@ export function buildTextStatsQuery(
       COUNT(*) AS cnt_all,
       COUNT_IF(${sanitizeName(columnName)} IS NULL) AS cnt_null,
       COUNT(*) - COUNT_IF(${sanitizeName(columnName)} IS NULL) AS cnt_not_null
-    FROM '${tablePath}'
+    FROM ${tableRef}
     ${whereClause}
   `.trim()
 }
@@ -145,13 +151,16 @@ export function buildColStatsQueryFromState({
     throw new Error('No table path found in state')
   }
 
+  // Get query engine from UI state
+  const queryEngine = state.ui.queryEngine
+
   // Get histogram bins from UI state
   let histogramNumberOfBins = state.ui.histogramNumberOfBins
 
   // Get distinct count from cardinality data if available
   const cardinalityData = state.columns.cardinality[columnName]?.data
   const distinctCount = cardinalityData?.cntD
-  
+
   // Use the smaller value between distinctCount and histogramNumberOfBins for histogram queries
   if (distinctCount !== null && distinctCount !== undefined && distinctCount > 0) {
     histogramNumberOfBins = Math.min(histogramNumberOfBins, distinctCount)
@@ -165,11 +174,11 @@ export function buildColStatsQueryFromState({
 
   // Build and return appropriate query
   if (filterType === FilterType.ENUM) {
-    return buildCategoricalStatsQuery(columnName, tablePath, whereClause)
+    return buildCategoricalStatsQuery(columnName, tablePath, whereClause, queryEngine)
   } else if (filterType === FilterType.RANGE) {
-    return buildHistogramStatsQuery(columnName, tablePath, histogramNumberOfBins, whereClause)
+    return buildHistogramStatsQuery(columnName, tablePath, histogramNumberOfBins, whereClause, queryEngine)
   } else {
     // TEXT or NONE - default to text query
-    return buildTextStatsQuery(columnName, tablePath, whereClause)
+    return buildTextStatsQuery(columnName, tablePath, whereClause, queryEngine)
   }
 }

@@ -18,6 +18,7 @@ interface UseHistogramResult {
  */
 export function useHistogram(): UseHistogramResult {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
   const histogramColumn = useAppSelector((state) => state.ui.histogramColumn)
   const histogramBreakdownColumn = useAppSelector((state) => state.ui.histogramBreakdownColumn)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
@@ -45,12 +46,13 @@ export function useHistogram(): UseHistogramResult {
       histogramColumn,
       histogramBreakdownColumn,
       tablePath,
+      queryEngine,
       filterCondition,
       histogramStatsData: {
         bin: histogramStats.bin
       }
     }
-  }, [tablePath, histogramColumn, histogramBreakdownColumn, filterCondition, histogramStatsData])
+  }, [tablePath, queryEngine, histogramColumn, histogramBreakdownColumn, filterCondition, histogramStatsData])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.histogram,

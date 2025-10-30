@@ -111,5 +111,5 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*"]
+module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*"]
 ignore_missing_imports = true

@@ -39,7 +39,9 @@ interface ColumnMeta {
 export async function executeQuery(
   sqlQuery: string,
   sqlKey: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  queryEngine: string,
+  tablePath: string
 ): Promise<QueryResult> {
   if (!sqlQuery.trim()) {
     throw new Error('Query cannot be empty')
@@ -54,7 +56,12 @@ export async function executeQuery(
   }
   dispatch(addExecution({ sqlKey, query: sqlQuery.trim(), result: runningResult }))
 
-  const requestData = { query: sqlQuery.trim() }
+  const requestData = {
+    query: sqlQuery.trim(),
+    queryEngine,
+    tablePath
+  }
+
   // Executing SQL query
 
   try {
@@ -97,10 +104,12 @@ export async function executeQueryAsListOfDict(
   sqlQuery: string,
   sqlKey: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatch: any
+  dispatch: any,
+  queryEngine: string,
+  tablePath: string
 ): Promise<RowObject[]> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
-  
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
   }
@@ -114,23 +123,30 @@ export async function executeQueryAsListOfDict(
 export async function executeQueryAsDictOfList(
   sqlQuery: string,
   sqlKey: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  queryEngine: string,
+  tablePath: string
 ): Promise<DictOfList> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
-  
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
   }
 
   return _.zipObject(
-    rawResult.column_names, 
+    rawResult.column_names,
     _.zip(...rawResult.rows)
   ) as DictOfList
 }
 
-async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promise<Record<string, Stats> | null> {
+async function getParquetStats(tablePath: string, dispatch: AppDispatch, queryEngine: string): Promise<Record<string, Stats> | null> {
   // Check if the file is a Parquet file
   if (!tablePath.toLowerCase().endsWith('.parquet')) {
+    return null
+  }
+
+  // Don't get parquet stats for Lance tables
+  if (queryEngine === 'lance') {
     return null
   }
 
@@ -142,14 +158,14 @@ async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promis
         MIN(stats_min_value) AS min,
         MAX(stats_max_value) AS max,
         -- Sometimes parquet metadata may be wrong for columns with all null values
-        (CASE WHEN (MIN(stats_min_value) IS NULL AND MAX(stats_max_value) IS NULL) 
-         THEN SUM(num_values) 
+        (CASE WHEN (MIN(stats_min_value) IS NULL AND MAX(stats_max_value) IS NULL)
+         THEN SUM(num_values)
          ELSE SUM(stats_null_count) END) AS cntNull
       FROM parquet_metadata('${tablePath}')
       GROUP BY path_in_schema
     `
 
-    const rows = await executeQueryAsListOfDict(statsQuery, `parquet_stats`, dispatch)
+    const rows = await executeQueryAsListOfDict(statsQuery, `parquet_stats`, dispatch, queryEngine, tablePath)
     const statsMap: Record<string, Stats> = {}
 
     for (const row of rows) {
@@ -179,19 +195,22 @@ async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promis
 }
 
 export async function getColumnMetadata(
-  tablePath: string, 
+  tablePath: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatch: any
+  dispatch: any,
+  queryEngine: string
 ): Promise<ColumnMeta[]> {
   if (!tablePath.trim()) {
     throw new Error('Table path cannot be empty')
   }
 
-  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '${tablePath}')`
-  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch)
-  
+  // Use lance_table when queryEngine is lance, otherwise use tablePath
+  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM ${tableRef})`
+  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch, queryEngine, tablePath)
+
   // Get Parquet stats if available
-  const parquetStats = await getParquetStats(tablePath, dispatch)
+  const parquetStats = await getParquetStats(tablePath, dispatch, queryEngine)
   
   const columns: ColumnMeta[] = []
   

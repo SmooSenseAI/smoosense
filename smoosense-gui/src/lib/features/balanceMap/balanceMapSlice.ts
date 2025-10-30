@@ -31,6 +31,7 @@ interface FetchBalanceMapParams {
   bubblePlotYColumn: string
   bubblePlotBreakdownColumn: string // Required - BalanceMap needs breakdown column for color mapping
   tablePath: string
+  queryEngine: string
   filterCondition: string | null
   xBin: {
     min: number
@@ -55,6 +56,7 @@ const fetchBalanceMapFunction = async (
     bubblePlotYColumn,
     bubblePlotBreakdownColumn,
     tablePath,
+    queryEngine,
     filterCondition,
     xBin,
     yBin
@@ -64,6 +66,9 @@ const fetchBalanceMapFunction = async (
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
 
+  // Use lance_table when queryEngine is lance, otherwise use tablePath
+  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+
   // Build query
   const query = `
     WITH filtered AS (
@@ -71,7 +76,7 @@ const fetchBalanceMapFunction = async (
         ${sanitizeName(bubblePlotXColumn)} AS x,
         ${sanitizeName(bubblePlotYColumn)} AS y,
         ${sanitizeName(bubblePlotBreakdownColumn)} AS breakdown
-      FROM '${tablePath}'
+      FROM ${tableRef}
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
       SELECT
@@ -91,7 +96,7 @@ const fetchBalanceMapFunction = async (
     ORDER BY 1, 2
   `
 
-  const data = await executeQueryAsListOfDict(query, 'balanceMap', dispatch)
+  const data = await executeQueryAsListOfDict(query, 'balanceMap', dispatch, queryEngine, tablePath)
 
   // Process data into a single balance map group (no grouping by breakdown anymore)
   const items = data as unknown as BalanceMapDataPoint[]

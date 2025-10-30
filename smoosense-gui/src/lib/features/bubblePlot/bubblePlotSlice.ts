@@ -28,6 +28,7 @@ interface FetchBubblePlotParams {
   bubblePlotYColumn: string
   bubblePlotBreakdownColumn: string | null // Optional - BubblePlot can work without breakdown column
   tablePath: string
+  queryEngine: string
   filterCondition: string | null
   xBin: {
     min: number
@@ -47,11 +48,12 @@ const fetchBubblePlotFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<BubblePlotGroup[]> => {
-  const { 
-    bubblePlotXColumn, 
-    bubblePlotYColumn, 
-    bubblePlotBreakdownColumn, 
-    tablePath, 
+  const {
+    bubblePlotXColumn,
+    bubblePlotYColumn,
+    bubblePlotBreakdownColumn,
+    tablePath,
+    queryEngine,
     filterCondition,
     xBin,
     yBin
@@ -61,14 +63,17 @@ const fetchBubblePlotFunction = async (
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
 
+  // Use lance_table when queryEngine is lance, otherwise use tablePath
+  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+
   // Build query
   const query = `
     WITH filtered AS (
-      SELECT 
+      SELECT
         ${sanitizeName(bubblePlotXColumn)} AS x,
         ${sanitizeName(bubblePlotYColumn)} AS y,
         ${isNil(bubblePlotBreakdownColumn) ? 'NULL' : sanitizeName(bubblePlotBreakdownColumn)} AS breakdown
-      FROM '${tablePath}'
+      FROM ${tableRef}
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
       SELECT
@@ -87,7 +92,7 @@ const fetchBubblePlotFunction = async (
     ORDER BY 1, 2, 3
   `
 
-  const data = await executeQueryAsListOfDict(query, 'bubblePlot', dispatch)
+  const data = await executeQueryAsListOfDict(query, 'bubblePlot', dispatch, queryEngine, tablePath)
 
   // Process data into bubble plot groups
   const grouped = _(data as unknown as BubblePlotDataPoint[])

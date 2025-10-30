@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import type { ColumnMeta } from '@/lib/api/queries'
 import { getColumnMetadata } from '@/lib/api/queries'
+import type { RootState } from '@/lib/store'
 
 export interface ColumnMetaState {
   data: ColumnMeta[] | null
@@ -17,8 +18,10 @@ const initialState: ColumnMetaState = {
 // Async thunk for fetching column metadata
 export const fetchColumnMetadata = createAsyncThunk(
   'columnMeta/fetchColumnMetadata',
-  async (tablePath: string, { dispatch }) => {
-    const result = await getColumnMetadata(tablePath, dispatch)
+  async (tablePath: string, { dispatch, getState }) => {
+    const state = getState() as RootState
+    const queryEngine = state.ui.queryEngine
+    const result = await getColumnMetadata(tablePath, dispatch, queryEngine)
     return result
   },
   {

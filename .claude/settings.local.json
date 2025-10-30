@@ -4,7 +4,14 @@
       "Bash(mkdir:*)",
       "Bash(uv run:*)",
       "Bash(pnpm exec tsc:*)",
-      "Bash(pnpm run lint)"
+      "Bash(pnpm run lint)",
+      "Bash(for file in balanceMapSlice.ts rowDataSlice.ts bubblePlotSlice.ts)",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(pnpm run typecheck:*)",
+      "Bash(for file in src/lib/features/bubblePlot/bubblePlotSlice.ts src/lib/features/heatmap/heatmapSlice.ts src/lib/features/histogram/histogramSlice.ts)",
+      "Bash(pnpm test:*)"
     ],
     "deny": [],
     "ask": []

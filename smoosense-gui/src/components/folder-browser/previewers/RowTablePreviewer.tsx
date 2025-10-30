@@ -29,7 +29,7 @@ export default function RowTablePreviewer({ item }: RowTablePreviewerProps) {
       
       try {
         const sqlKey = generateSqlKey('table_preview')
-        const result = await executeQueryAsListOfDict(query, sqlKey, dispatch)
+        const result = await executeQueryAsListOfDict(query, sqlKey, dispatch, 'duckdb', item.path)
         setData(result)
       } catch (err) {
         console.error('Error executing table preview query:', err)
@@ -40,7 +40,9 @@ export default function RowTablePreviewer({ item }: RowTablePreviewerProps) {
     }
     
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, dispatch])
+  // Note: item.path is not included because it's already captured in the query dependency
 
   const renderContent = () => {
     if (isLoading) {
