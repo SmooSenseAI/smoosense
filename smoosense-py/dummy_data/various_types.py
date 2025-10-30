@@ -207,6 +207,53 @@ class DummyDataGenerator:
         """Create output directory if it doesn't exist"""
         os.makedirs(self.output_dir, exist_ok=True)
 
+    def save_lance(self, table, filename):
+        """Save the data as Lance database with multiple versions"""
+        lance_path = os.path.join(self.output_dir, "lance")
+
+        # Clear the target folder if it exists
+        if os.path.exists(lance_path):
+            logger.info(f"Removing existing Lance directory: {lance_path}")
+            shutil.rmtree(lance_path)
+
+        logger.info(f"Writing Lance database to {lance_path}")
+        # Filter out struct and map columns for Lance
+        lance_columns = []
+        lance_column_names = []
+        for i, field in enumerate(table.schema):
+            if not (pa.types.is_struct(field.type) or pa.types.is_map(field.type)):
+                lance_columns.append(table.column(i))
+                lance_column_names.append(field.name)
+            else:
+                logger.info(
+                    f"Skipping column '{field.name}' (type: {field.type}) for Lance - unsupported type"
+                )
+        lance_table = pa.Table.from_arrays(lance_columns, names=lance_column_names)
+
+        # Create initial table
+        db = lancedb.connect(lance_path)
+        lance_db_table = db.create_table(filename, data=lance_table, mode="overwrite")
+        logger.info(f"Lance database written successfully with table name: {filename}")
+
+        # Make an update to create a new version
+        logger.info("Creating version 2: updating rows where bool=true")
+        lance_db_table.update(where="bool=true", values={"string": "updated"})
+        logger.info("Version 2 created successfully")
+
+        # Add more rows to create another version
+        logger.info("Creating version 3: adding first 3 rows")
+        df = lance_table.to_pandas()
+        additional_data = df.head(3)
+        lance_db_table.add(additional_data)
+        logger.info("Version 3 created successfully")
+
+        # Add a new column to create another version
+        logger.info("Creating version 4: adding new_column with default value 'foo'")
+        lance_db_table.add_columns({"new_column": "'foo'"})
+        logger.info("Version 4 created successfully")
+
+        logger.info(f"Lance database with {len(lance_db_table.list_versions())} versions created")
+
     def save_files(self, filename="dummy_data_various_types"):
         """Save the generated data as parquet, csv, and lance files"""
         logger.info(f"Saving files with base name: {filename}")
@@ -225,28 +272,8 @@ class DummyDataGenerator:
         table.to_pandas().to_csv(csv_path, index=False)
         logger.info("CSV file written successfully")
 
-        # Save as Lance (excluding struct and map columns which are unsupported)
-        lance_path = os.path.join(self.output_dir, "lance")
-
-        # Clear the target folder if it exists
-        if os.path.exists(lance_path):
-            logger.info(f"Removing existing Lance directory: {lance_path}")
-            shutil.rmtree(lance_path)
-
-        logger.info(f"Writing Lance database to {lance_path}")
-        # Filter out struct and map columns for Lance
-        lance_columns = []
-        lance_column_names = []
-        for i, field in enumerate(table.schema):
-            if not (pa.types.is_struct(field.type) or pa.types.is_map(field.type)):
-                lance_columns.append(table.column(i))
-                lance_column_names.append(field.name)
-            else:
-                logger.info(f"Skipping column '{field.name}' (type: {field.type}) for Lance - unsupported type")
-        lance_table = pa.Table.from_arrays(lance_columns, names=lance_column_names)
-        db = lancedb.connect(lance_path)
-        db.create_table(filename, data=lance_table, mode="overwrite")
-        logger.info(f"Lance database written successfully with table name: {filename}")
+        # Save as Lance
+        self.save_lance(table, filename)
 
     def get_schema(self):
         """Get the schema of the generated data"""

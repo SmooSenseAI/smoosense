@@ -107,8 +107,9 @@ warn_unreachable = true
 strict_equality = true
 exclude = [
     "app_dev.py",  # Development-only file, not included in package
+    "tests/",  # Test files don't need strict typing
 ]
 
 [[tool.mypy.overrides]]
-module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*"]
+module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*"]
 ignore_missing_imports = true

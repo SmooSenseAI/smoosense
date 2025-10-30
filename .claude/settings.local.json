@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(uv run:*)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(pnpm run lint)"
     ],
     "deny": [],
     "ask": []
