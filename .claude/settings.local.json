@@ -11,7 +11,8 @@
       "Bash(done)",
       "Bash(pnpm run typecheck:*)",
       "Bash(for file in src/lib/features/bubblePlot/bubblePlotSlice.ts src/lib/features/heatmap/heatmapSlice.ts src/lib/features/histogram/histogramSlice.ts)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(make typecheck:*)"
     ],
     "deny": [],
     "ask": []
