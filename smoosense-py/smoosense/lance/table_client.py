@@ -142,10 +142,6 @@ class LanceTableClient:
             ValueError: If no compatible columns found
         """
         if self._filtered_arrow_table is None:
-            logger.info(
-                f"Converting Lance table '{self.table_name}' to Arrow and filtering columns"
-            )
-
             # Convert Lance table to Arrow table
             arrow_table = self.table.to_arrow()
 
@@ -156,11 +152,9 @@ class LanceTableClient:
             ) = self._filter_duckdb_incompatible_columns(arrow_table)
 
             if self._incompatible_columns:
-                logger.info(
+                logger.warning(
                     f"Filtered out {len(self._incompatible_columns)} incompatible column(s): {', '.join(self._incompatible_columns)}"
                 )
-            else:
-                logger.info("All columns are compatible with DuckDB")
 
         return self._filtered_arrow_table
 
