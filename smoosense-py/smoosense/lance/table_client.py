@@ -7,7 +7,7 @@ import lancedb
 import pyarrow as pa
 from pydantic import validate_call
 
-from smoosense.lance.models import VersionInfo
+from smoosense.lance.models import ColumnInfo, IndexInfo, VersionInfo
 
 logger = logging.getLogger(__name__)
 
@@ -244,11 +244,12 @@ class LanceTableClient:
 
             metadata = version.get("metadata", {})
 
-            # Extract total_rows from metadata using helper function
+            # Extract fields from metadata using helper function
             total_data_rows = self._extract_int_from_metadata(metadata, "total_data_file_rows")
             total_deletion_rows = self._extract_int_from_metadata(
                 metadata, "total_deletion_file_rows"
             )
+            total_data_files = self._extract_int_from_metadata(metadata, "total_data_files")
 
             # Calculate diffs
             rows_add = total_data_rows - prev_data_rows
@@ -272,7 +273,7 @@ class LanceTableClient:
                 VersionInfo(
                     version=version["version"],
                     timestamp=timestamp,
-                    metadata=metadata,
+                    total_data_files=total_data_files,
                     total_rows=total_data_rows,
                     rows_add=rows_add,
                     rows_remove=rows_remove,
@@ -288,3 +289,73 @@ class LanceTableClient:
 
         logger.info(f"Found {len(versions_info)} versions for table {self.table_name}")
         return versions_info
+
+    @validate_call
+    def list_indices(self) -> list[IndexInfo]:
+        """
+        List all indices of the table.
+
+        Returns:
+            List of IndexInfo models
+        """
+        logger.info(f"Fetching indices for table {self.table_name}")
+
+        try:
+            indices_list = self.table.list_indices()
+        except Exception as e:
+            logger.error(f"Failed to list indices for table {self.table_name}: {e}")
+            # If list_indices fails, return empty list
+            return []
+
+        indices_info: list[IndexInfo] = []
+
+        for idx in indices_list:
+            try:
+                # Get index stats to extract num_unindexed_rows
+                stats = self.table.index_stats(idx.name)
+                num_unindexed_rows = getattr(stats, "num_unindexed_rows", None)
+            except Exception as e:
+                logger.warning(f"Failed to get stats for index {idx.name}: {e}")
+                num_unindexed_rows = None
+
+            indices_info.append(
+                IndexInfo(
+                    name=idx.name,
+                    index_type=idx.index_type,
+                    columns=idx.columns,
+                    num_unindexed_rows=num_unindexed_rows,
+                )
+            )
+
+        logger.info(f"Found {len(indices_info)} indices for table {self.table_name}")
+        return indices_info
+
+    @validate_call
+    def list_columns(self) -> list[ColumnInfo]:
+        """
+        List all columns of the table with their types.
+
+        Returns:
+            List of ColumnInfo models
+        """
+        logger.info(f"Fetching columns for table {self.table_name}")
+
+        try:
+            # Get schema from the table
+            schema = self.table.schema
+            columns_info: list[ColumnInfo] = []
+
+            for field in schema:
+                columns_info.append(
+                    ColumnInfo(
+                        name=field.name,
+                        type=str(field.type),
+                    )
+                )
+
+            logger.info(f"Found {len(columns_info)} columns for table {self.table_name}")
+            return columns_info
+        except Exception as e:
+            logger.error(f"Failed to list columns for table {self.table_name}: {e}")
+            # If schema access fails, return empty list
+            return []

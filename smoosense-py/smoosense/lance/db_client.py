@@ -47,19 +47,28 @@ class LanceDBClient:
         for table_name in table_names:
             try:
                 table = self.db.open_table(table_name)
-                versions = table.list_versions()
+                cnt_versions = len(table.list_versions())
+                cnt_indices = len(table.list_indices())
+
                 tables_info.append(
                     TableInfo(
                         name=table_name,
                         cnt_rows=table.count_rows(),
                         cnt_columns=len(table.schema),
-                        cnt_versions=len(versions),
+                        cnt_versions=cnt_versions,
+                        cnt_indices=cnt_indices,
                     )
                 )
             except Exception as e:
                 logger.warning(f"Failed to get info for table {table_name}: {e}")
                 tables_info.append(
-                    TableInfo(name=table_name, cnt_rows=None, cnt_columns=None, cnt_versions=None)
+                    TableInfo(
+                        name=table_name,
+                        cnt_rows=None,
+                        cnt_columns=None,
+                        cnt_versions=None,
+                        cnt_indices=None,
+                    )
                 )
 
         return tables_info

@@ -45,3 +45,39 @@ def list_versions() -> Response:
     except Exception as e:
         logger.error(f"Failed to list versions for table {table_name}: {e}")
         raise InvalidInputException(f"Failed to list versions: {e}") from e
+
+
+@lance_bp.get("/lance/list-indices")
+@handle_api_errors
+def list_indices() -> Response:
+    """List all indices of a table in a Lance database."""
+    root_folder = require_arg("rootFolder")
+    table_name = require_arg("tableName")
+
+    try:
+        client = LanceTableClient(root_folder, table_name)
+        indices_info = client.list_indices()
+        return jsonify([index.model_dump() for index in indices_info])
+    except ValueError as e:
+        raise InvalidInputException(str(e)) from e
+    except Exception as e:
+        logger.error(f"Failed to list indices for table {table_name}: {e}")
+        raise InvalidInputException(f"Failed to list indices: {e}") from e
+
+
+@lance_bp.get("/lance/list-columns")
+@handle_api_errors
+def list_columns() -> Response:
+    """List all columns of a table in a Lance database."""
+    root_folder = require_arg("rootFolder")
+    table_name = require_arg("tableName")
+
+    try:
+        client = LanceTableClient(root_folder, table_name)
+        columns_info = client.list_columns()
+        return jsonify([column.model_dump() for column in columns_info])
+    except ValueError as e:
+        raise InvalidInputException(str(e)) from e
+    except Exception as e:
+        logger.error(f"Failed to list columns for table {table_name}: {e}")
+        raise InvalidInputException(f"Failed to list columns: {e}") from e

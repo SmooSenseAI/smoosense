@@ -6,11 +6,12 @@ import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Database, Loader2, Table } from 'lucide-react'
 import TablePreview from './TablePreview'
 
-interface TableInfo {
+export interface TableInfo {
   name: string
   cnt_rows: number | null
   cnt_columns: number | null
   cnt_versions: number | null
+  cnt_indices: number | null
 }
 
 function TablesList({
@@ -45,7 +46,7 @@ function TablesList({
               )}
               {table.cnt_versions !== null && (
                 <Badge variant="outline" className="text-xs">
-                  {table.cnt_versions} ver
+                  v {table.cnt_versions}
                 </Badge>
               )}
             </div>
@@ -127,6 +128,9 @@ export default function DBContent({ rootFolder }: { rootFolder: string }) {
     )
   }
 
+  // Find the selected table's info
+  const selectedTableInfo = selectedTable ? tables.find(t => t.name === selectedTable) : null
+
   return (
     <div className="h-full w-full">
       <ResizablePanels
@@ -137,7 +141,7 @@ export default function DBContent({ rootFolder }: { rootFolder: string }) {
         className="h-full"
       >
         <TablesList tables={tables} selectedTable={selectedTable} onTableClick={handleTableClick} />
-        <TablePreview rootFolder={rootFolder} tableName={selectedTable} />
+        <TablePreview rootFolder={rootFolder} tableName={selectedTable} tableInfo={selectedTableInfo} />
       </ResizablePanels>
     </div>
   )

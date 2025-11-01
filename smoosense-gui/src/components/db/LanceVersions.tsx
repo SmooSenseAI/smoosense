@@ -14,7 +14,7 @@ ModuleRegistry.registerModules([AllCommunityModule])
 export interface VersionInfo {
   version: number
   timestamp: number
-  metadata: Record<string, unknown>
+  total_data_files: number | null
   total_rows: number | null
   rows_add: number | null
   rows_remove: number | null
@@ -106,7 +106,7 @@ export default function LanceVersions({ rootFolder, tableName }: LanceVersionsPr
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="cursor-default">
-            {relativeTime} ago
+            {relativeTime} {relativeTime === 'now' ? '' : 'ago'}
           </div>
         </TooltipTrigger>
         <TooltipContent>
@@ -159,6 +159,12 @@ export default function LanceVersions({ rootFolder, tableName }: LanceVersionsPr
       width: 150
     },
     {
+      field: 'total_data_files',
+      headerName: 'Data Files',
+      width: 120,
+      valueFormatter: (params) => params.value !== null && params.value !== undefined ? params.value.toLocaleString() : ''
+    },
+    {
       field: 'total_rows',
       headerName: 'Total Rows',
       width: 120,
@@ -175,12 +181,6 @@ export default function LanceVersions({ rootFolder, tableName }: LanceVersionsPr
       cellRenderer: columnsDiffRenderer,
       width: 200,
       autoHeight: true
-    },
-    {
-      field: 'metadata',
-      headerName: 'Metadata',
-      flex: 1,
-      valueFormatter: (params) => JSON.stringify(params.value)
     }
   ]
 

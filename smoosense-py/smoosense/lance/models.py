@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -10,6 +10,7 @@ class TableInfo(BaseModel):
     cnt_rows: Optional[int] = Field(None, description="Number of rows in the table")
     cnt_columns: Optional[int] = Field(None, description="Number of columns in the table")
     cnt_versions: Optional[int] = Field(None, description="Number of versions of the table")
+    cnt_indices: Optional[int] = Field(None, description="Number of indices of the table")
 
 
 class VersionInfo(BaseModel):
@@ -17,7 +18,9 @@ class VersionInfo(BaseModel):
 
     version: int = Field(..., description="Version number")
     timestamp: int = Field(..., description="Unix timestamp (epoch) of the version")
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Version metadata")
+    total_data_files: Optional[int] = Field(
+        None, description="Total number of data files in this version"
+    )
     total_rows: Optional[int] = Field(None, description="Total number of rows in this version")
     rows_add: Optional[int] = Field(
         None, description="Number of rows added compared to previous version"
@@ -31,3 +34,21 @@ class VersionInfo(BaseModel):
     columns_remove: list[str] = Field(
         default_factory=list, description="Columns removed compared to previous version"
     )
+
+
+class IndexInfo(BaseModel):
+    """Information about a Lance index."""
+
+    name: str = Field(..., description="Name of the index")
+    index_type: str = Field(..., description="Type of the index (e.g., IVF_PQ, BTREE)")
+    columns: list[str] = Field(..., description="Columns included in the index")
+    num_unindexed_rows: Optional[int] = Field(
+        None, description="Number of unindexed rows in the index"
+    )
+
+
+class ColumnInfo(BaseModel):
+    """Information about a table column."""
+
+    name: str = Field(..., description="Name of the column")
+    type: str = Field(..., description="Data type of the column")
