@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Optional
+from functools import lru_cache
 
 import duckdb
 import lancedb
@@ -37,10 +37,6 @@ class LanceTableClient:
         self.db = lancedb.connect(root_folder)
         self.table = self.db.open_table(table_name)
 
-        # Cache for filtered Arrow table to avoid re-conversion on multiple queries
-        self._filtered_arrow_table: Optional[pa.Table] = None
-        self._incompatible_columns: Optional[list[str]] = None
-
         logger.info(f"Connected to Lance table '{table_name}' at {root_folder}")
 
     @staticmethod
@@ -75,9 +71,8 @@ class LanceTableClient:
 
         return LanceTableClient(root_folder, table_name)
 
-    def _filter_duckdb_incompatible_columns(
-        self, arrow_table: pa.Table
-    ) -> tuple[pa.Table, list[str]]:
+    @staticmethod
+    def _filter_duckdb_incompatible_columns(arrow_table: pa.Table) -> tuple[pa.Table, list[str]]:
         """
         Filter out columns with DuckDB-incompatible Arrow types.
 
@@ -129,11 +124,52 @@ class LanceTableClient:
 
         return filtered_arrow_table, incompatible_columns
 
+    @staticmethod
+    @lru_cache(maxsize=3)
+    def _load_and_filter_arrow_table(table_path: str) -> tuple[pa.Table, list[str]]:
+        """
+        Load and filter Arrow table with class-level LRU cache.
+
+        This is cached at the class level with maxsize=3, meaning it persists
+        across different LanceTableClient instances for the same table path.
+
+        Args:
+            table_path: Full path to the Lance table (e.g., /path/to/db/table_name.lance)
+
+        Returns:
+            Tuple of (filtered_arrow_table, incompatible_column_names)
+
+        Raises:
+            ValueError: If no compatible columns found
+        """
+        logger.info(f"Loading Arrow table from {table_path} (cache miss)")
+
+        # Parse table path
+        root_folder = os.path.dirname(table_path)
+        table_name = os.path.basename(table_path).replace(".lance", "")
+
+        # Connect and load
+        db = lancedb.connect(root_folder)
+        table = db.open_table(table_name)
+        arrow_table = table.to_arrow()
+
+        # Filter incompatible columns
+        filtered_arrow_table, incompatible_columns = (
+            LanceTableClient._filter_duckdb_incompatible_columns(arrow_table)
+        )
+
+        if incompatible_columns:
+            logger.warning(
+                f"Filtered out {len(incompatible_columns)} incompatible column(s): {', '.join(incompatible_columns)}"
+            )
+
+        return filtered_arrow_table, incompatible_columns
+
     def _get_filtered_arrow_table(self) -> pa.Table:
         """
         Get the filtered Arrow table with DuckDB-compatible columns only.
 
-        Uses cached version if available to avoid re-conversion on multiple queries.
+        Uses class-level LRU cache keyed by table path to persist across instances.
 
         Returns:
             Filtered PyArrow table
@@ -141,22 +177,9 @@ class LanceTableClient:
         Raises:
             ValueError: If no compatible columns found
         """
-        if self._filtered_arrow_table is None:
-            # Convert Lance table to Arrow table
-            arrow_table = self.table.to_arrow()
-
-            # Filter incompatible columns
-            (
-                self._filtered_arrow_table,
-                self._incompatible_columns,
-            ) = self._filter_duckdb_incompatible_columns(arrow_table)
-
-            if self._incompatible_columns:
-                logger.warning(
-                    f"Filtered out {len(self._incompatible_columns)} incompatible column(s): {', '.join(self._incompatible_columns)}"
-                )
-
-        return self._filtered_arrow_table
+        table_path = os.path.join(self.root_folder, f"{self.table_name}.lance")
+        filtered_arrow_table, _ = self._load_and_filter_arrow_table(table_path)
+        return filtered_arrow_table
 
     def run_duckdb_sql(self, query: str) -> tuple[list[str], list[tuple]]:
         """

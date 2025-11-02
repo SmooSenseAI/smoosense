@@ -54,4 +54,4 @@ if __name__ == "__main__":
             "Work": "~/Work",
             "S3 bucket": "s3://sense-table-demo",
         },
-    ).run(threaded=True, debug=True)
+    ).run(threaded=False, debug=True)
