@@ -1,6 +1,9 @@
 'use client'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
+import { ExternalLink } from 'lucide-react'
+import { pathJoin } from '@/lib/utils/pathUtils'
 import type { TableInfo } from './DBContent'
 import LanceColumns from './LanceColumns'
 import LanceIndices from './LanceIndices'
@@ -25,6 +28,25 @@ export default function TablePreview({
 
   return (
     <div className="h-full w-full overflow-auto p-4">
+      {tableInfo?.cnt_rows !== null && tableInfo?.cnt_rows !== undefined && (
+        <div className="mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-semibold">
+            {tableInfo.cnt_rows.toLocaleString()} {tableInfo.cnt_rows === 1 ? 'row' : 'rows'}
+          </h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              const tablePath = pathJoin(rootFolder, `${tableName}.lance`)
+              const url = `./Table?tablePath=${tablePath}`
+              window.open(url, '_blank')
+            }}
+            title="Open table in new tab"
+          >
+            <ExternalLink />
+          </Button>
+        </div>
+      )}
       <Accordion type="single" defaultValue="columns" collapsible className="w-full">
         {/* Columns Section */}
         <AccordionItem value="columns">

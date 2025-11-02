@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ResizablePanels } from '@/components/ui/resizable-panels'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Database, Loader2, Table } from 'lucide-react'
+import { pathJoin } from '@/lib/utils/pathUtils'
 import TablePreview from './TablePreview'
 
 export interface TableInfo {
@@ -17,11 +18,13 @@ export interface TableInfo {
 function TablesList({
   tables,
   selectedTable,
-  onTableClick
+  onTableClick,
+  onTableDoubleClick
 }: {
   tables: TableInfo[]
   selectedTable: string | null
   onTableClick: (tableName: string) => void
+  onTableDoubleClick: (tableName: string) => void
 }) {
   return (
     <div className="h-full overflow-auto p-4">
@@ -30,6 +33,7 @@ function TablesList({
           <div
             key={table.name}
             onClick={() => onTableClick(table.name)}
+            onDoubleClick={() => onTableDoubleClick(table.name)}
             className={`flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors ${
               selectedTable === table.name ? 'border-primary bg-accent' : ''
             }`}
@@ -91,6 +95,12 @@ export default function DBContent({ rootFolder }: { rootFolder: string }) {
     setSelectedTable(tableName)
   }
 
+  const handleTableDoubleClick = (tableName: string) => {
+    const tablePath = pathJoin(rootFolder, `${tableName}.lance`)
+    const url = `./Table?tablePath=${tablePath}`
+    window.open(url, '_blank')
+  }
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -140,7 +150,7 @@ export default function DBContent({ rootFolder }: { rootFolder: string }) {
         maxSize={80}
         className="h-full"
       >
-        <TablesList tables={tables} selectedTable={selectedTable} onTableClick={handleTableClick} />
+        <TablesList tables={tables} selectedTable={selectedTable} onTableClick={handleTableClick} onTableDoubleClick={handleTableDoubleClick} />
         <TablePreview rootFolder={rootFolder} tableName={selectedTable} tableInfo={selectedTableInfo} />
       </ResizablePanels>
     </div>
