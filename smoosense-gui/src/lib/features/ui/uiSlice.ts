@@ -6,6 +6,7 @@ interface UiState {
   debugMode: boolean
   activeTab: string
   activePlotTab: string
+  activeEmbTab: string
   tablePath: string | null
   rootFolder: string | null
   baseUrl: string | null
@@ -48,6 +49,7 @@ const initialState: UiState = {
   debugMode: false,
   activeTab: 'Table',
   activePlotTab: 'BubblePlot',
+  activeEmbTab: 'Search',
   tablePath: null,
   rootFolder: null,
   baseUrl: null,
@@ -104,6 +106,9 @@ export const uiSlice = createSlice({
     },
     setActivePlotTab: (state, action: PayloadAction<string>) => {
       state.activePlotTab = action.payload
+    },
+    setActiveEmbTab: (state, action: PayloadAction<string>) => {
+      state.activeEmbTab = action.payload
     },
     setTablePath: (state, action: PayloadAction<string | null>) => {
       state.tablePath = action.payload
@@ -253,6 +258,7 @@ export const {
   setDebugMode,
   setActiveTab,
   setActivePlotTab,
+  setActiveEmbTab,
   setTablePath,
   setRootFolder,
   setBaseUrl,
