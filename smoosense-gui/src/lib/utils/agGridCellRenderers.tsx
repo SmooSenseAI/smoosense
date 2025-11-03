@@ -36,12 +36,23 @@ export enum RenderType {
 
 // Helper functions for string analysis
 function isUrl(str: string): boolean {
-  return str.startsWith('http://') ||
-         str.startsWith('https://') ||
-         str.startsWith('s3://') ||
-         str.startsWith('ftp://') ||
-         str.startsWith('file://') ||
-         str.startsWith('./')
+  // Check for protocol-based URLs
+  if (str.startsWith('http://') ||
+      str.startsWith('https://') ||
+      str.startsWith('s3://') ||
+      str.startsWith('ftp://') ||
+      str.startsWith('file://') ||
+      str.startsWith('./')) {
+    return true
+  }
+
+  // Check for local file paths: starts with / and last segment contains a dot
+  if (str.startsWith('/')) {
+    const lastSegment = _.last(str.split('/'))
+    return lastSegment?.includes('.') ?? false
+  }
+
+  return false
 }
 
 function inferUrlType(str: string): RenderType {
