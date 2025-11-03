@@ -6,7 +6,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizablePanels } from '@/components/ui/resizable-panels'
 import Gallery from '@/components/gallery/Gallery'
 import ColumnFilters from '@/components/filters/ColumnFilters'
-import BalanceMap from '@/lib/features/balanceMap/BalanceMap'
 
 const embTabs = ['Search', 'Cluster']
 

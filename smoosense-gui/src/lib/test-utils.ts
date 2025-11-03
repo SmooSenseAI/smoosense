@@ -33,6 +33,7 @@ export function createDefaultTestState(): RootState {
       debugMode: false,
       activeTab: 'Table',
       activePlotTab: 'BubblePlot',
+      activeEmbTab: 'Search',
       tablePath: null,
       rootFolder: '~',
       baseUrl: null,
