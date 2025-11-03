@@ -17,6 +17,7 @@ interface UseHeatMapResult {
  */
 export function useHeatMap(): UseHeatMapResult {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
   const heatmapXColumn = useAppSelector((state) => state.ui.heatmapXColumn)
   const heatmapYColumn = useAppSelector((state) => state.ui.heatmapYColumn)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
@@ -31,9 +32,10 @@ export function useHeatMap(): UseHeatMapResult {
       heatmapXColumn,
       heatmapYColumn,
       tablePath,
+      queryEngine,
       filterCondition
     }
-  }, [tablePath, heatmapXColumn, heatmapYColumn, filterCondition])
+  }, [tablePath, queryEngine, heatmapXColumn, heatmapYColumn, filterCondition])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.heatmap,

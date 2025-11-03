@@ -18,6 +18,7 @@ interface UseBubblePlotResult {
  */
 export function useBubblePlot(): UseBubblePlotResult {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
   const bubblePlotXColumn = useAppSelector((state) => state.ui.bubblePlotXColumn)
   const bubblePlotYColumn = useAppSelector((state) => state.ui.bubblePlotYColumn)
   const bubblePlotBreakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
@@ -47,11 +48,12 @@ export function useBubblePlot(): UseBubblePlotResult {
       bubblePlotYColumn,
       bubblePlotBreakdownColumn,
       tablePath,
+      queryEngine,
       filterCondition,
       xBin,
       yBin
     }
-  }, [tablePath, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
+  }, [tablePath, queryEngine, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.bubblePlot,

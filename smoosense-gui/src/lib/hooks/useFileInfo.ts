@@ -24,6 +24,7 @@ interface UseFileInfoResult {
 
 export function useFileInfo(): UseFileInfoResult {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
   const dispatch = useAppDispatch()
   const [data, setData] = useState<FileInfoResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -50,7 +51,7 @@ export function useFileInfo(): UseFileInfoResult {
           try {
             const metadataQuery = `SELECT CAST(key AS VARCHAR) AS key, CAST(value AS VARCHAR) AS value FROM parquet_kv_metadata('${tablePath}')`
             const sqlKey = generateSqlKey('parquet_kv_metadata')
-            const metadataResult = await executeQueryAsListOfDict(metadataQuery, sqlKey, dispatch)
+            const metadataResult = await executeQueryAsListOfDict(metadataQuery, sqlKey, dispatch, queryEngine, tablePath)
 
             // Convert the result to metadata object
             for (const row of metadataResult) {
@@ -89,7 +90,7 @@ export function useFileInfo(): UseFileInfoResult {
     }
 
     fetchFileInfo()
-  }, [tablePath, dispatch])
+  }, [tablePath, queryEngine, dispatch])
 
   return { data, loading, error }
 }

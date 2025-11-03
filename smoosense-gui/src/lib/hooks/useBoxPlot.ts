@@ -17,6 +17,7 @@ interface UseBoxPlotResult {
  */
 export function useBoxPlot(): UseBoxPlotResult {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
   const boxPlotColumns = useAppSelector((state) => state.ui.boxPlotColumns)
   const boxPlotBreakdownColumn = useAppSelector((state) => state.ui.boxPlotBreakdownColumn)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
@@ -31,9 +32,10 @@ export function useBoxPlot(): UseBoxPlotResult {
       boxPlotColumns,
       boxPlotBreakdownColumn,
       tablePath,
+      queryEngine,
       filterCondition
     }
-  }, [tablePath, boxPlotColumns, boxPlotBreakdownColumn, filterCondition])
+  }, [tablePath, queryEngine, boxPlotColumns, boxPlotBreakdownColumn, filterCondition])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.boxPlot,

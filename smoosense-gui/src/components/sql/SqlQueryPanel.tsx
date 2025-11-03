@@ -17,6 +17,7 @@ import { useTheme } from 'next-themes'
 
 export default function SqlQueryPanel() {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
   const { theme, systemTheme } = useTheme()
   const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
   const sqlQuery = useAppSelector((state) => state.ui.sqlQuery)
@@ -72,12 +73,18 @@ export default function SqlQueryPanel() {
   // Initialize default query when no query exists and tablePath is available
   useEffect(() => {
     if (tablePath && !sqlQuery) {
-      dispatch(setSqlQuery(`SELECT * FROM '${tablePath}' LIMIT 10`))
+      // Use lance_table when queryEngine is lance, otherwise use tablePath
+      const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+      dispatch(setSqlQuery(`SELECT * FROM ${tableRef} LIMIT 10`))
     }
-  }, [tablePath, sqlQuery, dispatch])
+  }, [tablePath, queryEngine, sqlQuery, dispatch])
 
   const handleExecuteQuery = async () => {
     if (!sqlQuery.trim()) return
+    if (!queryEngine || !tablePath) {
+      console.error('queryEngine and tablePath are required')
+      return
+    }
 
     const queryStartTime = Date.now()
     setStartTime(queryStartTime)
@@ -85,14 +92,14 @@ export default function SqlQueryPanel() {
     setIsLoading(true)
     // Clear previous results to show loading state
     setCurrentResult(null)
-    
+
     try {
       const sqlKey = generateSqlKey('user_query')
-      const result = await executeQuery(sqlQuery, sqlKey, dispatch)
-      
+      const result = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+
       // Save to Redux store
       dispatch(setSqlResult(result))
-      
+
       // Update local state with raw result
       setCurrentResult(result)
     } catch (error) {

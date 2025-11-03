@@ -29,12 +29,6 @@ function TableUrlParamsProviderInner({ children }: { children: React.ReactNode }
       dispatch(uiSliceActions.setBaseUrl(baseUrl))
     }
 
-    // Handle queryEngine parameter
-    const queryEngine = searchParams.get('queryEngine')
-    if (queryEngine && (queryEngine === 'duckdb' || queryEngine === 'athena' || queryEngine === 'lance')) {
-      dispatch(uiSliceActions.setQueryEngine(queryEngine))
-    }
-
     // Handle tablePath specifically
     const urlTablePath = searchParams.get('tablePath')
     if (urlTablePath !== currentTablePath) {
@@ -45,6 +39,15 @@ function TableUrlParamsProviderInner({ children }: { children: React.ReactNode }
         const folderPath = urlTablePath.substring(0, urlTablePath.lastIndexOf('/'))
         dispatch(uiSliceActions.setRootFolder(folderPath || '/'))
       }
+    }
+
+    // Handle queryEngine parameter
+    const queryEngine = searchParams.get('queryEngine')
+    if (queryEngine && (queryEngine === 'duckdb' || queryEngine === 'athena' || queryEngine === 'lance')) {
+      dispatch(uiSliceActions.setQueryEngine(queryEngine))
+    } else if (!queryEngine && urlTablePath && urlTablePath.endsWith('.lance')) {
+      // If queryEngine is not provided and tablePath ends with .lance, set queryEngine to lance
+      dispatch(uiSliceActions.setQueryEngine('lance'))
     }
 
     // Collect all other URL parameters and batch update UI slice

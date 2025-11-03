@@ -39,7 +39,9 @@ interface ColumnMeta {
 export async function executeQuery(
   sqlQuery: string,
   sqlKey: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  queryEngine: string,
+  tablePath: string
 ): Promise<QueryResult> {
   if (!sqlQuery.trim()) {
     throw new Error('Query cannot be empty')
@@ -54,7 +56,12 @@ export async function executeQuery(
   }
   dispatch(addExecution({ sqlKey, query: sqlQuery.trim(), result: runningResult }))
 
-  const requestData = { query: sqlQuery.trim() }
+  const requestData = {
+    query: sqlQuery.trim(),
+    queryEngine,
+    tablePath
+  }
+
   // Executing SQL query
 
   try {
@@ -97,10 +104,12 @@ export async function executeQueryAsListOfDict(
   sqlQuery: string,
   sqlKey: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatch: any
+  dispatch: any,
+  queryEngine: string,
+  tablePath: string
 ): Promise<RowObject[]> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
-  
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
   }
@@ -114,23 +123,70 @@ export async function executeQueryAsListOfDict(
 export async function executeQueryAsDictOfList(
   sqlQuery: string,
   sqlKey: string,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  queryEngine: string,
+  tablePath: string
 ): Promise<DictOfList> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
-  
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
   }
 
   return _.zipObject(
-    rawResult.column_names, 
+    rawResult.column_names,
     _.zip(...rawResult.rows)
   ) as DictOfList
 }
 
-async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promise<Record<string, Stats> | null> {
+async function getLanceStats(tablePath: string, dispatch: AppDispatch, queryEngine: string): Promise<Record<string, Stats> | null> {
+  // Only get stats for Lance tables
+  if (queryEngine !== 'lance') {
+    return null
+  }
+
+  try {
+    const statsQuery = `SUMMARIZE SELECT * FROM lance_table`
+
+    const rows = await executeQueryAsListOfDict(statsQuery, `lance_stats`, dispatch, queryEngine, tablePath)
+    const statsMap: Record<string, Stats> = {}
+
+    for (const row of rows) {
+      const columnName = String(row.column_name)
+      const min = row.min === null || typeof row.min === 'boolean' ? null : row.min
+      const max = row.max === null || typeof row.max === 'boolean' ? null : row.max
+      const count = Number(row.count || 0)
+      const nullPercentage = Number(row.null_percentage || 0)
+      const cntNull = Math.round((nullPercentage / 100) * count)
+      const cntAll = count
+
+      statsMap[columnName] = {
+        min,
+        max,
+        cntAll,
+        cntNull,
+        hasNull: cntNull > 0,
+        singleValue: min !== null && max !== null && min === max,
+        allNull: cntNull === cntAll
+      }
+    }
+
+    return statsMap
+  } catch (error) {
+    // Failed to get Lance stats
+    console.error(error)
+    return null
+  }
+}
+
+async function getParquetStats(tablePath: string, dispatch: AppDispatch, queryEngine: string): Promise<Record<string, Stats> | null> {
   // Check if the file is a Parquet file
   if (!tablePath.toLowerCase().endsWith('.parquet')) {
+    return null
+  }
+
+  // Don't get parquet stats for Lance tables
+  if (queryEngine === 'lance') {
     return null
   }
 
@@ -142,14 +198,14 @@ async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promis
         MIN(stats_min_value) AS min,
         MAX(stats_max_value) AS max,
         -- Sometimes parquet metadata may be wrong for columns with all null values
-        (CASE WHEN (MIN(stats_min_value) IS NULL AND MAX(stats_max_value) IS NULL) 
-         THEN SUM(num_values) 
+        (CASE WHEN (MIN(stats_min_value) IS NULL AND MAX(stats_max_value) IS NULL)
+         THEN SUM(num_values)
          ELSE SUM(stats_null_count) END) AS cntNull
       FROM parquet_metadata('${tablePath}')
       GROUP BY path_in_schema
     `
 
-    const rows = await executeQueryAsListOfDict(statsQuery, `parquet_stats`, dispatch)
+    const rows = await executeQueryAsListOfDict(statsQuery, `parquet_stats`, dispatch, queryEngine, tablePath)
     const statsMap: Record<string, Stats> = {}
 
     for (const row of rows) {
@@ -158,7 +214,7 @@ async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promis
       const max = row.max === null || typeof row.max === 'boolean' ? null : row.max
       const cntAll = Number(row.cntAll)
       const cntNull = Number(row.cntNull)
-      
+
       statsMap[columnName] = {
         min,
         max,
@@ -179,45 +235,50 @@ async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promis
 }
 
 export async function getColumnMetadata(
-  tablePath: string, 
+  tablePath: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatch: any
+  dispatch: any,
+  queryEngine: string
 ): Promise<ColumnMeta[]> {
   if (!tablePath.trim()) {
     throw new Error('Table path cannot be empty')
   }
 
-  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '${tablePath}')`
-  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch)
-  
-  // Get Parquet stats if available
-  const parquetStats = await getParquetStats(tablePath, dispatch)
-  
+  // Use lance_table when queryEngine is lance, otherwise use tablePath
+  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
+  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM ${tableRef})`
+  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch, queryEngine, tablePath)
+
+  // Get stats if available (Lance or Parquet)
+  const lanceStats = await getLanceStats(tablePath, dispatch, queryEngine)
+  const parquetStats = await getParquetStats(tablePath, dispatch, queryEngine)
+  const stats = lanceStats || parquetStats
+
   const columns: ColumnMeta[] = []
-  
+
   for (const row of rows) {
     const columnName = String(row.column_name)
     const duckdbType = String(row.column_type)
-    
+
     // Add the original column
     columns.push({
       column_name: columnName,
       duckdbType,
       typeShortcuts: computeTypeShortcuts(duckdbType),
-      stats: parquetStats?.[columnName] || null
+      stats: stats?.[columnName] || null
     })
-    
+
     // If it's a struct type, flatten the fields and add them as separate columns
     if (isStructType(duckdbType)) {
       try {
         const flattenedFields = flattenStructFields(columnName, duckdbType)
-        
+
         for (const field of flattenedFields) {
           columns.push({
             column_name: field.column_name,
             duckdbType: field.duckdbType,
             typeShortcuts: computeTypeShortcuts(field.duckdbType),
-            stats: parquetStats?.[field.column_name] || null
+            stats: stats?.[field.column_name] || null
           })
         }
       } catch (error) {

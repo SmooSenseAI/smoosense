@@ -8,38 +8,7 @@ import { loadFolderContents, setViewingId, toggleNodeExpansion } from '@/lib/fea
 import { cn } from '@/lib/utils'
 import { getFileType, FileType } from '@/lib/utils/fileTypes'
 import { ICONS } from '@/lib/utils/iconUtils'
-
-// Utility functions for formatting file info
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 10) / 10 + ' ' + sizes[i]
-}
-
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString()
-}
-
-function formatRelativeTime(timestamp: number): string {
-  const now = Date.now()
-  const diff = now - timestamp
-  const minute = 60 * 1000
-  const hour = minute * 60
-  const day = hour * 24
-  const week = day * 7
-  const month = day * 30
-  const year = day * 365
-
-  if (diff < minute) return 'now'
-  if (diff < hour) return `${Math.floor(diff / minute)}m`
-  if (diff < day) return `${Math.floor(diff / hour)}h`
-  if (diff < week) return `${Math.floor(diff / day)}d`
-  if (diff < month) return `${Math.floor(diff / week)}w`
-  if (diff < year) return `${Math.floor(diff / month)}mo`
-  return `${Math.floor(diff / year)}y`
-}
+import { formatDate, formatRelativeTime } from '@/lib/utils/timeUtils'
 
 export interface ArboristNodeData {
   id: string
@@ -58,6 +27,14 @@ interface TreeNodeComponentProps {
   node: NodeApi<ArboristNodeData>
   style: React.CSSProperties
   dragHandle?: (el: HTMLDivElement | null) => void
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return Math.round((bytes / Math.pow(k, i)) * 10) / 10 + ' ' + sizes[i]
 }
 
 export default function TreeNodeComponent({ node, style }: TreeNodeComponentProps) {

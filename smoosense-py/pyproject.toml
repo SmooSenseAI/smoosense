@@ -1,6 +1,6 @@
 [project]
 name = "smoosense"
-version = "0.1.0"
+version = "0.1.1"
 description = "Smoothly make sense of your large multi-modal datasets"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -9,6 +9,7 @@ dependencies = [
     "click>=8.1.8",
     "duckdb>=1.2.1",
     "flask>=3.1.0",
+    "lancedb>=0.25.2",
     "pydantic>=2.11.7",
     "pytz>=2025.2",
     "requests>=2.32.3",
@@ -40,6 +41,7 @@ dev = [
     "mypy>=1.17.1",
     "types-requests>=2.31.0.6",
     "pandas-stubs>=2.0.0",
+    "line-profiler>=5.0.0",
 ]
 
 [tool.setuptools]
@@ -106,8 +108,9 @@ warn_unreachable = true
 strict_equality = true
 exclude = [
     "app_dev.py",  # Development-only file, not included in package
+    "tests/",  # Test files don't need strict typing
 ]
 
 [[tool.mypy.overrides]]
-module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*"]
+module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*"]
 ignore_missing_imports = true

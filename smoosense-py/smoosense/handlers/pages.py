@@ -65,6 +65,11 @@ def get_tabular_slice_dice() -> Response:
     return serve_static_html("Table")
 
 
+@pages_bp.get("/DB")
+def get_db() -> Response:
+    return serve_static_html("DB")
+
+
 @pages_bp.get("/MiniTable")
 def get_mini_table() -> Response:
     return serve_static_html("MiniTable")
