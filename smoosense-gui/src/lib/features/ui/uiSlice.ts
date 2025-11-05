@@ -47,7 +47,7 @@ interface UiState {
 const initialState: UiState = {
   fontSize: 14,
   debugMode: false,
-  activeTab: 'Table',
+  activeTab: 'Embedding',
   activePlotTab: 'BubblePlot',
   activeEmbTab: 'Search',
   tablePath: null,

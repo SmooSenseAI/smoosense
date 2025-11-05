@@ -10,86 +10,19 @@ This module provides functionality to:
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import lancedb
 import numpy as np
-import torch
+import pandas as pd
+import pyarrow as pa
 import umap
 from PIL import Image
-from open_clip import create_model_and_transforms
 from tqdm import tqdm
 
+from smoosense.db.emb import EmbeddingGenerator
+
 logger = logging.getLogger(__name__)
-
-
-class ImageEmbeddingGenerator:
-    """Generate embeddings for images using CLIP."""
-
-    def __init__(
-        self,
-        model_name: str = "ViT-B-32",
-        pretrained: str = "openai",
-        device: Optional[str] = None
-    ):
-        """
-        Initialize the embedding generator.
-
-        Args:
-            model_name: CLIP model architecture (e.g., "ViT-B-32", "ViT-L-14")
-            pretrained: Pretrained weights source (e.g., "openai", "laion2b_s34b_b79k")
-            device: Device to use ("cuda", "mps", "cpu", or None for auto-detect)
-        """
-        if device is None:
-            # Check device availability in order: cuda > mps > cpu
-            if torch.cuda.is_available():
-                self.device = "cuda"
-            elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
-                self.device = "mps"
-            else:
-                self.device = "cpu"
-        else:
-            self.device = device
-
-        logger.info(f"Loading CLIP model {model_name} ({pretrained}) on {self.device}")
-        self.model, _, self.preprocess = create_model_and_transforms(
-            model_name,
-            pretrained=pretrained,
-            device=self.device
-        )
-        self.model.eval()
-
-        logger.info(f"CLIP model loaded on {self.device}")
-
-    def generate_embedding(self, image_path: str) -> np.ndarray:
-        """
-        Generate embedding for a single image.
-
-        Args:
-            image_path: Path to the image file
-
-        Returns:
-            Numpy array of embeddings (shape: [embedding_dim])
-
-        Raises:
-            Exception: If image cannot be loaded or processed
-        """
-        try:
-            # Load and preprocess image
-            image = Image.open(image_path).convert("RGB")
-            image_tensor = self.preprocess(image).unsqueeze(0).to(self.device)
-
-            # Generate embedding
-            with torch.no_grad():
-                embedding = self.model.encode_image(image_tensor)
-                # Normalize embedding
-                embedding = embedding / embedding.norm(dim=-1, keepdim=True)
-
-            return embedding.cpu().numpy().squeeze()
-
-        except Exception as e:
-            logger.error(f"Failed to generate embedding for {image_path}: {e}")
-            raise
 
 
 def extract_image_metadata(image_path: str) -> Dict[str, Any]:
@@ -136,10 +69,7 @@ def extract_image_metadata(image_path: str) -> Dict[str, Any]:
 
 def add_images_to_lance(
     image_paths: List[str],
-    db_path: str = ".",
-    model_name: str = "ViT-B-32",
-    pretrained: str = "openai",
-    batch_size: int = 32
+    db_path: str = "."
 ) -> int:
     """
     Add images to a Lance table with metadata and embeddings.
@@ -147,9 +77,6 @@ def add_images_to_lance(
     Args:
         image_paths: List of paths to image files
         db_path: Directory where the Lance database is stored
-        model_name: CLIP model architecture
-        pretrained: Pretrained weights source
-        batch_size: Number of images to process before writing to table
 
     Returns:
         Number of images successfully added
@@ -161,10 +88,10 @@ def add_images_to_lance(
     logger.info(f"Adding {len(image_paths)} images to Lance table '{table_name}'")
 
     # Initialize embedding generator
-    embedding_generator = ImageEmbeddingGenerator(
-        model_name=model_name,
-        pretrained=pretrained
-    )
+    embedding_generator = EmbeddingGenerator()
+
+    # Get the embedding column name
+    embedding_column_name = embedding_generator.embedding_column_name
 
     # Connect to Lance database
     db = lancedb.connect(db_path)
@@ -184,8 +111,8 @@ def add_images_to_lance(
             metadata = extract_image_metadata(image_path)
 
             # Generate embedding
-            embedding = embedding_generator.generate_embedding(image_path)
-            metadata["embedding"] = embedding
+            embedding = embedding_generator.generate_embedding_for_image(image_path)
+            metadata[embedding_column_name] = embedding
             all_embeddings.append(embedding)
 
             all_records.append(metadata)
@@ -213,11 +140,22 @@ def add_images_to_lance(
 
         logger.info("UMAP coordinates computed successfully")
 
-    # Write all records in batches
-    for i in range(0, len(all_records), batch_size):
-        batch = all_records[i:i + batch_size]
-        _write_batch_to_table(db, table_name, batch, table_exists)
-        table_exists = True  # Table now exists after first batch
+    # Write all records in one batch
+    _write_batch_to_table(db, table_name, all_records, table_exists, embedding_column_name)
+
+    # Create index for embedding column to support vector search
+    if all_records:
+        logger.info(f"Creating vector index for embedding column '{embedding_column_name}'...")
+        try:
+            table = db.open_table(table_name)
+            table.create_index(
+                metric="cosine",
+                vector_column_name=embedding_column_name
+            )
+            logger.info(f"Vector index created successfully for column '{embedding_column_name}'")
+        except Exception as e:
+            logger.warning(f"Failed to create vector index: {e}")
+            # Don't fail the entire operation if index creation fails
 
     logger.info(
         f"Completed: {success_count} images added, {failed_count} failed"
@@ -230,26 +168,88 @@ def _write_batch_to_table(
     db: lancedb.DBConnection,
     table_name: str,
     records: List[Dict[str, Any]],
-    table_exists: bool
+    table_exists: bool,
+    embedding_column_name: str
 ) -> None:
     """
-    Write a batch of records to the Lance table.
+    Write a batch of records to the Lance table with proper vector schema.
 
     Args:
         db: LanceDB connection
         table_name: Name of the table
         records: List of record dictionaries
         table_exists: Whether the table already exists
+        embedding_column_name: Name of the embedding column
     """
     if not records:
         return
 
-    if table_exists:
-        # Append to existing table
-        table = db.open_table(table_name)
-        table.add(records)
-        logger.debug(f"Added {len(records)} records to existing table '{table_name}'")
+    # Get embedding dimension from first record
+    first_embedding = records[0].get(embedding_column_name)
+    if first_embedding is not None and isinstance(first_embedding, np.ndarray):
+        embedding_dim = len(first_embedding)
+
+        # Convert records to pandas DataFrame
+        df = pd.DataFrame(records)
+
+        # Convert embedding column to proper format for LanceDB
+        # LanceDB expects vectors as lists, not numpy arrays
+        if embedding_column_name in df.columns:
+            df[embedding_column_name] = df[embedding_column_name].apply(
+                lambda x: x.tolist() if isinstance(x, np.ndarray) else x
+            )
+
+        # Convert DataFrame to PyArrow Table with explicit FixedSizeList schema for embeddings
+        pa_table = pa.Table.from_pandas(df)
+
+        # Find the embedding column and convert it to FixedSizeList
+        embedding_idx = pa_table.schema.get_field_index(embedding_column_name)
+        if embedding_idx >= 0:
+            # Create new schema with FixedSizeList for embedding column
+            fields = []
+            for i, field in enumerate(pa_table.schema):
+                if i == embedding_idx:
+                    # Replace with FixedSizeList
+                    fields.append(pa.field(embedding_column_name, pa.list_(pa.float32(), embedding_dim)))
+                else:
+                    fields.append(field)
+
+            new_schema = pa.schema(fields)
+
+            # Convert embedding column data to FixedSizeList
+            embedding_data = pa_table.column(embedding_column_name).to_pylist()
+            # Convert to float32 and create FixedSizeList array
+            embedding_array = pa.array(
+                [[float(val) for val in row] for row in embedding_data],
+                type=pa.list_(pa.float32(), embedding_dim)
+            )
+
+            # Rebuild table with new schema
+            columns = []
+            for i in range(len(pa_table.schema)):
+                if i == embedding_idx:
+                    columns.append(embedding_array)
+                else:
+                    columns.append(pa_table.column(i))
+
+            pa_table = pa.Table.from_arrays(columns, schema=new_schema)
+
+        if table_exists:
+            # Append to existing table
+            table = db.open_table(table_name)
+            table.add(pa_table)
+            logger.debug(f"Added {len(records)} records to existing table '{table_name}'")
+        else:
+            # Create new table with PyArrow table (has proper FixedSizeList schema)
+            db.create_table(table_name, pa_table, mode="overwrite")
+            logger.info(f"Created new table '{table_name}' with {len(records)} records")
     else:
-        # Create new table
-        db.create_table(table_name, records)
-        logger.info(f"Created new table '{table_name}' with {len(records)} records")
+        # Fallback for records without embeddings
+        df = pd.DataFrame(records)
+        if table_exists:
+            table = db.open_table(table_name)
+            table.add(df)
+            logger.debug(f"Added {len(records)} records to existing table '{table_name}'")
+        else:
+            db.create_table(table_name, df, mode="overwrite")
+            logger.info(f"Created new table '{table_name}' with {len(records)} records")

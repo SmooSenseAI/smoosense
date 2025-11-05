@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizablePanels } from '@/components/ui/resizable-panels'
 import Gallery from '@/components/gallery/Gallery'
 import ColumnFilters from '@/components/filters/ColumnFilters'
+import EmbeddingSearch from '@/components/emb/EmbeddingSearch'
 
 const embTabs = ['Search', 'Cluster']
 
@@ -50,11 +51,9 @@ export default function EmbeddingTabContent() {
         </div>
 
         {/* Embedding Component */}
-        <div className="flex-1 bg-muted/20">
+        <div className="flex-1 bg-muted/20 overflow-auto">
           {activeEmbTab === 'Search' ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-muted-foreground text-lg">Search coming soon...</p>
-            </div>
+            <EmbeddingSearch />
           ) : activeEmbTab === 'Cluster' ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground text-lg">Cluster coming soon...</p>

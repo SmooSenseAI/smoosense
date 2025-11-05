@@ -86,10 +86,7 @@ def add(path_patterns: Tuple[str, ...]) -> None:
     try:
         success_count = add_images_to_lance(
             image_paths=matched_files,
-            db_path='.',
-            model_name='ViT-B-32',
-            pretrained='openai',
-            batch_size=32
+            db_path='.'
         )
 
         logger.info(f"Successfully added {success_count} images to Lance table")

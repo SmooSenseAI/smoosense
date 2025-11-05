@@ -16,6 +16,7 @@ import heatmapReducer from './features/heatmap/heatmapSlice'
 import boxPlotReducer from './features/boxplot/boxPlotSlice'
 import folderTreeReducer from './features/folderTree/folderTreeSlice'
 import handPickedRowsReducer from './features/handPickedRows/handPickedRowsSlice'
+import embeddingSearchReducer from './features/embeddingSearch/embeddingSearchSlice'
 
 const storeInstance = configureStore({
   reducer: {
@@ -36,6 +37,7 @@ const storeInstance = configureStore({
     boxPlot: boxPlotReducer,
     folderTree: folderTreeReducer,
     handPickedRows: handPickedRowsReducer,
+    embeddingSearch: embeddingSearchReducer,
   },
 })
 

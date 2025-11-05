@@ -97,3 +97,29 @@ def list_columns() -> Response:
     except Exception as e:
         logger.error(f"Failed to list columns for table {table_name}: {e}")
         raise InvalidInputException(f"Failed to list columns: {e}") from e
+
+
+@lance_bp.get("/lance/search")
+@handle_api_errors
+def search() -> Response:
+    """Perform vector similarity search on a Lance table."""
+    table_path = require_arg("tablePath")
+    query_text = require_arg("queryText")
+
+    limit = 10
+
+    try:
+        client = LanceTableClient.from_table_path(table_path)
+        column_names, rows = client.search(query_text, limit)
+
+        # rows are already dicts from to_pylist()
+        return jsonify({
+            "columns": column_names,
+            "data": rows,
+            "count": len(rows)
+        })
+    except ValueError as e:
+        raise InvalidInputException(str(e)) from e
+    except Exception as e:
+        logger.error(f"Search failed for table {table_path}: {e}")
+        raise InvalidInputException(f"Search failed: {e}") from e

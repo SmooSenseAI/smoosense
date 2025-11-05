@@ -16,6 +16,7 @@ import heatmapReducer from '@/lib/features/heatmap/heatmapSlice'
 import boxPlotReducer from '@/lib/features/boxplot/boxPlotSlice'
 import folderTreeReducer from '@/lib/features/folderTree/folderTreeSlice'
 import handPickedRowsReducer from '@/lib/features/handPickedRows/handPickedRowsSlice'
+import embeddingSearchReducer from '@/lib/features/embeddingSearch/embeddingSearchSlice'
 import type { RootState } from '@/lib/store'
 
 // Utility type for deep partial objects
@@ -158,6 +159,12 @@ export function createDefaultTestState(): RootState {
     handPickedRows: {
       rows: [],
     },
+    embeddingSearch: {
+      data: null,
+      loading: false,
+      error: null,
+      needRefresh: false,
+    },
   }
 }
 
@@ -236,6 +243,7 @@ export function createTestStore(stateOverrides?: DeepPartial<RootState>) {
       boxPlot: boxPlotReducer,
       folderTree: folderTreeReducer,
       handPickedRows: handPickedRowsReducer,
+      embeddingSearch: embeddingSearchReducer,
     },
     preloadedState,
   })

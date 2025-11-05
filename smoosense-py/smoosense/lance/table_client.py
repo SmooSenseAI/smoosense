@@ -7,6 +7,7 @@ import lancedb
 import pyarrow as pa
 from pydantic import validate_call
 
+from smoosense.db.emb import EmbeddingGenerator
 from smoosense.lance.models import ColumnInfo, IndexInfo, VersionInfo
 
 logger = logging.getLogger(__name__)
@@ -382,3 +383,55 @@ class LanceTableClient:
             logger.error(f"Failed to list columns for table {self.table_name}: {e}")
             # If schema access fails, return empty list
             return []
+
+    def search(
+        self, query_text: str, limit: int = 10
+    ) -> tuple[list[str], list[dict]]:
+        """
+        Perform a vector similarity search on the table.
+
+        Args:
+            query_text: Text to search for (will be embedded)
+            limit: Maximum number of results to return
+
+        Returns:
+            Tuple of (column_names, rows) where:
+                - column_names is a list of column name strings (excluding embedding column)
+                - rows is a list of dictionaries containing the row data (excluding embedding column)
+
+        Raises:
+            ValueError: If embedding column doesn't exist or search fails
+        """
+        # Initialize embedding generator
+        embedding_generator = EmbeddingGenerator()
+        embedding_column = embedding_generator.embedding_column_name
+
+        logger.info(
+            f"Searching table {self.table_name} with query '{query_text}' "
+            f"on column '{embedding_column}' (limit={limit})"
+        )
+
+        try:
+            # Generate embedding for query text
+            logger.info(f"Generating embedding for query text: '{query_text}'")
+            query_embedding = embedding_generator.generate_embedding_for_text(query_text)
+
+            # Perform vector search with the embedding
+            result = self.table.search(query_embedding, vector_column_name=embedding_column).limit(limit)
+
+            # Convert to Arrow table
+            arrow_table = result.to_arrow()
+
+            # Convert to column names and rows (as dicts)
+            column_names = arrow_table.schema.names
+            rows = arrow_table.to_pylist()
+
+            # Exclude embedding column from response
+            column_names = [col for col in column_names if col != embedding_column]
+            rows = [{k: v for k, v in row.items() if k != embedding_column} for row in rows]
+
+            logger.info(f"Search completed: {len(rows)} results found")
+            return column_names, rows
+        except Exception as e:
+            logger.error(f"Search failed: {e}")
+            raise ValueError(f"Failed to search table: {e}") from e
