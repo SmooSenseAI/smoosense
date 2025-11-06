@@ -2,8 +2,9 @@
 
 import time
 
-from my_logging import getLogger
 from playwright.sync_api import Page
+
+from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
 

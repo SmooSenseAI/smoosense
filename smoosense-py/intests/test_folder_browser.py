@@ -8,8 +8,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from base_integration_test import BaseIntegrationTest
-from my_logging import getLogger
 from utils import LocatorUtils
+
+from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
 

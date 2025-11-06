@@ -8,10 +8,10 @@ import unittest
 from pathlib import Path
 from typing import Optional
 
-from my_logging import getLogger
 from playwright.sync_api import BrowserContext, Page, sync_playwright
 
 from smoosense.app import SmooSenseApp
+from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
 

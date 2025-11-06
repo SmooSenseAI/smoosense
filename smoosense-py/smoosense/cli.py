@@ -9,7 +9,10 @@ from typing import Optional
 import click
 
 from smoosense.app import SmooSenseApp
+from smoosense.my_logging import getLogger
 from smoosense.utils.port import find_available_port
+
+logger = getLogger(__name__)
 
 ASCII_ART = """
  ▗▄▄▖▗▖  ▗▖ ▗▄▖  ▗▄▖  ▗▄▄▖▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖

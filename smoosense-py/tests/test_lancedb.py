@@ -2,10 +2,10 @@ import os
 import unittest
 
 import lancedb
-from my_logging import getLogger
 
 from smoosense.lance.db_client import LanceDBClient
 from smoosense.lance.table_client import LanceTableClient
+from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
 PWD = os.path.dirname(__file__)

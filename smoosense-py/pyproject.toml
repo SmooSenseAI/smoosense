@@ -13,6 +13,7 @@ dependencies = [
     "pydantic>=2.11.7",
     "pytz>=2025.2",
     "requests>=2.32.3",
+    "rich>=14.0.0",
 ]
 
 [project.optional-dependencies]
@@ -28,7 +29,6 @@ daft = [
 
 [dependency-groups]
 dev = [
-    "rich>=14.0.0",
     "datamodel-code-generator>=0.31.2",
     "pytest>=8.0.0",
     "twine>=6.1.0",

@@ -2,7 +2,6 @@ import os
 import random
 import shutil
 import string
-import sys
 from datetime import datetime, timedelta
 
 import lancedb
@@ -10,9 +9,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-# Add parent directory to path to import my_logging
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from tests.my_logging import getLogger
+from smoosense.my_logging import getLogger
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 logger = getLogger(__name__)

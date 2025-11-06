@@ -11,10 +11,10 @@ from typing import Optional
 # Add the intests directory to sys.path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from my_logging import getLogger
 from playwright.sync_api import BrowserContext, Page, sync_playwright
 
 from smoosense.app import SmooSenseApp
+from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
 

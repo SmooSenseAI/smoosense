@@ -2,8 +2,7 @@ import json
 import os
 import unittest
 
-from my_logging import getLogger
-
+from smoosense.my_logging import getLogger
 from tests.base_fs_test import BaseFSTest
 
 logger = getLogger(__name__)

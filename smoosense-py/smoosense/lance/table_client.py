@@ -37,7 +37,7 @@ class LanceTableClient:
         self.db = lancedb.connect(root_folder)
         self.table = self.db.open_table(table_name)
 
-        logger.info(f"Connected to Lance table '{table_name}' at {root_folder}")
+        logger.debug(f"Connected to Lance table '{table_name}' at {root_folder}")
 
     @staticmethod
     def from_table_path(table_path: str) -> "LanceTableClient":
@@ -199,7 +199,7 @@ class LanceTableClient:
         Raises:
             ValueError: If no compatible columns found or query execution fails
         """
-        logger.info(f"Executing DuckDB query on Lance table {self.table_name}")
+        logger.debug(f"Executing DuckDB query on Lance table {self.table_name}")
 
         # Get filtered Arrow table (uses cache if available)
         filtered_arrow_table = self._get_filtered_arrow_table()
@@ -216,7 +216,7 @@ class LanceTableClient:
         # Close the connection
         con.close()
 
-        logger.info(f"Query executed successfully: {len(rows)} rows, {len(column_names)} columns")
+        logger.debug(f"Query executed successfully: {len(rows)} rows, {len(column_names)} columns")
 
         return column_names, rows
 

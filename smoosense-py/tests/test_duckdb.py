@@ -1,7 +1,6 @@
 import unittest
 
-from my_logging import getLogger
-
+from smoosense.my_logging import getLogger
 from smoosense.utils.duckdb_connections import check_permissions
 
 logger = getLogger(__name__)

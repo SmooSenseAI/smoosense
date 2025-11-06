@@ -1,5 +1,6 @@
 import logging
 
+from rich.console import Console
 from rich.logging import RichHandler
 
 
@@ -12,8 +13,9 @@ class CommaFormatter(logging.Formatter):
         return super().format(record)
 
 
-# Configure Rich logger with custom formatter
-handler = RichHandler(rich_tracebacks=True)
+# Configure Rich logger with custom formatter and wider console
+console = Console(width=200)  # Increase width for better message display
+handler = RichHandler(rich_tracebacks=True, console=console)
 handler.setFormatter(
     CommaFormatter("[%(relativeCreatedFormatted)sms] %(filename)s:%(lineno)d - %(message)s")
 )

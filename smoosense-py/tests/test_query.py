@@ -2,9 +2,8 @@ import json
 import os
 import unittest
 
-from my_logging import getLogger
-
 from smoosense.app import SmooSenseApp
+from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
 PWD = os.path.dirname(__file__)

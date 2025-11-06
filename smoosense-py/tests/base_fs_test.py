@@ -3,9 +3,9 @@ import tempfile
 import unittest
 
 from flask import Flask
-from my_logging import getLogger
 
 from smoosense.handlers.fs import fs_bp
+from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
 
