@@ -190,3 +190,136 @@ class TestCLI(unittest.TestCase):
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
+
+    def test_sense_db_default_current_directory(self) -> None:
+        """Test 'sense db' command (default behavior - db .)."""
+        with patch("smoosense.cli.run_app") as mock_run_app:
+            result = self.runner.invoke(main, ["db"])
+
+            # Should invoke run_app
+            self.assertTrue(mock_run_app.called)
+            call_args = mock_run_app.call_args
+            page_path = call_args[1]["page_path"]
+
+            # Should browse current directory as a database
+            expected_path = f"/DB?dbPath={os.getcwd()}&dbType=lance"
+            self.assertEqual(page_path, expected_path)
+            self.assertEqual(result.exit_code, 0)
+
+    def test_sense_db_current_directory(self) -> None:
+        """Test 'sense db .' command."""
+        with patch("smoosense.cli.run_app") as mock_run_app:
+            result = self.runner.invoke(main, ["db", "."])
+
+            self.assertTrue(mock_run_app.called)
+            call_args = mock_run_app.call_args
+            page_path = call_args[1]["page_path"]
+
+            expected_path = f"/DB?dbPath={os.getcwd()}&dbType=lance"
+            self.assertEqual(page_path, expected_path)
+            self.assertEqual(result.exit_code, 0)
+
+    def test_sense_db_specific_directory(self) -> None:
+        """Test 'sense db /path/to/db' command."""
+        # Create temporary directory for testing
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("smoosense.cli.run_app") as mock_run_app:
+                result = self.runner.invoke(main, ["db", tmpdir])
+
+                self.assertTrue(mock_run_app.called)
+                call_args = mock_run_app.call_args
+                page_path = call_args[1]["page_path"]
+
+                expected_path = f"/DB?dbPath={os.path.abspath(tmpdir)}&dbType=lance"
+                self.assertEqual(page_path, expected_path)
+                self.assertEqual(result.exit_code, 0)
+
+    def test_sense_db_with_lance_folders(self) -> None:
+        """Test 'sense db' with directory containing .lance folders."""
+        # Create temporary directory with .lance folders
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create a .lance directory
+            lance_dir = os.path.join(tmpdir, "my_table.lance")
+            os.makedirs(lance_dir)
+
+            with patch("smoosense.cli.run_app") as mock_run_app:
+                result = self.runner.invoke(main, ["db", tmpdir])
+
+                self.assertTrue(mock_run_app.called)
+                call_args = mock_run_app.call_args
+                page_path = call_args[1]["page_path"]
+
+                # Should detect lance database type
+                expected_path = f"/DB?dbPath={os.path.abspath(tmpdir)}&dbType=lance"
+                self.assertEqual(page_path, expected_path)
+                self.assertEqual(result.exit_code, 0)
+
+    def test_sense_db_without_lance_folders(self) -> None:
+        """Test 'sense db' with directory without .lance folders."""
+        # Create temporary directory without .lance folders
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create some non-lance files/folders
+            regular_dir = os.path.join(tmpdir, "regular_folder")
+            os.makedirs(regular_dir)
+
+            with tempfile.NamedTemporaryFile(dir=tmpdir, suffix=".csv", delete=False) as f:
+                temp_file = f.name
+
+            try:
+                with patch("smoosense.cli.run_app") as mock_run_app:
+                    result = self.runner.invoke(main, ["db", tmpdir])
+
+                    self.assertTrue(mock_run_app.called)
+                    call_args = mock_run_app.call_args
+                    page_path = call_args[1]["page_path"]
+
+                    # Should default to lance even without .lance folders
+                    expected_path = f"/DB?dbPath={os.path.abspath(tmpdir)}&dbType=lance"
+                    self.assertEqual(page_path, expected_path)
+                    self.assertEqual(result.exit_code, 0)
+            finally:
+                if os.path.exists(temp_file):
+                    os.unlink(temp_file)
+
+    def test_sense_db_nonexistent_directory(self) -> None:
+        """Test 'sense db /nonexisting/path' command - should error."""
+        with patch("smoosense.cli.run_app") as mock_run_app:
+            result = self.runner.invoke(main, ["db", "/nonexisting/path"])
+
+            # Should not call run_app
+            self.assertFalse(mock_run_app.called)
+
+            # Should exit with error
+            self.assertNotEqual(result.exit_code, 0)
+
+            # Should contain error message about path not existing
+            self.assertTrue(
+                "does not exist" in result.output.lower() or "path" in result.output.lower()
+            )
+
+    def test_sense_db_with_port_option(self) -> None:
+        """Test 'sense db' with --port option."""
+        with patch("smoosense.cli.run_app") as mock_run_app:
+            result = self.runner.invoke(main, ["db", ".", "--port", "8080"])
+
+            self.assertTrue(mock_run_app.called)
+            call_args = mock_run_app.call_args
+
+            # Check port was passed correctly
+            port = call_args[1]["port"]
+            self.assertEqual(port, 8080)
+            self.assertEqual(result.exit_code, 0)
+
+    def test_sense_db_with_url_prefix_option(self) -> None:
+        """Test 'sense db' with --url-prefix option."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("smoosense.cli.run_app") as mock_run_app:
+                result = self.runner.invoke(main, ["db", tmpdir, "--url-prefix", "/smoosense"])
+
+                self.assertTrue(mock_run_app.called)
+                call_args = mock_run_app.call_args
+
+                # Check url_prefix was passed correctly
+                url_prefix = call_args[1]["url_prefix"]
+                self.assertEqual(url_prefix, "/smoosense")
+                self.assertEqual(result.exit_code, 0)
