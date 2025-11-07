@@ -8,6 +8,7 @@ import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import { useAGGridTheme, useAGGridDefaultColDef, useAGGridOptions, useAppSelector } from '@/lib/hooks'
 import { formatRelativeTime, formatDate } from '@/lib/utils/timeUtils'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { getApi } from '@/lib/utils/apiUtils'
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -39,29 +40,12 @@ export default function LanceVersions({ rootFolder, tableName }: LanceVersionsPr
   const rowHeight = useAppSelector((state) => state.ui.rowHeight)
 
   useEffect(() => {
-    const fetchVersions = async () => {
-      setLoading(true)
-      setError(null)
-      setVersions(null)
-
-      try {
-        const response = await fetch(
-          `/api/lance/list-versions?rootFolder=${encodeURIComponent(rootFolder)}&tableName=${encodeURIComponent(tableName)}`
-        )
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to fetch versions')
-        }
-        const data = await response.json()
-        setVersions(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load versions')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchVersions()
+    getApi({
+      relativeUrl: `lance/list-versions?rootFolder=${encodeURIComponent(rootFolder)}&tableName=${encodeURIComponent(tableName)}`,
+      setData: (data) => setVersions(data as VersionInfo[]),
+      setLoading,
+      setError,
+    })
   }, [rootFolder, tableName])
 
   if (loading) {

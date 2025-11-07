@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { getApi } from '@/lib/utils/apiUtils'
 
 export interface ColumnInfo {
   name: string
@@ -21,29 +22,12 @@ export default function LanceColumns({ rootFolder, tableName }: LanceColumnsProp
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchColumns = async () => {
-      setLoading(true)
-      setError(null)
-      setColumns(null)
-
-      try {
-        const response = await fetch(
-          `/api/lance/list-columns?rootFolder=${encodeURIComponent(rootFolder)}&tableName=${encodeURIComponent(tableName)}`
-        )
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to fetch columns')
-        }
-        const data = await response.json()
-        setColumns(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load columns')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchColumns()
+    getApi({
+      relativeUrl: `lance/list-columns?rootFolder=${encodeURIComponent(rootFolder)}&tableName=${encodeURIComponent(tableName)}`,
+      setData: (data) => setColumns(data as ColumnInfo[]),
+      setLoading,
+      setError,
+    })
   }, [rootFolder, tableName])
 
   if (loading) {
