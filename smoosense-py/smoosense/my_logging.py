@@ -13,8 +13,8 @@ class CommaFormatter(logging.Formatter):
         return super().format(record)
 
 
-# Configure Rich logger with custom formatter and wider console
-console = Console(width=200)  # Increase width for better message display
+# Configure Rich logger with custom formatter and auto-detected console width
+console = Console()  # Auto-detect terminal width
 handler = RichHandler(rich_tracebacks=True, console=console)
 handler.setFormatter(
     CommaFormatter("[%(relativeCreatedFormatted)sms] %(filename)s:%(lineno)d - %(message)s")
