@@ -15,8 +15,9 @@ from smoosense.cli.utils import get_package_version, server_options
 
 @click.group(invoke_without_command=True)
 @click.option("--version", "-v", is_flag=True, help="Show the version and exit.")
+@server_options
 @click.pass_context
-def main(ctx: click.Context, version: bool) -> None:
+def main(ctx: click.Context, version: bool, port: Optional[int], url_prefix: str) -> None:
     """Smoothly make sense of your large-scale multi-modal tabular data.
 
     SmooSense provides a web interface for exploring and analyzing your data files.
@@ -37,7 +38,7 @@ def main(ctx: click.Context, version: bool) -> None:
 
     # If no subcommand is provided, default to 'folder .'
     if ctx.invoked_subcommand is None:
-        ctx.invoke(folder, path=".")
+        ctx.invoke(folder, path=".", port=port, url_prefix=url_prefix)
 
 
 @main.command()

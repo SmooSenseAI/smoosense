@@ -156,6 +156,32 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertIn("sense, version", result.output)
 
+    def test_sense_with_global_port_option(self) -> None:
+        """Test 'sense --port 8080' command (default behavior with port)."""
+        with patch("smoosense.cli.run_app") as mock_run_app:
+            result = self.runner.invoke(main, ["--port", "8080"])
+
+            self.assertTrue(mock_run_app.called)
+            call_args = mock_run_app.call_args
+
+            # Check port was passed correctly
+            port = call_args[1]["port"]
+            self.assertEqual(port, 8080)
+            self.assertEqual(result.exit_code, 0)
+
+    def test_sense_with_global_url_prefix_option(self) -> None:
+        """Test 'sense --url-prefix /smoosense' command."""
+        with patch("smoosense.cli.run_app") as mock_run_app:
+            result = self.runner.invoke(main, ["--url-prefix", "/smoosense"])
+
+            self.assertTrue(mock_run_app.called)
+            call_args = mock_run_app.call_args
+
+            # Check url_prefix was passed correctly
+            url_prefix = call_args[1]["url_prefix"]
+            self.assertEqual(url_prefix, "/smoosense")
+            self.assertEqual(result.exit_code, 0)
+
     def test_sense_folder_with_port_option(self) -> None:
         """Test 'sense folder' with --port option."""
         with patch("smoosense.cli.run_app") as mock_run_app:
