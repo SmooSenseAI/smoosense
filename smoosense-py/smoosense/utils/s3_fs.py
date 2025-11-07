@@ -101,8 +101,31 @@ class S3FileSystem:
             return content
         return None
 
+    @validate_call
+    def head_file(self, url: str) -> FSItem:
+        """
+        Get metadata about an S3 object.
+
+        Args:
+            url: S3 URL (e.g., 's3://bucket/key')
+
+        Returns:
+            FSItem with file metadata
+        """
+        parsed = urlparse(url)
+        bucket = parsed.netloc
+        key = parsed.path.lstrip("/")
+        response = self.s3_client.head_object(Bucket=bucket, Key=key)
+
+        return FSItem(
+            name=os.path.basename(key),
+            size=response["ContentLength"],
+            lastModified=int(response["LastModified"].timestamp() * 1000),
+            isDir=False,
+        )
+
 
 if __name__ == "__main__":
     s3_client = boto3.client("s3")
-    for item in S3FileSystem(s3_client).list_one_level("s3://sense-table-demo"):
-        print(item.model_dump())
+    s3_fs = S3FileSystem(s3_client)
+    print(s3_fs.head_file("s3://smoosense-demo/datasets/Rapidata/compare-video-generation.parquet"))

@@ -1,6 +1,55 @@
 import { API_PREFIX } from './urlUtils'
 
 /**
+ * Make a GET API request with loading and error handling
+ * @param params - Request parameters
+ * @param params.relativeUrl - Relative API endpoint URL (e.g., 'parquet/info?filePath=...')
+ * @param params.setData - Callback to set the data
+ * @param params.setLoading - Callback to set loading state
+ * @param params.setError - Callback to set error state
+ */
+export async function getApi({
+  relativeUrl,
+  setData,
+  setLoading,
+  setError,
+}: {
+  relativeUrl: string
+  setData: (data: unknown) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+}): Promise<void> {
+  setLoading(true)
+  setError(null)
+  setData(null)
+
+  // Validate relativeUrl
+  if (relativeUrl.startsWith('.') || relativeUrl.startsWith('/')) {
+    setError('Invalid relative URL: must not start with "." or "/"')
+    setLoading(false)
+    return
+  }
+
+  try {
+    const url = `${API_PREFIX}/${relativeUrl}`
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      setError(errorData.error || `API request failed: ${response.statusText}`)
+      return
+    }
+
+    const data = await response.json()
+    setData(data)
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Failed to load data')
+  } finally {
+    setLoading(false)
+  }
+}
+
+/**
  * Make a POST API request
  * @param url - API endpoint URL
  * @param data - Request body data
