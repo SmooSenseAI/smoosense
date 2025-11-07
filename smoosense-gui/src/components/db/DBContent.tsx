@@ -61,20 +61,20 @@ function TablesList({
   )
 }
 
-export default function DBContent({ rootFolder }: { rootFolder: string }) {
+export default function DBContent({ dbPath }: { dbPath: string }) {
   const [tables, setTables] = useState<TableInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedTable, setSelectedTable] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!rootFolder) return
+    if (!dbPath) return
 
     const fetchTables = async () => {
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch(`/api/lance/list-tables?rootFolder=${encodeURIComponent(rootFolder)}`)
+        const response = await fetch(`/api/lance/list-tables?dbPath=${encodeURIComponent(dbPath)}&dbType=lance`)
         if (!response.ok) {
           const errorData = await response.json()
           throw new Error(errorData.error || 'Failed to fetch tables')
@@ -89,14 +89,14 @@ export default function DBContent({ rootFolder }: { rootFolder: string }) {
     }
 
     fetchTables()
-  }, [rootFolder])
+  }, [dbPath])
 
   const handleTableClick = (tableName: string) => {
     setSelectedTable(tableName)
   }
 
   const handleTableDoubleClick = (tableName: string) => {
-    const tablePath = pathJoin(rootFolder, `${tableName}.lance`)
+    const tablePath = pathJoin(dbPath, `${tableName}.lance`)
     const url = `./Table?tablePath=${tablePath}`
     window.open(url, '_blank')
   }
@@ -131,7 +131,7 @@ export default function DBContent({ rootFolder }: { rootFolder: string }) {
           <Database className="h-12 w-12 mx-auto text-muted-foreground" />
           <h3 className="text-lg font-semibold">No Tables Found</h3>
           <p className="text-sm text-muted-foreground">
-            The Lance database at <code className="bg-muted px-2 py-1 rounded">{rootFolder}</code> does not contain any tables.
+            The Lance database at <code className="bg-muted px-2 py-1 rounded">{dbPath}</code> does not contain any tables.
           </p>
         </div>
       </div>
@@ -151,7 +151,7 @@ export default function DBContent({ rootFolder }: { rootFolder: string }) {
         className="h-full"
       >
         <TablesList tables={tables} selectedTable={selectedTable} onTableClick={handleTableClick} onTableDoubleClick={handleTableDoubleClick} />
-        <TablePreview rootFolder={rootFolder} tableName={selectedTable} tableInfo={selectedTableInfo} />
+        <TablePreview dbPath={dbPath} tableName={selectedTable} tableInfo={selectedTableInfo} />
       </ResizablePanels>
     </div>
   )

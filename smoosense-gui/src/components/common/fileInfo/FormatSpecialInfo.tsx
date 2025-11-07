@@ -28,8 +28,8 @@ export default function FormatSpecialInfo({ tablePath }: FormatSpecialInfoProps)
 
   switch (fileType) {
     case FileType.Lance: {
-      // Extract rootFolder and tableName from tablePath
-      const rootFolder = pathDirname(tablePath)
+      // Extract dbPath and tableName from tablePath
+      const dbPath = pathDirname(tablePath)
       const tableName = pathBasename(tablePath).replace('.lance', '')
 
       return (
@@ -40,10 +40,10 @@ export default function FormatSpecialInfo({ tablePath }: FormatSpecialInfoProps)
               <TabsTrigger value="versions" className="cursor-pointer">Versions</TabsTrigger>
             </TabsList>
             <TabsContent value="indices" className="flex-1 px-6 pb-6 overflow-hidden">
-              <LanceIndices rootFolder={rootFolder} tableName={tableName} />
+              <LanceIndices dbPath={dbPath} tableName={tableName} />
             </TabsContent>
             <TabsContent value="versions" className="flex-1 px-6 pb-6 overflow-hidden">
-              <LanceVersions rootFolder={rootFolder} tableName={tableName} />
+              <LanceVersions dbPath={dbPath} tableName={tableName} />
             </TabsContent>
           </Tabs>
         </div>

@@ -24,11 +24,11 @@ export interface VersionInfo {
 }
 
 interface LanceVersionsProps {
-  rootFolder: string
+  dbPath: string
   tableName: string
 }
 
-export default function LanceVersions({ rootFolder, tableName }: LanceVersionsProps) {
+export default function LanceVersions({ dbPath, tableName }: LanceVersionsProps) {
   const [versions, setVersions] = useState<VersionInfo[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,12 +41,12 @@ export default function LanceVersions({ rootFolder, tableName }: LanceVersionsPr
 
   useEffect(() => {
     getApi({
-      relativeUrl: `lance/list-versions?rootFolder=${encodeURIComponent(rootFolder)}&tableName=${encodeURIComponent(tableName)}`,
+      relativeUrl: `lance/list-versions?dbPath=${encodeURIComponent(dbPath)}&tableName=${encodeURIComponent(tableName)}&dbType=lance`,
       setData: (data) => setVersions(data as VersionInfo[]),
       setLoading,
       setError,
     })
-  }, [rootFolder, tableName])
+  }, [dbPath, tableName])
 
   if (loading) {
     return (

@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from werkzeug.wrappers import Response
 
 from smoosense.exceptions import InvalidInputException
@@ -16,16 +16,20 @@ lance_bp = Blueprint("lance", __name__)
 @handle_api_errors
 def list_tables() -> Response:
     """List all tables in a Lance database directory."""
-    root_folder = require_arg("rootFolder")
+    db_path = require_arg("dbPath")
+    db_type = request.args.get("dbType", "lance")
+
+    if db_type != "lance":
+        raise InvalidInputException(f"Unsupported database type: {db_type}")
 
     try:
-        client = LanceDBClient(root_folder)
+        client = LanceDBClient(db_path)
         tables_info = client.list_tables()
         return jsonify([table.model_dump() for table in tables_info])
     except ValueError as e:
         raise InvalidInputException(str(e)) from e
     except Exception as e:
-        logger.error(f"Failed to list tables from {root_folder}: {e}")
+        logger.error(f"Failed to list tables from {db_path}: {e}")
         raise InvalidInputException(f"Failed to list Lance tables: {e}") from e
 
 
@@ -33,11 +37,15 @@ def list_tables() -> Response:
 @handle_api_errors
 def list_versions() -> Response:
     """List all versions of a table in a Lance database."""
-    root_folder = require_arg("rootFolder")
+    db_path = require_arg("dbPath")
     table_name = require_arg("tableName")
+    db_type = request.args.get("dbType", "lance")
+
+    if db_type != "lance":
+        raise InvalidInputException(f"Unsupported database type: {db_type}")
 
     try:
-        client = LanceTableClient(root_folder, table_name)
+        client = LanceTableClient(db_path, table_name)
         versions_info = client.list_versions()
         return jsonify([version.model_dump() for version in versions_info])
     except ValueError as e:
@@ -51,11 +59,15 @@ def list_versions() -> Response:
 @handle_api_errors
 def list_indices() -> Response:
     """List all indices of a table in a Lance database."""
-    root_folder = require_arg("rootFolder")
+    db_path = require_arg("dbPath")
     table_name = require_arg("tableName")
+    db_type = request.args.get("dbType", "lance")
+
+    if db_type != "lance":
+        raise InvalidInputException(f"Unsupported database type: {db_type}")
 
     try:
-        client = LanceTableClient(root_folder, table_name)
+        client = LanceTableClient(db_path, table_name)
         indices_info = client.list_indices()
         return jsonify([index.model_dump() for index in indices_info])
     except ValueError as e:
@@ -69,11 +81,15 @@ def list_indices() -> Response:
 @handle_api_errors
 def list_columns() -> Response:
     """List all columns of a table in a Lance database."""
-    root_folder = require_arg("rootFolder")
+    db_path = require_arg("dbPath")
     table_name = require_arg("tableName")
+    db_type = request.args.get("dbType", "lance")
+
+    if db_type != "lance":
+        raise InvalidInputException(f"Unsupported database type: {db_type}")
 
     try:
-        client = LanceTableClient(root_folder, table_name)
+        client = LanceTableClient(db_path, table_name)
         columns_info = client.list_columns()
         return jsonify([column.model_dump() for column in columns_info])
     except ValueError as e:

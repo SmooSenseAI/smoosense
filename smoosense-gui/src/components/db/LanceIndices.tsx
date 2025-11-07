@@ -18,11 +18,11 @@ export interface IndexInfo {
 }
 
 interface LanceIndicesProps {
-  rootFolder: string
+  dbPath: string
   tableName: string
 }
 
-export default function LanceIndices({ rootFolder, tableName }: LanceIndicesProps) {
+export default function LanceIndices({ dbPath, tableName }: LanceIndicesProps) {
   const [indices, setIndices] = useState<IndexInfo[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -35,12 +35,12 @@ export default function LanceIndices({ rootFolder, tableName }: LanceIndicesProp
 
   useEffect(() => {
     getApi({
-      relativeUrl: `lance/list-indices?rootFolder=${encodeURIComponent(rootFolder)}&tableName=${encodeURIComponent(tableName)}`,
+      relativeUrl: `lance/list-indices?dbPath=${encodeURIComponent(dbPath)}&tableName=${encodeURIComponent(tableName)}&dbType=lance`,
       setData: (data) => setIndices(data as IndexInfo[]),
       setLoading,
       setError,
     })
-  }, [rootFolder, tableName])
+  }, [dbPath, tableName])
 
   if (loading) {
     return (

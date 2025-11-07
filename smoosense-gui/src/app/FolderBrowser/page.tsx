@@ -52,7 +52,7 @@ function FolderBrowserContent() {
   if (!rootFolder && urlRootFolder) {
     return (
       <div className="min-h-screen bg-background">
-        <FolderBrowserNavbar />
+        <FolderBrowserNavbar title={`Folder @ ${urlRootFolder}`} />
         <main className="h-[calc(100vh-56px)]">
           <div className="h-full flex items-center justify-center">
             <div className="flex items-center justify-center space-x-2">
@@ -71,7 +71,7 @@ function FolderBrowserContent() {
   // If rootFolder exists, use it
   return (
     <div className="min-h-screen bg-background">
-      <FolderBrowserNavbar />
+      <FolderBrowserNavbar title={`Folder @ ${rootFolder}`} />
       <main className="h-[calc(100vh-56px)]">
         <div className="h-full flex flex-col">
           <div className="flex-1">

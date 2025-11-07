@@ -12,23 +12,23 @@ export interface ColumnInfo {
 }
 
 interface LanceColumnsProps {
-  rootFolder: string
+  dbPath: string
   tableName: string
 }
 
-export default function LanceColumns({ rootFolder, tableName }: LanceColumnsProps) {
+export default function LanceColumns({ dbPath, tableName }: LanceColumnsProps) {
   const [columns, setColumns] = useState<ColumnInfo[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     getApi({
-      relativeUrl: `lance/list-columns?rootFolder=${encodeURIComponent(rootFolder)}&tableName=${encodeURIComponent(tableName)}`,
+      relativeUrl: `lance/list-columns?dbPath=${encodeURIComponent(dbPath)}&tableName=${encodeURIComponent(tableName)}&dbType=lance`,
       setData: (data) => setColumns(data as ColumnInfo[]),
       setLoading,
       setError,
     })
-  }, [rootFolder, tableName])
+  }, [dbPath, tableName])
 
   if (loading) {
     return (

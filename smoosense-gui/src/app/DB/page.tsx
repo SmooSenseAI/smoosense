@@ -8,20 +8,20 @@ import DBContent from '@/components/db/DBContent'
 
 function DBPageContent() {
   const searchParams = useSearchParams()
-  const rootFolder = searchParams.get('rootFolder')
+  const dbPath = searchParams.get('dbPath')
 
-  // Set document title based on rootFolder
+  // Set document title based on dbPath
   useEffect(() => {
-    if (rootFolder) {
-      const folderName = pathBasename(rootFolder)
+    if (dbPath) {
+      const folderName = pathBasename(dbPath)
       document.title = `${folderName} - Lance DB` || 'SmooSense - Lance DB'
     } else {
       document.title = 'SmooSense - Lance DB'
     }
-  }, [rootFolder])
+  }, [dbPath])
 
-  // If rootFolder is missing, show error
-  if (!rootFolder) {
+  // If dbPath is missing, show error
+  if (!dbPath) {
     return (
       <div className="min-h-screen bg-background">
         <FolderBrowserNavbar />
@@ -32,10 +32,10 @@ function DBPageContent() {
                 Error: Missing Database Path
               </h1>
               <p className="text-lg text-muted-foreground text-center max-w-md">
-                This page requires a <code className="bg-muted px-2 py-1 rounded">rootFolder</code> parameter in the URL.
+                This page requires a <code className="bg-muted px-2 py-1 rounded">dbPath</code> parameter in the URL.
               </p>
               <p className="text-sm text-muted-foreground">
-                Example: <code className="bg-muted px-2 py-1 rounded">/DB?rootFolder=~/data/lance</code>
+                Example: <code className="bg-muted px-2 py-1 rounded">/DB?dbPath=~/data/lance</code>
               </p>
             </div>
           </div>
@@ -46,11 +46,11 @@ function DBPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <FolderBrowserNavbar />
+      <FolderBrowserNavbar title={`Database @ ${dbPath}`} />
       <main className="h-[calc(100vh-56px)]">
         <div className="h-full flex flex-col">
           <div className="flex-1">
-            <DBContent rootFolder={rootFolder} />
+            <DBContent dbPath={dbPath} />
           </div>
         </div>
       </main>

@@ -11,7 +11,11 @@ import { Share2 } from 'lucide-react'
 import DebugStateViewer from '@/components/debug/DebugStateViewer'
 import NavbarSkeleton from './NavbarSkeleton'
 
-export default function FolderBrowserNavbar() {
+interface FolderBrowserNavbarProps {
+  title?: string
+}
+
+export default function FolderBrowserNavbar({ title }: FolderBrowserNavbarProps) {
   const debugMode = useAppSelector((state) => state.ui.debugMode)
 
   // Icon buttons array (excluding GlobalSettings which is added automatically)
@@ -36,6 +40,7 @@ export default function FolderBrowserNavbar() {
 
   return (
     <NavbarSkeleton
+      title={title}
       iconButtons={iconButtons}
       globalSettingsContext="FolderBrowser"
     />

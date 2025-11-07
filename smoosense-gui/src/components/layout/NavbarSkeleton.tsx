@@ -9,6 +9,7 @@ import HelpPopover from '@/components/common/HelpPopover'
 
 interface NavbarSkeletonProps {
   className?: string
+  title?: string
   tabList?: ReactNode
   iconButtons?: ReactNode[]
   globalSettingsContext?: 'Table' | 'FolderBrowser'
@@ -17,6 +18,7 @@ interface NavbarSkeletonProps {
 
 export default function NavbarSkeleton({
   className = "",
+  title,
   tabList,
   iconButtons = [],
   globalSettingsContext,
@@ -37,8 +39,14 @@ export default function NavbarSkeleton({
           <Logo />
         </div>
 
-        {/* Tab list - center, or flex spacer if no tabs */}
-        {tabList ? (
+        {/* Title or Tab list - center, or flex spacer if neither */}
+        {title ? (
+          <div className="flex-1 flex justify-center">
+            <span className="text-sm font-medium text-muted-foreground truncate max-w-md">
+              {title}
+            </span>
+          </div>
+        ) : tabList ? (
           <div className="flex-1 flex justify-center">
             {tabList}
           </div>

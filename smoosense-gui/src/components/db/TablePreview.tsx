@@ -10,11 +10,11 @@ import LanceIndices from './LanceIndices'
 import LanceVersions from './LanceVersions'
 
 export default function TablePreview({
-  rootFolder,
+  dbPath,
   tableName,
   tableInfo
 }: {
-  rootFolder: string
+  dbPath: string
   tableName: string | null
   tableInfo: TableInfo | null | undefined
 }) {
@@ -37,7 +37,7 @@ export default function TablePreview({
             variant="ghost"
             size="icon"
             onClick={() => {
-              const tablePath = pathJoin(rootFolder, `${tableName}.lance`)
+              const tablePath = pathJoin(dbPath, `${tableName}.lance`)
               const url = `./Table?tablePath=${tablePath}`
               window.open(url, '_blank')
             }}
@@ -56,7 +56,7 @@ export default function TablePreview({
               : 'Columns'}
           </AccordionTrigger>
           <AccordionContent>
-            <LanceColumns rootFolder={rootFolder} tableName={tableName} />
+            <LanceColumns dbPath={dbPath} tableName={tableName} />
           </AccordionContent>
         </AccordionItem>
 
@@ -69,7 +69,7 @@ export default function TablePreview({
           </AccordionTrigger>
           <AccordionContent>
             <div className="h-[400px]">
-              <LanceIndices rootFolder={rootFolder} tableName={tableName} />
+              <LanceIndices dbPath={dbPath} tableName={tableName} />
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -83,7 +83,7 @@ export default function TablePreview({
           </AccordionTrigger>
           <AccordionContent>
             <div className="h-[400px]">
-              <LanceVersions rootFolder={rootFolder} tableName={tableName} />
+              <LanceVersions dbPath={dbPath} tableName={tableName} />
             </div>
           </AccordionContent>
         </AccordionItem>
