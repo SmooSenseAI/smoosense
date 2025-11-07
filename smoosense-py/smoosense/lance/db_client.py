@@ -1,7 +1,6 @@
 import logging
 import os
 
-import lancedb
 from pydantic import validate_call
 
 from smoosense.lance.models import TableInfo
@@ -19,6 +18,8 @@ class LanceDBClient:
         Args:
             root_folder: Path to the Lance database directory
         """
+        import lancedb  # Import lancedb lazily since it may be slow at the 1st time
+
         if root_folder.startswith("~"):
             root_folder = os.path.expanduser(root_folder)
 

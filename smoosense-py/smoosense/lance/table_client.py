@@ -3,7 +3,6 @@ import os
 from functools import lru_cache
 
 import duckdb
-import lancedb
 import pyarrow as pa
 from pydantic import validate_call
 
@@ -23,6 +22,8 @@ class LanceTableClient:
             root_folder: Path to the Lance database directory
             table_name: Name of the table
         """
+        import lancedb  # Import lancedb lazily since it may be slow at the 1st time
+
         if root_folder.startswith("~"):
             root_folder = os.path.expanduser(root_folder)
 
@@ -142,16 +143,13 @@ class LanceTableClient:
         Raises:
             ValueError: If no compatible columns found
         """
+
         logger.info(f"Loading Arrow table from {table_path} (cache miss)")
 
-        # Parse table path
-        root_folder = os.path.dirname(table_path)
-        table_name = os.path.basename(table_path).replace(".lance", "")
-
         # Connect and load
-        db = lancedb.connect(root_folder)
-        table = db.open_table(table_name)
-        arrow_table = table.to_arrow()
+        instance = LanceTableClient.from_table_path(table_path)
+
+        arrow_table = instance.table.to_arrow()
 
         # Filter incompatible columns
         filtered_arrow_table, incompatible_columns = (
