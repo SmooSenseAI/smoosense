@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { AgGridReact } from 'ag-grid-react'
-import { ColDef, GridOptions } from 'ag-grid-community'
+import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community'
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import { useAGGridTheme, useAGGridDefaultColDef, useAGGridOptions, useAppSelector } from '@/lib/hooks'
 
@@ -125,6 +125,10 @@ export default function LanceIndices({ rootFolder, tableName }: LanceIndicesProp
     rowHeight
   }
 
+  const onGridReady = (params: GridReadyEvent) => {
+    params.api.sizeColumnsToFit()
+  }
+
   return (
     <div className="h-full w-full">
       <AgGridReact
@@ -132,6 +136,7 @@ export default function LanceIndices({ rootFolder, tableName }: LanceIndicesProp
         rowData={indices}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
+        onGridReady={onGridReady}
         {...gridOptions}
       />
     </div>

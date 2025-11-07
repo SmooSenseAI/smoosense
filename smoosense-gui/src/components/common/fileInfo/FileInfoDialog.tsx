@@ -1,19 +1,21 @@
 'use client'
 
 import { Info, Loader2, AlertCircle, Download } from 'lucide-react'
-import IconPopover from '@/components/common/IconPopover'
+import IconDialog from '@/components/common/IconDialog'
+import { ResizablePanels } from '@/components/ui/resizable-panels'
 import { useFileInfo } from '@/lib/hooks/useFileInfo'
 import { useAppSelector } from '@/lib/hooks'
 import CopyToClipboard from '@/components/ui/CopyToClipboard'
 import { pathBasename } from '@/lib/utils/pathUtils'
 import { CLS } from '@/lib/utils/styles'
 import { getFileUrl } from '@/lib/utils/apiUtils'
+import FormatSpecialInfo from './FormatSpecialInfo'
 
-export default function FileInfoPopover() {
+export default function FileInfoDialog() {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
   const { data, loading, error } = useFileInfo()
 
-  // Don't show the popover if no file is selected
+  // Don't show the dialog trigger if no file is selected
   if (!tablePath) {
     return null
   }
@@ -25,7 +27,7 @@ export default function FileInfoPopover() {
     }
   }
 
-  const renderContent = () => {
+  const renderFileInfo = () => {
     if (loading) {
       return (
         <div className="flex items-center gap-2 p-4">
@@ -59,17 +61,17 @@ export default function FileInfoPopover() {
     const additionalMetadata = metadata ? Object.entries(metadata).filter(([key]) => !standardFields.has(key)) : []
 
     return (
-      <div className="space-y-4 max-w-xs">
+      <div className="space-y-4 p-6 h-full overflow-auto">
         {/* File and Dataset Information */}
         <div>
           {metadata?.description && (
-            <h3 className="font-medium text-sm mb-2">{metadata.description}</h3>
+            <h3 className="font-medium text-sm mb-5">{metadata.description}</h3>
           )}
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Name:</span>
-              <div className="flex items-center gap-1">
-                <span className="truncate max-w-[150px]">{pathBasename(tablePath)}</span>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground flex-shrink-0">Name:</span>
+              <div className="flex items-center gap-1 min-w-0 flex-1">
+                <span className="truncate">{pathBasename(tablePath)}</span>
                 <button
                   onClick={handleDownload}
                   className={CLS.ICON_BUTTON_SM_SUBTLE}
@@ -80,15 +82,15 @@ export default function FileInfoPopover() {
                 <CopyToClipboard value={pathBasename(tablePath)} />
               </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Path:</span>
-              <div className="flex items-center gap-1">
-                <span className="truncate max-w-[150px]">{tablePath}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground flex-shrink-0">Path:</span>
+              <div className="flex items-center gap-1 min-w-0 flex-1">
+                <span className="truncate">{tablePath}</span>
                 <CopyToClipboard value={tablePath} />
               </div>
             </div>
             {metadata?.source && (
-              <div className="flex justify-between">
+              <div className="flex justify-start">
                 <span className="text-muted-foreground">Source:</span>
                 {metadata?.source_url ? (
                   <a
@@ -111,12 +113,12 @@ export default function FileInfoPopover() {
         {additionalMetadata.length > 0 && (
           <div className="border-t pt-3">
             <h3 className="font-medium text-sm mb-2">Additional Metadata</h3>
-            <div className="space-y-1 text-xs">
+            <div className="space-y-1 text-sm">
               {additionalMetadata.map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{key}:</span>
-                  <div className="flex items-center gap-1">
-                    <span className="truncate max-w-[150px]">{value}</span>
+                <div key={key} className="flex items-center gap-2">
+                  <span className="text-muted-foreground flex-shrink-0">{key}:</span>
+                  <div className="flex items-center gap-1 min-w-0 flex-1">
+                    <span className="truncate">{value}</span>
                     <CopyToClipboard value={value} />
                   </div>
                 </div>
@@ -124,19 +126,32 @@ export default function FileInfoPopover() {
             </div>
           </div>
         )}
-
       </div>
     )
   }
 
   return (
-    <IconPopover
-      icon={<Info className="h-4 w-4" />}
+    <IconDialog
+      icon={<Info />}
       tooltip="File Information"
-      contentClassName="w-auto max-w-sm p-4"
-      align="start"
+      title="File Information"
+      width="90vw"
+      height="90vh"
     >
-      {renderContent()}
-    </IconPopover>
+      <ResizablePanels
+        direction="horizontal"
+        defaultSizes={[30, 70]}
+        minSize={20}
+        maxSize={80}
+      >
+        {/* Left Panel - File Info */}
+        <div className="h-full border-r">
+          {renderFileInfo()}
+        </div>
+
+        {/* Right Panel - Content based on file type */}
+        <FormatSpecialInfo tablePath={tablePath} />
+      </ResizablePanels>
+    </IconDialog>
   )
 }

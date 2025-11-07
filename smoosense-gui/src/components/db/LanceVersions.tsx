@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { AgGridReact } from 'ag-grid-react'
-import { ColDef, GridOptions } from 'ag-grid-community'
+import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community'
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import { useAGGridTheme, useAGGridDefaultColDef, useAGGridOptions, useAppSelector } from '@/lib/hooks'
 import { formatRelativeTime, formatDate } from '@/lib/utils/timeUtils'
@@ -189,6 +189,10 @@ export default function LanceVersions({ rootFolder, tableName }: LanceVersionsPr
     rowHeight
   }
 
+  const onGridReady = (params: GridReadyEvent) => {
+    params.api.sizeColumnsToFit()
+  }
+
   return (
     <TooltipProvider>
       <div className="h-full w-full">
@@ -197,6 +201,7 @@ export default function LanceVersions({ rootFolder, tableName }: LanceVersionsPr
           rowData={versions}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
+          onGridReady={onGridReady}
           {...gridOptions}
         />
       </div>

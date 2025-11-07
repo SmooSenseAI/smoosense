@@ -13,7 +13,7 @@ import SqlHistoryViewer from '@/components/debug/SqlHistoryViewer'
 import NavbarSkeleton from './NavbarSkeleton'
 import FolderBrowserTabContent from '@/components/folder-browser/FolderBrowserTabContent'
 import TableStatusBar from './TableStatusBar'
-import FileInfoPopover from '@/components/common/FileInfoPopover'
+import FileInfoDialog from '@/components/common/fileInfo/FileInfoDialog'
 
 const mainTabs = ['Summarize', 'Table', 'Gallery', 'Plot', 'HandPick', 'Query']
 
@@ -58,12 +58,11 @@ export default function TableNavbar() {
       </TabsList>
     </Tabs>
   )
-
   // Icon buttons array (excluding GlobalSettings which is added automatically)
   const iconButtons = [
-    <FileInfoPopover key="fileinfo" />,
+    <FileInfoDialog key="fileinfo" />,
     ...(hasQuickActions ? [<AssistantPopover key="assistant" />] : []),
-    <SharePopover key="share" />,
+
     <IconDialog
       key="folder"
       icon={<Folder />}
@@ -76,6 +75,7 @@ export default function TableNavbar() {
     >
       <FolderBrowserTabContent />
     </IconDialog>,
+    <SharePopover key="share" />,
     ...(debugMode ? [<DebugStateViewer key="debug" />, <SqlHistoryViewer key="sql" />] : [])
   ]
 
