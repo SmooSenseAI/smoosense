@@ -4,23 +4,19 @@ SmooSense CLI module.
 Provides command-line interface for SmooSense application.
 """
 
+import os
 from typing import Optional
 
 import click
 
 from smoosense.cli.server import run_app
-from smoosense.cli.utils import get_package_version
+from smoosense.cli.utils import get_package_version, server_options
 
 
-@click.command()
+@click.group(invoke_without_command=True)
 @click.option("--version", "-v", is_flag=True, help="Show the version and exit.")
-@click.option(
-    "--port", "-p", type=int, help="Port number to run the server on (default: auto-select)"
-)
-@click.option(
-    "--url-prefix", type=str, default="", help="URL prefix for the application (e.g., '/smoosense')"
-)
-def main(version: bool, port: Optional[int], url_prefix: str) -> None:
+@click.pass_context
+def main(ctx: click.Context, version: bool) -> None:
     """Smoothly make sense of your large-scale multi-modal tabular data.
 
     SmooSense provides a web interface for exploring and analyzing your data files.
@@ -28,17 +24,55 @@ def main(version: bool, port: Optional[int], url_prefix: str) -> None:
 
     \b
     Examples:
-        sense                                  # Start SmooSense in current directory
+        sense                                  # Browse current directory
+        sense folder /path/to/folder           # Browse specific folder
+        sense table /path/to/file.csv          # Open table viewer
         sense --port 8080                      # Use custom port
-        sense --url-prefix /smoosense          # Add URL prefix
-        sense --port 8080 --url-prefix /app    # Combine options
         sense --version                        # Show version information
     """
-
     if version:
         click.echo(f"sense, version {get_package_version()}")
-        return
-    run_app(port=port, url_prefix=url_prefix)
+        ctx.exit()
+
+    # If no subcommand is provided, default to 'folder .'
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(folder, path=".")
+
+
+@main.command()
+@click.argument("path", type=click.Path(exists=True), default=".")
+@server_options
+def folder(path: str, port: Optional[int], url_prefix: str) -> None:
+    """Open folder browser for the specified directory.
+
+    \b
+    Examples:
+        sense folder .                         # Browse current directory
+        sense folder /path/to/folder           # Browse specific folder
+        sense folder ~/Downloads               # Browse Downloads folder
+    """
+    # Convert to absolute path
+    abs_path = os.path.abspath(path)
+    page_path = f"/FolderBrowser?rootFolder={abs_path}"
+    run_app(page_path=page_path, port=port, url_prefix=url_prefix)
+
+
+@main.command()
+@click.argument("path", type=click.Path(exists=True))
+@server_options
+def table(path: str, port: Optional[int], url_prefix: str) -> None:
+    """Open table viewer for the specified file.
+
+    \b
+    Examples:
+        sense table data.csv                   # Open CSV file
+        sense table /path/to/data.parquet      # Open Parquet file
+        sense table ./results.csv --port 8080  # Use custom port
+    """
+    # Convert to absolute path
+    abs_path = os.path.abspath(path)
+    page_path = f"/Table?tablePath={abs_path}"
+    run_app(page_path=page_path, port=port, url_prefix=url_prefix)
 
 
 __all__ = ["main"]

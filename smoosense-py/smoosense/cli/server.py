@@ -22,7 +22,7 @@ from smoosense.utils.port import find_available_port
 logger = getLogger(__name__)
 
 
-def run_app(port: Optional[int] = None, url_prefix: str = "") -> None:
+def run_app(page_path: str, port: Optional[int] = None, url_prefix: str = "") -> None:
     """
     Run the SmooSense application server.
 
@@ -30,6 +30,7 @@ def run_app(port: Optional[int] = None, url_prefix: str = "") -> None:
     Otherwise, starts a new server instance.
 
     Args:
+        page_path: Page path with query params (e.g., '/FolderBrowser?rootFolder=/path')
         port: Port number to run the server on (auto-selected if None)
         url_prefix: URL prefix for the application (e.g., '/smoosense')
     """
@@ -41,8 +42,7 @@ def run_app(port: Optional[int] = None, url_prefix: str = "") -> None:
         logger.info(
             f"Server already running on port {running_server.port} (PID: {running_server.pid})"
         )
-        default_folder = os.path.abspath(os.getcwd())
-        url = get_server_url(running_server, f"/FolderBrowser?rootFolder={default_folder}")
+        url = get_server_url(running_server, page_path)
 
         print("\033[33m⚡ Server already running!\033[0m")  # Yellow text
         print(f"\033[32m👉 Opening browser: \033[1;34m{url}\033[0m\n")
@@ -51,8 +51,6 @@ def run_app(port: Optional[int] = None, url_prefix: str = "") -> None:
         return
 
     # No running server, start a new one
-    default_folder = os.path.abspath(os.getcwd())
-
     # Use provided port or find available one
     if port is None:
         port = find_available_port()
@@ -66,7 +64,7 @@ def run_app(port: Optional[int] = None, url_prefix: str = "") -> None:
 
     # Construct URL with optional prefix
     base_path = url_prefix if url_prefix else ""
-    url = f"http://localhost:{port}{base_path}/FolderBrowser?rootFolder={default_folder}"
+    url = f"http://localhost:{port}{base_path}{page_path}"
 
     # Using ANSI escape codes for colors
     print("\033[36m" + ASCII_ART + "\033[0m")  # Cyan color for ASCII art
