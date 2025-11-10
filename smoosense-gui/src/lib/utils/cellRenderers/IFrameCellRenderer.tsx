@@ -11,7 +11,12 @@ interface IFrameCellRendererProps {
 const IFrameCellRenderer = memo(function IFrameCellRenderer({
   value
 }: IFrameCellRendererProps) {
-  const iframeUrl = String(value).trim()
+  let iframeUrl = String(value).trim()
+
+  // Strip iframe+ prefix if present
+  if (iframeUrl.startsWith('iframe+http://') || iframeUrl.startsWith('iframe+https://')) {
+    iframeUrl = iframeUrl.replace(/^iframe\+/, '')
+  }
 
   // Handle empty or invalid values
   if (isNil(value) || value === '' || !iframeUrl) {

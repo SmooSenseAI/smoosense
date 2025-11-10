@@ -70,14 +70,23 @@ export default function GalleryItemVisual({
         )
       })()}
 
-      {renderType === RenderType.IFrame && (
-        <iframe
-          src={proxyedUrl(String(visualValue))}
-          className="w-full h-full border-0"
-          title={`Row ${index + 1}`}
-          style={{ backgroundColor: 'transparent' }}
-        />
-      )}
+      {renderType === RenderType.IFrame && (() => {
+        let iframeUrl = String(visualValue)
+
+        // Strip iframe+ prefix if present
+        if (iframeUrl.startsWith('iframe+http://') || iframeUrl.startsWith('iframe+https://')) {
+          iframeUrl = iframeUrl.replace(/^iframe\+/, '')
+        }
+
+        return (
+          <iframe
+            src={proxyedUrl(iframeUrl)}
+            className="w-full h-full border-0"
+            title={`Row ${index + 1}`}
+            style={{ backgroundColor: 'transparent' }}
+          />
+        )
+      })()}
     </div>
   )
 }

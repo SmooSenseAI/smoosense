@@ -38,6 +38,8 @@ export enum RenderType {
 function isUrl(str: string): boolean {
   return str.startsWith('http://') ||
          str.startsWith('https://') ||
+         str.startsWith('iframe+http://') ||
+         str.startsWith('iframe+https://') ||
          str.startsWith('s3://') ||
          str.startsWith('ftp://') ||
          str.startsWith('file://') ||
@@ -45,6 +47,11 @@ function isUrl(str: string): boolean {
 }
 
 function inferUrlType(str: string): RenderType {
+  // Check for iframe+ prefix first
+  if (str.startsWith('iframe+http://') || str.startsWith('iframe+https://')) {
+    return RenderType.IFrame
+  }
+
   // Extract filename from URL for file type detection
   const urlParts = str.split('/')
   const filename = urlParts[urlParts.length - 1].split('?')[0] // Remove query parameters
