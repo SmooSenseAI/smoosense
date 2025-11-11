@@ -46,15 +46,23 @@
 
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
-            let bboxStr = params.get('bboxes').trim();
+
+            // Normalize params by trimming keys and values (handles spaces in parameter names)
+            const normalizedParams = {};
+            for (const [key, value] of params.entries()) {
+                normalizedParams[key.trim()] = value.trim();
+            }
+
+            let bboxStr = normalizedParams['bboxes'] || '';
             if (bboxStr.startsWith("'") && bboxStr.endsWith("'")) {
                 bboxStr = bboxStr.slice(1, -1);
             }
+
             return {
-                image: params.get('image'),
+                image: normalizedParams['image'],
                 bboxes: JSON.parse(bboxStr),
-                autorange: params.get('autorange') === 'true',
-                name: params.get('name') || ''
+                autorange: normalizedParams['autorange'] === 'true',
+                name: normalizedParams['name'] || ''
             };
         }
 
