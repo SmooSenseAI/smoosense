@@ -46,9 +46,13 @@
 
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
+            let bboxStr = params.get('bboxes').trim();
+            if (bboxStr.startsWith("'") && bboxStr.endsWith("'")) {
+                bboxStr = bboxStr.slice(1, -1);
+            }
             return {
                 image: params.get('image'),
-                bboxes: JSON.parse(params.get('bboxes')),
+                bboxes: JSON.parse(bboxStr),
                 autorange: params.get('autorange') === 'true',
                 name: params.get('name') || ''
             };
