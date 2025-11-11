@@ -9,9 +9,9 @@ export default function FolderBrowserTabContent() {
     <div className="h-full w-full">
       <ResizablePanels
         direction="horizontal"
-        defaultSizes={[20, 80]}
-        minSize={15}
-        maxSize={85}
+        defaultSizes={[30, 70]}
+        minSize={20}
+        maxSize={80}
         className="h-full"
       >
         <FolderNavigation />

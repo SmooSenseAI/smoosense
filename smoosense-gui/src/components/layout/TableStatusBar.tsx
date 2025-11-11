@@ -67,8 +67,8 @@ export default function TableStatusBar() {
                   key={columnName}
                   variant="secondary"
                   className={cn(
-                    "flex items-center gap-1 px-2 py-1",
-                    "hover:bg-secondary/80 transition-colors"
+                    "flex items-center gap-1 px-2 py-1 bg-primary",
+                    "hover:bg-primary/80 transition-colors"
                   )}
                 >
                   <span>{columnName}</span>

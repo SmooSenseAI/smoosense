@@ -15,7 +15,7 @@ import FolderBrowserTabContent from '@/components/folder-browser/FolderBrowserTa
 import TableStatusBar from './TableStatusBar'
 import FileInfoDialog from '@/components/common/fileInfo/FileInfoDialog'
 
-const mainTabs = ['Summarize', 'Table', 'Gallery', 'Plot', 'HandPick', 'Query']
+const mainTabs = ['Summarize', 'Table', 'Gallery', 'Plot', 'Query'] // Hide 'HandPick' for now
 
 
 export default function TableNavbar() {

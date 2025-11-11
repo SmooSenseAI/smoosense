@@ -172,7 +172,7 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
       className={cn(
         "group flex items-center space-x-2 px-2 py-1 text-sm cursor-pointer hover:bg-muted/50 rounded relative",
         "select-none",
-        isViewing && "bg-primary/20 hover:bg-primary/10"
+        isViewing && "bg-primary/20 hover:bg-primary/10 font-bold"
       )}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}

@@ -25,27 +25,11 @@ export default function HelpPopover() {
     },
     {
       title: 'GitHub',
-      links: [
-        {
-          label: 'Report bugs or feature request',
-          url: 'https://github.com/SmooSenseAI/smoosense/issues/new',
-          icon: <ExternalLink className="h-3 w-3" />
-        }
-      ],
+      links: [],
       badges: [
         {
-          alt: 'License',
-          src: 'https://img.shields.io/github/license/SmooSenseAI/smoosense',
-          url: 'https://github.com/SmooSenseAI/smoosense/blob/main/LICENSE'
-        },
-        {
-          alt: 'CI Status',
-          src: 'https://github.com/SmooSenseAI/smoosense/actions/workflows/ci.yml/badge.svg',
-          url: 'https://github.com/SmooSenseAI/smoosense/actions/workflows/ci.yml'
-        },
-        {
           alt: 'Issues',
-          src: 'https://img.shields.io/github/issues/SmooSenseAI/smoosense',
+          src: 'https://img.shields.io/github/issues/SmooSenseAI/smoosense?label=Submit+new+issue',
           url: 'https://github.com/SmooSenseAI/smoosense/issues'
         },
         {

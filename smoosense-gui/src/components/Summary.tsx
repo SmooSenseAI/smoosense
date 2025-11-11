@@ -38,7 +38,8 @@ export default function Summary() {
       width: 200,
       cellClass: 'font-medium',
       filter: 'agTextColumnFilter',
-      floatingFilter: true
+      floatingFilter: true,
+      cellRenderer: DefaultCellRenderer,
     },
     {
       field: 'duckdbType',
@@ -78,7 +79,8 @@ export default function Summary() {
     {
       field: 'min',
       headerName: 'Min',
-      width: 150,
+      minWidth: 150,
+      flex: 1,
       cellRenderer: DefaultCellRenderer,
       filter: false,
       floatingFilter: false
@@ -86,7 +88,8 @@ export default function Summary() {
     {
       field: 'max',
       headerName: 'Max',
-      width: 150,
+      minWidth: 150,
+      flex: 1,
       cellRenderer: DefaultCellRenderer,
       filter: false,
       floatingFilter: false

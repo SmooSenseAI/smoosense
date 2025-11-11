@@ -69,7 +69,6 @@ class TestFolderBrowser(BaseIntegrationTest):
         """Take screenshots of the FolderBrowser in both light and dark modes."""
 
         # Navigate to the FolderBrowser
-        logger.info(f"Navigating to FolderBrowser: {self.folder_browser_url}")
         response = self.page.goto(self.folder_browser_url)
         self.assertEqual(response.status, 200)
 
@@ -87,10 +86,11 @@ class TestFolderBrowser(BaseIntegrationTest):
             logger.info(f"Setting theme to {mode} mode")
             LocatorUtils.set_theme_mode(self.page, mode)
 
-            # Click on parquet file
+            # Click on some files/folders
             for file_type, file_name in {
-                "parquet": "compare-video-generation.parquet",
                 "csv": "dummy_data_various_types.csv",
+                "parquet": "compare-video-generation.parquet",
+                "image-folder": "images",
             }.items():
                 self.page.locator(f'span[title="{file_name}"]').click()
 
@@ -98,6 +98,11 @@ class TestFolderBrowser(BaseIntegrationTest):
                 time.sleep(2)  # Additional wait for UI updates
 
                 self.take_screenshot(f"folder_browser_{file_type}_{mode}.png")
+
+            # Close images folder.
+            self.page.locator(f'span[title="images"]').click()
+
+
 
         logger.info("Screenshot test completed successfully for FolderBrowser")
 
