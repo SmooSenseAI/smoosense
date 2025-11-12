@@ -33,10 +33,11 @@ def parquet_info() -> Response:
             # Get file size from S3
             file_size = S3FileSystem(current_app.config["S3_CLIENT"]).head_file(file_path).size
         else:
-            # Local file
-            parquet_file = pq.ParquetFile(file_path)
+            # Local file - expand user path
+            expanded_path = os.path.expanduser(file_path)
+            parquet_file = pq.ParquetFile(expanded_path)
             metadata = parquet_file.metadata
-            file_size = os.path.getsize(file_path)
+            file_size = os.path.getsize(expanded_path)
 
         # Calculate compression ratio
         total_uncompressed = sum(

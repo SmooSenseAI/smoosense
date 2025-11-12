@@ -24,21 +24,28 @@ interface IconDialogProps {
 }
 
 export default function IconDialog({
-  icon, 
-  title, 
-  tooltip, 
-  children, 
-  width = '90vw', 
+  icon,
+  title,
+  tooltip,
+  children,
+  width = '90vw',
   height = '90vh',
   buttonClassName = '',
   onOpen
 }: IconDialogProps) {
     const [isOpen, setIsOpen] = useState(false)
 
-    // Clone the icon element and add size classes
-    const iconWithSize = isValidElement(icon) 
-        ? cloneElement(icon as ReactElement<{ className?: string }>, { 
+    // Clone the icon element and add size classes for button
+    const iconWithSize = isValidElement(icon)
+        ? cloneElement(icon as ReactElement<{ className?: string }>, {
             className: `h-4 w-4 ${(icon.props as { className?: string })?.className || ''}`.trim()
+          })
+        : icon
+
+    // Clone the icon element with larger size for header
+    const headerIcon = isValidElement(icon)
+        ? cloneElement(icon as ReactElement<{ className?: string }>, {
+            className: `h-5 w-5 ${(icon.props as { className?: string })?.className || ''}`.trim()
           })
         : icon
 
@@ -63,7 +70,12 @@ export default function IconDialog({
             >
                 <DialogHeader className="p-6 pb-2 flex-shrink-0">
                     <DialogTitle className="flex items-center justify-between">
-                        {title}
+                        <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">
+                                {headerIcon}
+                            </span>
+                            <span>{title}</span>
+                        </div>
                         <button
                             onClick={() => setIsOpen(false)}
                             className={`${CLS.ICON_BUTTON_SM} `}
