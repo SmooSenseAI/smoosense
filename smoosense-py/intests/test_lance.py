@@ -25,11 +25,14 @@ class TestLance(BaseIntegrationTest):
 
         # Lance table path - go up one more level from smoosense-py to smoosense root
         project_root = Path(__file__).parent.parent.parent
+        cls.lance_db_path = str(project_root / "data" / "lance")
         cls.lance_table_path = str(
             project_root / "data" / "lance" / "dummy_data_various_types.lance"
         )
         cls.table_url = f"{cls.server.base_url}/Table?tablePath={cls.lance_table_path}"
+        cls.db_url = f"{cls.server.base_url}/DB?dbPath={cls.lance_db_path}"
         logger.info(f"Lance table URL configured: {cls.table_url}")
+        logger.info(f"Lance DB URL configured: {cls.db_url}")
 
     def test_lance_table_loads_successfully(self) -> None:
         """Test that the Lance table loads successfully."""
@@ -107,3 +110,38 @@ class TestLance(BaseIntegrationTest):
             time.sleep(0.5)
 
         logger.info("Lance info dialog screenshot test completed successfully")
+
+    def test_lancedb_screenshots(self) -> None:
+        """Test Lance DB page and take screenshots after selecting a table."""
+
+        # Take screenshots for each theme mode
+        for mode in ["light", "dark"]:
+            logger.info(f"Testing LanceDB with {mode} mode")
+
+            # Navigate to the DB page
+            response = self.page.goto(self.db_url)
+            self.assertEqual(response.status, 200)
+
+            # Wait for the page to load completely
+            self.page.wait_for_load_state("networkidle")
+            time.sleep(2)  # Additional wait for data to load
+
+            # Set theme mode
+            logger.info(f"Setting theme to {mode} mode")
+            LocatorUtils.set_theme_mode(self.page, mode)
+            time.sleep(0.5)  # Wait for theme to apply
+
+            # Find and click the dummy_data_various_types table in the left panel
+            logger.info("Clicking on dummy_data_various_types table")
+            table_item = self.page.locator('span.font-medium:has-text("dummy_data_various_types")')
+            table_item.wait_for(state="visible", timeout=5000)
+            table_item.click()
+
+            # Wait for table preview to load
+            time.sleep(1)
+
+            # Take screenshot
+            logger.info(f"Taking screenshot of LanceDB with selected table")
+            self.take_screenshot(f"lancedb_{mode}.png")
+
+        logger.info("LanceDB screenshot test completed successfully")
