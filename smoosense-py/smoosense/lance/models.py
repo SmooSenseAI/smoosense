@@ -34,6 +34,12 @@ class VersionInfo(BaseModel):
     columns_remove: list[str] = Field(
         default_factory=list, description="Columns removed compared to previous version"
     )
+    indices_add: list[str] = Field(
+        default_factory=list, description="New indices compared to previous version"
+    )
+    indices_remove: list[str] = Field(
+        default_factory=list, description="Indices removed compared to previous version"
+    )
 
 
 class IndexInfo(BaseModel):

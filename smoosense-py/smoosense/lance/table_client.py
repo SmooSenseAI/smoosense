@@ -254,6 +254,7 @@ class LanceTableClient:
         prev_data_rows = 0
         prev_deletion_rows = 0
         prev_columns: set[str] = set()
+        prev_indices: set[str] = set()
 
         for version in version_list:
             timestamp = version["timestamp"]
@@ -276,19 +277,41 @@ class LanceTableClient:
             rows_add = total_data_rows - prev_data_rows
             rows_remove = total_deletion_rows - prev_deletion_rows
 
-            # Get schema for this version to calculate column differences
+            # Get schema and indices for this version
             try:
                 # Use to_lance() to access the dataset at a specific version
                 dataset = self.table.to_lance()
                 version_dataset = dataset.checkout_version(version["version"])
-                current_columns = set(version_dataset.schema.names)
-            except Exception as e:
-                logger.warning(f"Failed to get schema for version {version['version']}: {e}")
-                current_columns = set()
 
-            # Calculate column differences
-            columns_add = list(current_columns - prev_columns) if prev_columns else []
-            columns_remove = list(prev_columns - current_columns) if prev_columns else []
+                # Get columns from schema
+                current_columns = set(version_dataset.schema.names)
+
+                # Get indices from the version dataset
+                current_indices = set()
+                try:
+                    indices_list = version_dataset.list_indices()
+                    # list_indices returns a list of dicts with 'name' key
+                    current_indices = {
+                        idx["name"] if isinstance(idx, dict) else idx.name for idx in indices_list
+                    }
+                except Exception as e:
+                    # list_indices may fail for some versions
+                    logger.debug(f"Failed to get indices for version {version['version']}: {e}")
+                    current_indices = set()
+            except Exception as e:
+                logger.warning(
+                    f"Failed to get schema/indices for version {version['version']}: {e}"
+                )
+                current_columns = set()
+                current_indices = set()
+
+            # Calculate column and index differences
+            # Only skip showing additions/removals for the very first version
+            is_first_version = version["version"] == version_list[0]["version"]
+            columns_add = [] if is_first_version else list(current_columns - prev_columns)
+            columns_remove = [] if is_first_version else list(prev_columns - current_columns)
+            indices_add = [] if is_first_version else list(current_indices - prev_indices)
+            indices_remove = [] if is_first_version else list(prev_indices - current_indices)
 
             versions_info.append(
                 VersionInfo(
@@ -300,6 +323,8 @@ class LanceTableClient:
                     rows_remove=rows_remove,
                     columns_add=columns_add,
                     columns_remove=columns_remove,
+                    indices_add=indices_add,
+                    indices_remove=indices_remove,
                 )
             )
 
@@ -307,6 +332,7 @@ class LanceTableClient:
             prev_data_rows = total_data_rows
             prev_deletion_rows = total_deletion_rows
             prev_columns = current_columns
+            prev_indices = current_indices
 
         logger.info(f"Found {len(versions_info)} versions for table {self.table_name}")
         return versions_info

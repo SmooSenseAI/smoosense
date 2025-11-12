@@ -21,6 +21,8 @@ export interface VersionInfo {
   rows_remove: number | null
   columns_add: string[]
   columns_remove: string[]
+  indices_add: string[]
+  indices_remove: string[]
 }
 
 interface LanceVersionsProps {
@@ -130,6 +132,21 @@ export default function LanceVersions({ dbPath, tableName }: LanceVersionsProps)
     )
   }
 
+  const indicesDiffRenderer = (params: { data: VersionInfo }) => {
+    const { indices_add, indices_remove } = params.data
+
+    return (
+      <div className="flex flex-col text-sm leading-tight py-2 gap-1">
+        {indices_add.length > 0 && (
+          <div className="text-green-600 dark:text-green-400">+ {indices_add.join(', ')}</div>
+        )}
+        {indices_remove.length > 0 && (
+          <div className="text-red-600 dark:text-red-400">- {indices_remove.join(', ')}</div>
+        )}
+      </div>
+    )
+  }
+
   const columnDefs: ColDef[] = [
     {
       field: 'version',
@@ -163,6 +180,12 @@ export default function LanceVersions({ dbPath, tableName }: LanceVersionsProps)
     {
       headerName: 'Columns Diff',
       cellRenderer: columnsDiffRenderer,
+      width: 200,
+      autoHeight: true
+    },
+    {
+      headerName: 'Indices Diff',
+      cellRenderer: indicesDiffRenderer,
       width: 200,
       autoHeight: true
     }

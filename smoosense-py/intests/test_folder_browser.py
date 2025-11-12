@@ -100,9 +100,7 @@ class TestFolderBrowser(BaseIntegrationTest):
                 self.take_screenshot(f"folder_browser_{file_type}_{mode}.png")
 
             # Close images folder.
-            self.page.locator(f'span[title="images"]').click()
-
-
+            self.page.locator('span[title="images"]').click()
 
         logger.info("Screenshot test completed successfully for FolderBrowser")
 
