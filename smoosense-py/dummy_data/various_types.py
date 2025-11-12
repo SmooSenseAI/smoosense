@@ -249,6 +249,13 @@ class DummyDataGenerator:
         lance_db_table.add_columns({"new_column": "'foo'"})
         logger.info("Version 4 created successfully")
 
+        # Create indices
+        lance_db_table.create_scalar_index("idx_int")
+        logger.info("Scalar index created successfully")
+
+        lance_db_table.create_fts_index("string")
+        logger.info("FTS index created successfully")
+
         logger.info(f"Lance database with {len(lance_db_table.list_versions())} versions created")
 
     def save_files(self, filename="dummy_data_various_types"):
