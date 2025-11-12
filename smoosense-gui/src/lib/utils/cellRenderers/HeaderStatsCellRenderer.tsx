@@ -177,9 +177,10 @@ const HeaderStatsCellRendererImpl = memo(function HeaderStatsCellRendererImpl({
   return (
     <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <PopoverTrigger asChild>
-        <button 
-          className={`w-full h-full cursor-pointer ${showColumnName ? 'flex flex-col' : ''} ${isPopoverOpen ? 'ring-1 ring-primary ring-inset rounded' : ''}`}
+        <button
+          className={`header-stats-trigger w-full h-full cursor-pointer ${showColumnName ? 'flex flex-col' : ''} ${isPopoverOpen ? 'ring-1 ring-primary ring-inset rounded' : ''}`}
           style={{padding: '1px'}}
+          data-col-name={columnName}
         >
           {showColumnName && (
             <div className="text-sm font-medium text-foreground px-2 py-1 border-b border-border rounded bg-muted/30">

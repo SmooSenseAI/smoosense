@@ -17,7 +17,7 @@ const BUTTON_DESTRUCTIVE = 'bg-secondary text-secondary-foreground hover:bg-dest
 const ICON_BUTTON_SUBTLE = ' border border-border shadow-sm opacity-80 hover:opacity-100'
 
 // Hyperlink styles
-const HYPERLINK = 'dark:text-sky-400 dark:hover:text-sky-300 text-blue-600 hover:text-blue-800 underline underline-offset-4 transition-colors'
+const HYPERLINK = 'dark:text-sky-400 dark:hover:text-sky-300 text-blue-600 hover:text-blue-800 underline underline-offset-4 transition-colors cursor-pointer'
 
 export const CLS = {
   // Base styles

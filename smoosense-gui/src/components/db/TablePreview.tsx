@@ -47,13 +47,15 @@ export default function TablePreview({
           </Button>
         </div>
       )}
-      <Accordion type="single" defaultValue="columns" collapsible className="w-full">
+      <Accordion type="multiple" defaultValue={["columns", "indices", "versions"]} className="w-full">
         {/* Columns Section */}
         <AccordionItem value="columns">
           <AccordionTrigger>
-            {tableInfo?.cnt_columns !== null && tableInfo?.cnt_columns !== undefined
-              ? `${tableInfo.cnt_columns} ${tableInfo.cnt_columns === 1 ? 'column' : 'columns'}`
-              : 'Columns'}
+            <h2 className="text-xl font-semibold">
+              {tableInfo?.cnt_columns !== null && tableInfo?.cnt_columns !== undefined
+                ? `${tableInfo.cnt_columns} ${tableInfo.cnt_columns === 1 ? 'column' : 'columns'}`
+                : 'Columns'}
+            </h2>
           </AccordionTrigger>
           <AccordionContent>
             <LanceColumns dbPath={dbPath} tableName={tableName} />
@@ -63,12 +65,14 @@ export default function TablePreview({
         {/* Lance Indices Section */}
         <AccordionItem value="indices">
           <AccordionTrigger>
-            {tableInfo?.cnt_indices !== null && tableInfo?.cnt_indices !== undefined
-              ? `${tableInfo.cnt_indices} ${tableInfo.cnt_indices === 1 ? 'index' : 'indices'}`
-              : 'Lance Indices'}
+            <h2 className="text-xl font-semibold">
+              {tableInfo?.cnt_indices !== null && tableInfo?.cnt_indices !== undefined
+                ? `${tableInfo.cnt_indices} ${tableInfo.cnt_indices === 1 ? 'index' : 'indices'}`
+                : 'Lance Indices'}
+            </h2>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="h-[400px]">
+            <div className="h-[200px]">
               <LanceIndices dbPath={dbPath} tableName={tableName} />
             </div>
           </AccordionContent>
@@ -77,12 +81,14 @@ export default function TablePreview({
         {/* Lance Versions Section */}
         <AccordionItem value="versions">
           <AccordionTrigger>
-            {tableInfo?.cnt_versions !== null && tableInfo?.cnt_versions !== undefined
-              ? `${tableInfo.cnt_versions} ${tableInfo.cnt_versions === 1 ? 'version' : 'versions'}`
-              : 'Lance Versions'}
+            <h2 className="text-xl font-semibold">
+              {tableInfo?.cnt_versions !== null && tableInfo?.cnt_versions !== undefined
+                ? `${tableInfo.cnt_versions} ${tableInfo.cnt_versions === 1 ? 'version' : 'versions'}`
+                : 'Lance Versions'}
+            </h2>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="h-[400px]">
+            <div className="h-[300px]">
               <LanceVersions dbPath={dbPath} tableName={tableName} />
             </div>
           </AccordionContent>

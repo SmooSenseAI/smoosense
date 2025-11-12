@@ -124,7 +124,6 @@ class TestLance(BaseIntegrationTest):
 
             # Wait for the page to load completely
             self.page.wait_for_load_state("networkidle")
-            time.sleep(2)  # Additional wait for data to load
 
             # Set theme mode
             logger.info(f"Setting theme to {mode} mode")
@@ -141,7 +140,7 @@ class TestLance(BaseIntegrationTest):
             time.sleep(1)
 
             # Take screenshot
-            logger.info(f"Taking screenshot of LanceDB with selected table")
+            logger.info("Taking screenshot of LanceDB with selected table")
             self.take_screenshot(f"lancedb_{mode}.png")
 
         logger.info("LanceDB screenshot test completed successfully")

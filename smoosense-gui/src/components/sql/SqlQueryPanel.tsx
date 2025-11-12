@@ -122,7 +122,9 @@ export default function SqlQueryPanel() {
   const sqlEditorPanel = (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-1 border-b border-border bg-muted/30">
-        <h3 className="text-sm font-semibold">SQL Query</h3>
+        <h3 className="text-sm font-semibold">
+          Query with <a href="https://duckdb.org/docs/stable/sql/introduction" target="_blank" className={CLS.HYPERLINK}>duckdb SQL</a>
+        </h3>
         <Button
           onClick={handleExecuteQuery}
           disabled={isLoading || !sqlQuery.trim()}

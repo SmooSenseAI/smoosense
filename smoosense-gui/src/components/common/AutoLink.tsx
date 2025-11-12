@@ -17,7 +17,7 @@ export default function AutoLink({ url, className = '' }: AutoLinkProps) {
     <a
       href={url}
       onClick={handleClick}
-      className={`${CLS.HYPERLINK} cursor-pointer py-1 truncate block ${className}`}
+      className={`${CLS.HYPERLINK} py-1 truncate block ${className}`}
       title={url}
     >
       {url}

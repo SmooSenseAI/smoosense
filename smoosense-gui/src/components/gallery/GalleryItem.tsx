@@ -32,7 +32,7 @@ export default function GalleryItem({
 
   return (
     <div
-      className="border rounded-lg overflow-hidden hover:shadow-md cursor-pointer hover:ring-1 hover:ring-primary transition-all"
+      className="gallery-item border rounded-lg overflow-hidden hover:shadow-md cursor-pointer hover:ring-1 hover:ring-primary transition-all"
       style={itemStyle}
       onClick={onClick}
     >

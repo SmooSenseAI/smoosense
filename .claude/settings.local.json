@@ -14,7 +14,8 @@
       "Bash(pnpm test:*)",
       "Bash(make typecheck:*)",
       "Bash(pnpm lint:*)",
-      "Bash(make test:*)"
+      "Bash(make test:*)",
+      "Bash(python -m pytest:*)"
     ],
     "deny": [],
     "ask": []
