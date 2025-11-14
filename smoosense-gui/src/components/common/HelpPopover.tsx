@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { HelpCircle, ExternalLink, Mail } from 'lucide-react'
+import { HelpCircle, ExternalLink, Calendar } from 'lucide-react'
 import IconPopover from '@/components/common/IconPopover'
 import { CLS } from '@/lib/utils/styles'
 import { Separator } from '@/components/ui/separator'
@@ -18,8 +18,8 @@ export default function HelpPopover() {
         },
         {
           label: 'Consult tailored solution',
-          url: 'mailto:contact@smoosense.ai',
-          icon: <Mail className="h-3 w-3" />
+          url: 'https://calendar.app.google/7ryR8DPtzYzfw1Pw7',
+          icon: <Calendar className="h-3 w-3" />
         }
       ]
     },
@@ -53,11 +53,6 @@ export default function HelpPopover() {
           alt: 'Latest version',
           src: 'https://img.shields.io/pypi/v/smoosense?label=pypi-latest',
           url: 'https://pypi.org/project/smoosense/'
-        },
-        {
-          alt: 'Downloads',
-          src: 'https://static.pepy.tech/personalized-badge/smoosense?period=total&units=international_system&left_color=black&right_color=MAGENTA&left_text=downloads',
-          url: 'https://pepy.tech/project/smoosense'
         }
       ]
     }
