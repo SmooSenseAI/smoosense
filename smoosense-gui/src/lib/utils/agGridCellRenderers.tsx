@@ -6,6 +6,7 @@ import _, { isNil } from 'lodash'
 import { getFileType, FileType } from './fileTypes'
 import ImageCellRenderer from './cellRenderers/ImageCellRenderer'
 import VideoCellRenderer from './cellRenderers/VideoCellRenderer'
+import AudioCellRenderer from './cellRenderers/AudioCellRenderer'
 import PdfCellRenderer from './cellRenderers/PdfCellRenderer'
 import IFrameCellRenderer from './cellRenderers/IFrameCellRenderer'
 import JsonCellRenderer from './cellRenderers/JsonCellRenderer'
@@ -23,6 +24,7 @@ export enum RenderType {
   Date = 'date',
   ImageUrl = 'imageUrl',
   VideoUrl = 'videoUrl',
+  AudioUrl = 'audioUrl',
   PdfUrl = 'pdfUrl',
   IFrame = 'iframe',
   HyperLink = 'hyperLink',
@@ -64,6 +66,10 @@ function inferUrlType(str: string): RenderType {
 
   if (fileType === FileType.Video) {
     return RenderType.VideoUrl
+  }
+
+  if (fileType === FileType.Audio) {
+    return RenderType.AudioUrl
   }
 
   if (fileType === FileType.Pdf) {
@@ -127,6 +133,8 @@ function CellRenderer({ value, type, nodeData }: CellRendererProps) {
       return <ImageCellRenderer value={value}/>
     case RenderType.VideoUrl:
       return <VideoCellRenderer value={value}/>
+    case RenderType.AudioUrl:
+      return <AudioCellRenderer value={value}/>
     case RenderType.PdfUrl:
       return <PdfCellRenderer value={value}/>
     case RenderType.IFrame:
@@ -232,6 +240,10 @@ export function inferRenderTypeFromData(columnValues: unknown[], columnName?: st
         return RenderType.VideoUrl
       }
 
+      if (normalizedUrls.every(url => inferUrlType(url) === RenderType.AudioUrl)) {
+        return RenderType.AudioUrl
+      }
+
       if (normalizedUrls.every(url => inferUrlType(url) === RenderType.PdfUrl)) {
         return RenderType.PdfUrl
       }
@@ -263,8 +275,8 @@ export function inferRenderTypeFromData(columnValues: unknown[], columnName?: st
 }
 
 export function expandColDef(type: RenderType, baseColDef?: BaseColDef) {
-  // Disable sorting for visual columns (Image, Video, Iframe, Bbox)
-  const isVisualColumn = [RenderType.ImageUrl, RenderType.ImageMask, RenderType.VideoUrl, RenderType.IFrame, RenderType.Bbox].includes(type)
+  // Disable sorting for visual columns (Image, Video, Audio, Iframe, Bbox)
+  const isVisualColumn = [RenderType.ImageUrl, RenderType.ImageMask, RenderType.VideoUrl, RenderType.AudioUrl, RenderType.IFrame, RenderType.Bbox].includes(type)
 
   const colDef: ColDef = {
     minWidth: 50,
@@ -290,7 +302,7 @@ export function expandColDef(type: RenderType, baseColDef?: BaseColDef) {
 
 export function recommendColumnWidth(type: RenderType) {
   if([
-      RenderType.ImageUrl, RenderType.ImageMask, RenderType.VideoUrl, RenderType.HyperLink,
+      RenderType.ImageUrl, RenderType.ImageMask, RenderType.VideoUrl, RenderType.AudioUrl, RenderType.HyperLink,
     RenderType.Boolean
   ].includes(type)) {
     return 100

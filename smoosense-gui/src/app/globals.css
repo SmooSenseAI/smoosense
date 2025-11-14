@@ -142,3 +142,39 @@
 .ag-theme-quartz .ag-root-wrapper {
   border-radius: 0 !important;
 }
+
+/* React H5 Audio Player dark mode support */
+.rhap_container {
+  border: 1px solid oklch(0.92 0.004 286.32);
+  border-radius: var(--radius-md);
+}
+
+.dark .rhap_container {
+  background-color: oklch(0.21 0.006 285.885);
+  color: oklch(0.985 0 0);
+  box-shadow: none;
+  border-color: oklch(1 0 0 / 10%);
+}
+
+.dark .rhap_progress-filled,
+.dark .rhap_progress-indicator,
+.dark .rhap_volume-indicator {
+  background-color: oklch(0.541 0.281 293.009);
+}
+
+.dark .rhap_progress-bar,
+.dark .rhap_volume-bar {
+  background-color: oklch(0.274 0.006 286.033);
+}
+
+.dark .rhap_time {
+  color: oklch(0.985 0 0);
+}
+
+.dark .rhap_button-clear {
+  color: oklch(0.985 0 0);
+}
+
+.dark .rhap_button-clear:hover {
+  color: oklch(0.541 0.281 293.009);
+}

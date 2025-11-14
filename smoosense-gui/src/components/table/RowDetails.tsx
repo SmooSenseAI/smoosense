@@ -11,6 +11,9 @@ import { useRenderType } from '@/lib/hooks'
 import { useProcessedRowData } from '@/lib/hooks/useProcessedRowData'
 import AutoLink from '@/components/common/AutoLink'
 import { setShowRowDetailsPanel } from '@/lib/features/ui/uiSlice'
+import AudioPlayer from 'react-h5-audio-player'
+import 'react-h5-audio-player/lib/styles.css'
+import { proxyedUrl } from '@/lib/utils/urlUtils'
 
 interface RowDetailsWrapperProps {
   children: React.ReactNode
@@ -95,7 +98,24 @@ function renderValueByType(value: unknown, renderType: RenderType): React.ReactN
         )
       }
       return <span className="text-sm font-mono">{String(value)}</span>
-    
+
+    case RenderType.AudioUrl:
+      if (typeof value === 'string') {
+        const audioUrl = proxyedUrl(value)
+        return (
+          <div className="space-y-2">
+            <AudioPlayer
+              src={audioUrl}
+              showJumpControls={false}
+              customAdditionalControls={[]}
+              layout="horizontal-reverse"
+            />
+            <AutoLink url={value} className="text-xs font-mono" />
+          </div>
+        )
+      }
+      return <span className="text-sm font-mono">{String(value)}</span>
+
     case RenderType.Boolean:
       return <span className={`font-medium`}>{String(value)}</span>
     

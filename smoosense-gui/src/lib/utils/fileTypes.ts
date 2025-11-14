@@ -4,6 +4,7 @@ export enum FileType {
   RowTable = 'row-table',
   Image = 'image',
   Video = 'video',
+  Audio = 'audio',
   Text = 'text',
   Pdf = 'pdf',
   Unknown = 'unknown'
@@ -45,6 +46,11 @@ export function getFileType(fileName: string): FileType {
   // Video files
   if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', 'm4v', '3gp', 'ogv'].includes(extension)) {
     return FileType.Video
+  }
+
+  // Audio files
+  if (['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'wma', 'opus', 'webm'].includes(extension)) {
+    return FileType.Audio
   }
 
   // PDF files
