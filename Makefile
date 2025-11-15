@@ -39,7 +39,7 @@ test:
 	for project in $(SUB_PROJECTS); do \
 		make -C $$project test; \
 	done
-	make build-release
+	make build-local
 	make -C smoosense-py integration-test
 
 publish:

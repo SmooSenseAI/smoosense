@@ -23,5 +23,4 @@ build
 .vscode
 .idea
 smoosense/statics/cache
-smoosense/statics/_next/
 data/readme.md
