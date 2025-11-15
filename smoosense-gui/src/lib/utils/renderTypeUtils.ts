@@ -11,8 +11,8 @@ export function isMediaType(renderType: RenderType): boolean {
 }
 
 /**
- * Check if a render type supports visual content (media + iframe + bbox)
+ * Check if a render type supports visual content (media + iframe + bbox + audio)
  */
 export function isVisualType(renderType: RenderType): boolean {
-  return isMediaType(renderType) || renderType === RenderType.IFrame || renderType === RenderType.Bbox
+  return isMediaType(renderType) || renderType === RenderType.IFrame || renderType === RenderType.Bbox || renderType === RenderType.AudioUrl
 }

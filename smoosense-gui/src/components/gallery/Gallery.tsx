@@ -45,7 +45,7 @@ export default function Gallery() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <p className="text-lg font-medium mb-2">No visual columns found</p>
-            <p className="text-sm">Gallery requires columns with ImageUrl, VideoUrl, IFrame, or ImageMask render types</p>
+            <p className="text-sm">Gallery requires columns with ImageUrl, VideoUrl, AudioUrl, IFrame, ImageMask, or Bbox render types</p>
           </div>
         </div>
       </div>

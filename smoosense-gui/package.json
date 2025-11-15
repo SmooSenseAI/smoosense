@@ -45,6 +45,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "colormap": "^2.3.2",
     "jsonata": "^2.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.539.0",
@@ -63,6 +64,7 @@
     "recharts": "^3.1.2",
     "rehype-raw": "^7.0.0",
     "reselect": "^5.1.1",
+    "rust-melspec-wasm": "0.1.0-alpha.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7"

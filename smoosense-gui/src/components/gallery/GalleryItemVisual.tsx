@@ -6,6 +6,7 @@ import { parseBbox, buildBboxVizUrl } from '@/lib/utils/bboxUtils'
 import ImageBlock from '@/components/common/ImageBlock'
 import ImageMask from '@/components/viz/ImageMask'
 import GalleryVideoItem from './GalleryVideoItem'
+import AudioPreview from '@/components/audio/AudioPreview'
 import { useAppSelector } from '@/lib/hooks'
 
 interface GalleryItemVisualProps {
@@ -48,6 +49,12 @@ export default function GalleryItemVisual({
 
       {renderType === RenderType.VideoUrl && (
         <GalleryVideoItem visualValue={String(visualValue)} />
+      )}
+
+      {renderType === RenderType.AudioUrl && (
+        <div className="w-full h-full flex items-center justify-center">
+          <AudioPreview audioUrl={proxyedUrl(String(visualValue))} height={galleryItemHeight} />
+        </div>
       )}
 
       {renderType === RenderType.Bbox && (() => {
