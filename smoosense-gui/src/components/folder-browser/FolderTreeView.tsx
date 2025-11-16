@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Tree } from 'react-arborist'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import { 
-  loadFolderContents, 
+import {
+  loadFolderContents,
   toggleNodeExpansion,
   clearTree,
-  type TreeNode 
+  type TreeNode
 } from '@/lib/features/folderTree/folderTreeSlice'
 import TreeNodeComponent, { type ArboristNodeData } from './TreeNodeComponent'
 
@@ -15,6 +15,8 @@ export default function FolderTreeView() {
   const dispatch = useAppDispatch()
   const { rootNode, loading, error } = useAppSelector(state => state.folderTree)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState(600)
   
   // Load folder contents when rootFolder changes
   useEffect(() => {
@@ -32,7 +34,25 @@ export default function FolderTreeView() {
       dispatch(toggleNodeExpansion(rootNode.path))
     }
   }, [rootNode, dispatch])
-  
+
+  // Measure container height synchronously before paint
+  useLayoutEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        if (rect.height > 0) {
+          setHeight(Math.floor(rect.height))
+        }
+      }
+    }
+
+    updateHeight()
+
+    // Also update on window resize
+    window.addEventListener('resize', updateHeight)
+    return () => window.removeEventListener('resize', updateHeight)
+  }, [rootNode])
+
   // Convert tree structure to hierarchical format for react-arborist
   const convertToArboristData = (node: TreeNode): ArboristNodeData => {
     return {
@@ -80,12 +100,12 @@ export default function FolderTreeView() {
   }
   
   return (
-    <div className="h-full w-full">
+    <div ref={containerRef} className="h-full w-full">
       <Tree
         data={treeData}
         openByDefault={false}
         width="100%"
-        height={800}
+        height={height}
         indent={20}
         rowHeight={32}
         overscanCount={10}
