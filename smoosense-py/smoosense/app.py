@@ -27,49 +27,50 @@ class SmooSenseApp:
     def __init__(
         self,
         *,
-        url_prefix: str = "",
         s3_client: Optional[BaseClient] = None,
         s3_prefix_to_save_shareable_link: str = "",
         folder_shortcuts: Optional[dict[str, str]] = None,
     ):
         self.s3_client = s3_client if s3_client is not None else boto3.client("s3")
+
+        # Check if S3/AWS configuration is available
+        # This includes explicit s3_client, environment variables, or AWS config files
         has_s3_config = any(
             [
                 s3_client is not None,
                 os.getenv("S3_PROFILE") is not None,
                 os.getenv("AWS_ENDPOINT_URL") is not None,
+                os.getenv("AWS_ACCESS_KEY_ID") is not None,
+                os.getenv("AWS_SECRET_ACCESS_KEY") is not None,
+                os.path.exists(os.path.expanduser("~/.aws/credentials")),
             ]
         )
 
         if has_s3_config:
-            self.duckdb_connection_maker = duckdb_connection_using_s3(s3_client=s3_client)
+            self.duckdb_connection_maker = duckdb_connection_using_s3(s3_client=self.s3_client)
         else:
             self.duckdb_connection_maker = lambda: duckdb.connect()
 
-        if url_prefix:
-            assert url_prefix.startswith("/"), "url_prefix must start with /"
-            assert not url_prefix.endswith("/"), "url_prefix must not end with /"
-        self.url_prefix = url_prefix
         self.passover_config = {
             "S3_PREFIX_TO_SAVE_SHAREABLE_LINK": s3_prefix_to_save_shareable_link,
             "FOLDER_SHORTCUTS": folder_shortcuts or {},
         }
 
     def create_app(self) -> Flask:
-        app = Flask(__name__, static_folder="statics", static_url_path=f"{self.url_prefix}")
+        app = Flask(__name__, static_folder="statics", static_url_path="")
 
         # Store the s3_client in app config so blueprints can access it
         app.config["S3_CLIENT"] = self.s3_client
         app.config["DUCKDB_CONNECTION_MAKER"] = self.duckdb_connection_maker
         app.config["PASSOVER_CONFIG"] = self.passover_config
 
-        # Register blueprints with url_prefix
-        app.register_blueprint(query_bp, url_prefix=f"{self.url_prefix}/api")
-        app.register_blueprint(fs_bp, url_prefix=f"{self.url_prefix}/api")
-        app.register_blueprint(lance_bp, url_prefix=f"{self.url_prefix}/api")
-        app.register_blueprint(parquet_bp, url_prefix=f"{self.url_prefix}/api")
-        app.register_blueprint(pages_bp, url_prefix=self.url_prefix)
-        app.register_blueprint(s3_bp, url_prefix=f"{self.url_prefix}/api")
+        # Register blueprints
+        app.register_blueprint(query_bp, url_prefix="/api")
+        app.register_blueprint(fs_bp, url_prefix="/api")
+        app.register_blueprint(lance_bp, url_prefix="/api")
+        app.register_blueprint(parquet_bp, url_prefix="/api")
+        app.register_blueprint(pages_bp, url_prefix="")
+        app.register_blueprint(s3_bp, url_prefix="/api")
 
         return app
 

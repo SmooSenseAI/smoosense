@@ -32,39 +32,16 @@ class TestParquet(BaseIntegrationTest):
 
         logger.info(f"Parquet test files configured: {list(cls.parquet_files.keys())}")
 
+    def setUp(self) -> None:
+        """Set up page with longer timeout for large parquet files."""
+        super().setUp()
+        # Increase timeout for loading large parquet files from S3
+        self.page.set_default_timeout(120000)  # 120 seconds
+        logger.info("Page timeout set to 120 seconds for parquet tests")
+
     def _get_table_url(self, table_path: str) -> str:
         """Construct table URL with properly encoded table path."""
         return f"{self.server.base_url}/Table?tablePath={quote(table_path)}"
-
-    def test_parquet_files_load_successfully(self) -> None:
-        """Test that both parquet files load successfully."""
-
-        for file_key, table_path in self.parquet_files.items():
-            with self.subTest(file=file_key):
-                logger.info(f"Testing {file_key}: {table_path}")
-
-                # Navigate to the Table page
-                table_url = self._get_table_url(table_path)
-                response = self.page.goto(table_url)
-
-                # Check that the response was successful
-                self.assertIsNotNone(response)
-                self.assertEqual(response.status, 200)
-
-                # Wait for the page to load completely
-                self.page.wait_for_load_state("networkidle")
-
-                # Check that the page has loaded some content
-                body_content = self.page.locator("body").text_content()
-                self.assertIsNotNone(body_content)
-                self.assertGreater(len(body_content.strip()), 0, "Page appears to be blank")
-                logger.info(f"Page content length: {len(body_content.strip())} characters")
-
-                # Check that the page title is accessible
-                title = self.page.title()
-                logger.info(f"Page title: '{title}'")
-
-                logger.info(f"{file_key} load test completed successfully")
 
     def test_parquet_info_dialog_screenshots(self) -> None:
         """Test Parquet info dialog and take screenshots for both files."""
@@ -80,10 +57,6 @@ class TestParquet(BaseIntegrationTest):
                 table_url = self._get_table_url(table_path)
                 response = self.page.goto(table_url)
                 self.assertEqual(response.status, 200)
-
-                # Wait for the page to load completely
-                self.page.wait_for_load_state("networkidle")
-                time.sleep(2)  # Additional wait for data to load
 
                 # Set theme mode
                 logger.info(f"Setting theme to {mode} mode")

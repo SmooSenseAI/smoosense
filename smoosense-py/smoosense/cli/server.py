@@ -22,7 +22,7 @@ from smoosense.utils.port import find_available_port
 logger = getLogger(__name__)
 
 
-def run_app(page_path: str, port: Optional[int] = None, url_prefix: str = "") -> None:
+def run_app(page_path: str, port: Optional[int] = None) -> None:
     """
     Run the SmooSense application server.
 
@@ -32,7 +32,6 @@ def run_app(page_path: str, port: Optional[int] = None, url_prefix: str = "") ->
     Args:
         page_path: Page path with query params (e.g., '/FolderBrowser?rootFolder=/path')
         port: Port number to run the server on (auto-selected if None)
-        url_prefix: URL prefix for the application (e.g., '/smoosense')
     """
     # Check if server is already running
     running_server = get_running_server()
@@ -55,16 +54,8 @@ def run_app(page_path: str, port: Optional[int] = None, url_prefix: str = "") ->
     if port is None:
         port = find_available_port()
 
-    # Validate and normalize url_prefix
-    if url_prefix:
-        # Ensure it starts with / and doesn't end with /
-        if not url_prefix.startswith("/"):
-            url_prefix = "/" + url_prefix
-        url_prefix = url_prefix.rstrip("/")
-
-    # Construct URL with optional prefix
-    base_path = url_prefix if url_prefix else ""
-    url = f"http://localhost:{port}{base_path}{page_path}"
+    # Construct URL
+    url = f"http://localhost:{port}{page_path}"
 
     # Using ANSI escape codes for colors
     print("\033[36m" + ASCII_ART + "\033[0m")  # Cyan color for ASCII art
@@ -74,13 +65,13 @@ def run_app(page_path: str, port: Optional[int] = None, url_prefix: str = "") ->
     atexit.register(remove_server_state)
 
     # Create server state file
-    create_server_state(port=port, url_prefix=url_prefix)
+    create_server_state(port=port)
     logger.info(f"Created server state file for port {port}, PID {os.getpid()}")
 
     # Start browser opening in a separate thread
     browser_thread = threading.Thread(target=open_browser_after_delay, args=(url,), daemon=True)
     browser_thread.start()
 
-    # Create app with url_prefix if provided
-    app = SmooSenseApp(url_prefix=url_prefix)
+    # Create app
+    app = SmooSenseApp()
     app.run(host="localhost", port=port)

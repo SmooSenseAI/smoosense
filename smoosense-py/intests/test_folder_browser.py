@@ -1,4 +1,7 @@
-"""FolderBrowser integration tests."""
+"""FolderBrowser integration tests.
+
+For screenshot capture, see screenshot_folder_browser.py
+"""
 
 import sys
 import time
@@ -8,7 +11,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from base_integration_test import BaseIntegrationTest
-from utils import LocatorUtils
 
 from smoosense.my_logging import getLogger
 
@@ -64,45 +66,6 @@ class TestFolderBrowser(BaseIntegrationTest):
 
         logger.info("Found smoosense-gui and smoosense-py folders in navigation")
         logger.info("FolderBrowser load test completed successfully")
-
-    def test_take_screenshots(self) -> None:
-        """Take screenshots of the FolderBrowser in both light and dark modes."""
-
-        # Navigate to the FolderBrowser
-        response = self.page.goto(self.folder_browser_url)
-        self.assertEqual(response.status, 200)
-
-        # Wait for the page to load completely
-        self.page.wait_for_load_state("networkidle")
-
-        # Click on data folder to expand it
-        logger.info("Expanding data folder")
-        data_node = self.page.locator('span[title="data"]')
-        data_node.click()
-        time.sleep(1)  # Wait for expansion
-
-        # Take screenshots for each theme mode
-        for mode in ["light", "dark"]:
-            logger.info(f"Setting theme to {mode} mode")
-            LocatorUtils.set_theme_mode(self.page, mode)
-
-            # Click on some files/folders
-            for file_type, file_name in {
-                "csv": "dummy_data_various_types.csv",
-                "parquet": "compare-video-generation.parquet",
-                "image-folder": "images",
-            }.items():
-                self.page.locator(f'span[title="{file_name}"]').click()
-
-                self.page.wait_for_load_state("networkidle")
-                time.sleep(2)  # Additional wait for UI updates
-
-                self.take_screenshot(f"folder_browser_{file_type}_{mode}.png")
-
-            # Close images folder.
-            self.page.locator('span[title="images"]').click()
-
-        logger.info("Screenshot test completed successfully for FolderBrowser")
 
     def test_data_folder_expansion(self) -> None:
         """Test that the data folder can be expanded and shows expected parquet files."""

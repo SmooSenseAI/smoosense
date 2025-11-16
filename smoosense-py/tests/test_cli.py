@@ -169,19 +169,6 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(port, 8080)
             self.assertEqual(result.exit_code, 0)
 
-    def test_sense_with_global_url_prefix_option(self) -> None:
-        """Test 'sense --url-prefix /smoosense' command."""
-        with patch("smoosense.cli.run_app") as mock_run_app:
-            result = self.runner.invoke(main, ["--url-prefix", "/smoosense"])
-
-            self.assertTrue(mock_run_app.called)
-            call_args = mock_run_app.call_args
-
-            # Check url_prefix was passed correctly
-            url_prefix = call_args[1]["url_prefix"]
-            self.assertEqual(url_prefix, "/smoosense")
-            self.assertEqual(result.exit_code, 0)
-
     def test_sense_folder_with_port_option(self) -> None:
         """Test 'sense folder' with --port option."""
         with patch("smoosense.cli.run_app") as mock_run_app:
@@ -194,28 +181,6 @@ class TestCLI(unittest.TestCase):
             port = call_args[1]["port"]
             self.assertEqual(port, 8080)
             self.assertEqual(result.exit_code, 0)
-
-    def test_sense_table_with_url_prefix_option(self) -> None:
-        """Test 'sense table' with --url-prefix option."""
-        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
-            temp_file = f.name
-
-        try:
-            with patch("smoosense.cli.run_app") as mock_run_app:
-                result = self.runner.invoke(
-                    main, ["table", temp_file, "--url-prefix", "/smoosense"]
-                )
-
-                self.assertTrue(mock_run_app.called)
-                call_args = mock_run_app.call_args
-
-                # Check url_prefix was passed correctly
-                url_prefix = call_args[1]["url_prefix"]
-                self.assertEqual(url_prefix, "/smoosense")
-                self.assertEqual(result.exit_code, 0)
-        finally:
-            if os.path.exists(temp_file):
-                os.unlink(temp_file)
 
     def test_sense_db_default_current_directory(self) -> None:
         """Test 'sense db' command (default behavior - db .)."""
@@ -335,17 +300,3 @@ class TestCLI(unittest.TestCase):
             port = call_args[1]["port"]
             self.assertEqual(port, 8080)
             self.assertEqual(result.exit_code, 0)
-
-    def test_sense_db_with_url_prefix_option(self) -> None:
-        """Test 'sense db' with --url-prefix option."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch("smoosense.cli.run_app") as mock_run_app:
-                result = self.runner.invoke(main, ["db", tmpdir, "--url-prefix", "/smoosense"])
-
-                self.assertTrue(mock_run_app.called)
-                call_args = mock_run_app.call_args
-
-                # Check url_prefix was passed correctly
-                url_prefix = call_args[1]["url_prefix"]
-                self.assertEqual(url_prefix, "/smoosense")
-                self.assertEqual(result.exit_code, 0)

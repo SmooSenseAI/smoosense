@@ -29,12 +29,11 @@ def find_free_port() -> int:
 
 
 class CustomServerFixture:
-    """Test server wrapper for SmooSenseApp with custom port and URL prefix."""
+    """Test server wrapper for SmooSenseApp with custom port."""
 
-    def __init__(self, host: str = "localhost", port: Optional[int] = None, url_prefix: str = ""):
+    def __init__(self, host: str = "localhost", port: Optional[int] = None):
         self.host = host
         self.port = port or find_free_port()
-        self.url_prefix = url_prefix
         self.app_instance: Optional[SmooSenseApp] = None
         self.thread: Optional[threading.Thread] = None
         self.server_ready = threading.Event()
@@ -43,17 +42,15 @@ class CustomServerFixture:
     @property
     def base_url(self) -> str:
         """Get base URL for the server."""
-        return f"http://{self.host}:{self.port}{self.url_prefix}"
+        return f"http://{self.host}:{self.port}"
 
     def _run_server(self) -> None:
         """Run the server in a separate thread."""
         try:
-            logger.info(
-                f"Starting SmooSenseApp server on {self.host}:{self.port} with URL prefix '{self.url_prefix}'"
-            )
+            logger.info(f"Starting SmooSenseApp server on {self.host}:{self.port}")
 
-            # Create SmooSenseApp instance with custom URL prefix
-            self.app_instance = SmooSenseApp(url_prefix=self.url_prefix)
+            # Create SmooSenseApp instance
+            self.app_instance = SmooSenseApp()
             flask_app = self.app_instance.create_app()
 
             # Configure Flask app to be more suitable for testing
@@ -100,17 +97,16 @@ class CustomServerFixture:
 
 
 class TestCustomServerConfig(unittest.TestCase):
-    """Test cases for server with custom port and URL prefix."""
+    """Test cases for server with custom port."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up server, browser and custom configuration."""
         logger.info("Setting up TestCustomServerConfig")
 
-        # Set up custom server with URL prefix
+        # Set up custom server with custom port
         cls.custom_port = find_free_port()
-        cls.url_prefix = "/smoosense"
-        cls.server = CustomServerFixture(port=cls.custom_port, url_prefix=cls.url_prefix)
+        cls.server = CustomServerFixture(port=cls.custom_port)
         cls.server.start()
 
         # Get the root folder (parent of parent directory of this file)
@@ -150,10 +146,8 @@ class TestCustomServerConfig(unittest.TestCase):
         logger.info("TestCustomServerConfig teardown completed")
 
     def test_custom_server_folder_browser_functionality(self) -> None:
-        """Test complete folder browser functionality with custom port and URL prefix."""
-        logger.info(
-            f"Testing folder browser with custom server config: port={self.custom_port}, prefix='{self.url_prefix}'"
-        )
+        """Test complete folder browser functionality with custom port."""
+        logger.info(f"Testing folder browser with custom server config: port={self.custom_port}")
 
         # Navigate to the FolderBrowser
         logger.info(f"Navigating to: {self.folder_browser_url}")
@@ -293,35 +287,7 @@ class TestCustomServerConfig(unittest.TestCase):
                 "'Open in Table view' button not found (may be expected for this file type)"
             )
 
-        # Verify the server is responding with correct URL prefix
-        logger.info(f"Verifying server responds correctly with URL prefix '{self.url_prefix}'")
-
-        # Test that API calls work with the URL prefix
-        # We can check this by looking at network requests or by verifying the page functionality works
-        # Since the folder expansion and file selection worked, the API calls are working correctly
-
         logger.info("All custom server configuration tests completed successfully")
-
-    def test_different_port_and_prefix_combinations(self) -> None:
-        """Test that different port and URL prefix combinations work."""
-        logger.info("Testing that the server works with custom port and URL prefix")
-
-        # Verify the server is running on the expected port
-        self.assertEqual(self.server.port, self.custom_port)
-        self.assertEqual(self.server.url_prefix, self.url_prefix)
-
-        # Verify the base URL is constructed correctly
-        expected_base_url = f"http://localhost:{self.custom_port}{self.url_prefix}"
-        self.assertEqual(self.server.base_url, expected_base_url)
-
-        # Navigate to the root of the server to ensure it responds
-        root_url = self.server.base_url + "/"
-        logger.info(f"Testing root URL: {root_url}")
-
-        response = self.page.goto(root_url)
-        self.assertEqual(response.status, 200)
-
-        logger.info("Server responds correctly with custom port and URL prefix")
 
 
 if __name__ == "__main__":

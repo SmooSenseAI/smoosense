@@ -20,7 +20,6 @@ class ServerState(BaseModel):
 
     pid: int = Field(description="Process ID of the running server")
     port: int = Field(description="Port number the server is running on")
-    url_prefix: str = Field(default="", description="URL prefix for the application")
 
 
 def get_state_file_path() -> Path:
@@ -127,13 +126,12 @@ def remove_server_state() -> None:
         pass  # Ignore errors if file doesn't exist or can't be removed
 
 
-def create_server_state(port: int, url_prefix: str = "") -> ServerState:
+def create_server_state(port: int) -> ServerState:
     """
     Create and save server state for current process.
 
     Args:
         port: Port number the server is running on
-        url_prefix: URL prefix for the application
 
     Returns:
         Created ServerState
@@ -141,7 +139,6 @@ def create_server_state(port: int, url_prefix: str = "") -> ServerState:
     state = ServerState(
         pid=os.getpid(),
         port=port,
-        url_prefix=url_prefix,
     )
     write_server_state(state)
     return state
@@ -158,5 +155,4 @@ def get_server_url(state: ServerState, path: str = "") -> str:
     Returns:
         Full URL string
     """
-    base_path = state.url_prefix if state.url_prefix else ""
-    return f"http://localhost:{state.port}{base_path}{path}"
+    return f"http://localhost:{state.port}{path}"

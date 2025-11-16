@@ -36,16 +36,10 @@ def server_options(f: Callable) -> Callable:
     """
     Add common server options to a CLI command.
 
-    Adds --port and --url-prefix options to the decorated command.
+    Adds --port option to the decorated command.
     Note: Decorators are applied in reverse order, so these will appear
     after any other decorators applied before this one.
     """
-    f = click.option(
-        "--url-prefix",
-        type=str,
-        default="",
-        help="URL prefix for the application (e.g., '/smoosense')",
-    )(f)
     f = click.option(
         "--port",
         "-p",

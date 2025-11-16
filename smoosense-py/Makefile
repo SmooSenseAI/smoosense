@@ -1,4 +1,4 @@
-.PHONY: env clean install-hooks build
+.PHONY: env clean install-hooks build unit-test integration-test screenshot test dev publish
 
 
 clean:
@@ -15,6 +15,9 @@ unit-test:
 
 integration-test:
 	uv run python -m unittest discover -s intests -p "test_*.py"
+
+screenshot:
+	uv run python -m unittest discover -s intests -p "screenshot_*.py"
 
 build:
 	(rm -rf dist)
