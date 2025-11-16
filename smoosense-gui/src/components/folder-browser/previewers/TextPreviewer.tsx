@@ -1,11 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import { type TreeNode } from '@/lib/features/folderTree/folderTreeSlice'
 import { useTextContent } from '@/lib/hooks/useTextContent'
 import PreviewLoading from './shared/PreviewLoading'
 import PreviewError from './shared/PreviewError'
 import PreviewNotFound from './shared/PreviewNotFound'
 import ReadonlyCodeMirror from '@/components/common/ReadonlyCodeMirror'
+import ReactMarkdown from 'react-markdown'
+import { Code, Eye } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { python } from '@codemirror/lang-python'
 import { javascript } from '@codemirror/lang-javascript'
 import { sql } from '@codemirror/lang-sql'
@@ -17,11 +21,12 @@ interface TextPreviewerProps {
 }
 
 export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps) {
-  const { content, isLoading, error, fileExists } = useTextContent({ 
-    itemId: item.id, 
-    version 
+  const [showRendered, setShowRendered] = useState(true)
+  const { content, isLoading, error, fileExists } = useTextContent({
+    itemId: item.id,
+    version
   })
-  
+
   // Determine file type and language extension
   const fileName = item.name.toLowerCase()
   const getLanguageConfig = () => {
@@ -38,9 +43,10 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
     }
     return null
   }
-  
+
   const languageConfig = getLanguageConfig()
   const isCodeFile = languageConfig !== null
+  const isMarkdown = fileName.endsWith('.md') || fileName.endsWith('.markdown')
 
   const renderContent = () => {
     if (isLoading) {
@@ -55,9 +61,20 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
       return <PreviewNotFound />
     }
 
-    // Use ReadonlyCodeMirror for all files, with or without syntax highlighting
+    // For markdown files, show either rendered or source based on toggle
+    if (isMarkdown && showRendered) {
+      return (
+        <div className="w-full h-full overflow-auto p-6">
+          <div className="markdown-content max-w-4xl">
+            <ReactMarkdown>{content || '(Empty file)'}</ReactMarkdown>
+          </div>
+        </div>
+      )
+    }
+
+    // Use ReadonlyCodeMirror for source view or non-markdown files
     const extensions = isCodeFile && languageConfig ? [languageConfig.extension] : []
-    
+
     return (
       <ReadonlyCodeMirror
         value={content || '(Empty file)'}
@@ -67,7 +84,30 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col relative">
+      {/* Toggle button for markdown files */}
+      {isMarkdown && !isLoading && !error && fileExists !== false && (
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowRendered(!showRendered)}
+            className="gap-2"
+          >
+            {showRendered ? (
+              <>
+                <Code className="h-4 w-4" />
+                Show source
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4" />
+                See rendered
+              </>
+            )}
+          </Button>
+        </div>
+      )}
       {renderContent()}
     </div>
   )
