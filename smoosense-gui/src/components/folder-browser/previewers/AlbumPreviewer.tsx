@@ -37,6 +37,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
   // Get gallery UI settings from Redux
   const galleryItemWidth = useAppSelector((state) => state.ui.galleryItemWidth)
   const galleryItemHeight = useAppSelector((state) => state.ui.galleryItemHeight)
+  const galleryCaptionHeight = useAppSelector((state) => state.ui.galleryCaptionHeight)
 
   useEffect(() => {
     const fetchFolderContents = async () => {
@@ -162,7 +163,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
               className="relative border rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-muted/30"
               style={{
                 width: `${galleryItemWidth}px`,
-                height: `${galleryItemHeight + 40}px` // Extra space for filename
+                height: `${galleryItemHeight + galleryCaptionHeight}px`
               }}
             >
               <div
@@ -189,8 +190,11 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
               </div>
 
               {/* File name overlay */}
-              <div className="p-2 bg-background border-t">
-                <p className="text-xs truncate" title={mediaFile.name}>
+              <div
+                className="p-3 bg-background border-t"
+                style={{ height: `${galleryCaptionHeight}px` }}
+              >
+                <p className="text-xs line-clamp-2 h-full overflow-hidden break-all" title={mediaFile.name}>
                   {mediaFile.name}
                 </p>
               </div>
