@@ -132,22 +132,22 @@ export default function MelSpectrogram({
     return canvas.toDataURL()
   }
 
-  // Draw spectrogram (only once when data is ready)
+  // Draw spectrogram (when data is ready or height changes)
   useEffect(() => {
     if (!spectrogramCanvasRef.current || !spectrogramData) return
 
     const canvas = spectrogramCanvasRef.current
     const ctx = canvas.getContext('2d')!
     const width = canvas.width
-    const height = canvas.height
+    const canvasHeight = canvas.height
 
     // Draw spectrogram
     const img = new Image()
     img.onload = () => {
-      ctx.drawImage(img, 0, 0, width, height)
+      ctx.drawImage(img, 0, 0, width, canvasHeight)
     }
     img.src = spectrogramData
-  }, [spectrogramData])
+  }, [spectrogramData, height])
 
   // Draw playhead (updates frequently)
   useEffect(() => {

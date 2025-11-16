@@ -21,6 +21,7 @@ export function useAudioData(audioUrl: string): UseAudioDataResult {
 
   useEffect(() => {
     let cancelled = false
+    let audioContext: AudioContext | null = null
 
     async function loadAudio() {
       try {
@@ -46,12 +47,19 @@ export function useAudioData(audioUrl: string): UseAudioDataResult {
 
         // Fetch and decode audio
         const response = await fetch(audioUrl)
-        const arrayBuffer = await response.arrayBuffer()
+        if (cancelled) return
 
-        const audioContext = new AudioContext({ sampleRate: 16000 })
+        const arrayBuffer = await response.arrayBuffer()
+        if (cancelled) return
+
+        audioContext = new AudioContext({ sampleRate: 16000 })
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
         const samples = audioBuffer.getChannelData(0)
         const duration = audioBuffer.duration
+
+        // Close the audio context as we no longer need it
+        await audioContext.close()
+        audioContext = null
 
         const data = { samples, duration }
 
@@ -66,6 +74,11 @@ export function useAudioData(audioUrl: string): UseAudioDataResult {
         if (!cancelled) {
           setError(err instanceof Error ? err : new Error('Failed to load audio'))
           setIsLoading(false)
+        }
+      } finally {
+        // Ensure audio context is closed even on error or cancellation
+        if (audioContext && audioContext.state !== 'closed') {
+          await audioContext.close()
         }
       }
     }

@@ -6,7 +6,7 @@ import { parseBbox, buildBboxVizUrl } from '@/lib/utils/bboxUtils'
 import ImageBlock from '@/components/common/ImageBlock'
 import ImageMask from '@/components/viz/ImageMask'
 import GalleryVideoItem from './GalleryVideoItem'
-import AudioPreview from '@/components/audio/AudioPreview'
+import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
 import { useAppSelector } from '@/lib/hooks'
 
 interface GalleryItemVisualProps {
@@ -53,7 +53,7 @@ export default function GalleryItemVisual({
 
       {renderType === RenderType.AudioUrl && (
         <div className="w-full h-full flex items-center justify-center">
-          <AudioPreview audioUrl={proxyedUrl(String(visualValue))} height={galleryItemHeight} />
+          <AudioMiniMelSpectrogram audioUrl={proxyedUrl(String(visualValue))} height={galleryItemHeight} allowPopOver={true} />
         </div>
       )}
 

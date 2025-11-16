@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { loadFolderContents } from '@/lib/features/folderTree/folderTreeSlice'
 import ImageBlock from '@/components/common/ImageBlock'
 import GalleryVideoItem from '@/components/gallery/GalleryVideoItem'
+import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
 import AlbumHeaderControls from './AlbumHeaderControls'
 import PreviewLoading from './shared/PreviewLoading'
 import PreviewError from './shared/PreviewError'
@@ -21,7 +22,7 @@ interface AlbumPreviewerProps {
 interface MediaFile {
   name: string
   path: string
-  type: 'image' | 'video'
+  type: 'image' | 'video' | 'audio'
 }
 
 const ITEMS_PER_PAGE = 10
@@ -48,7 +49,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
           limit: 1000  // Load more items to find media files
         })).unwrap()
 
-        // Filter for image and video files
+        // Filter for image, video, and audio files
         const media: MediaFile[] = result.items
           .filter(file => !file.isDir)
           .map(file => {
@@ -64,6 +65,12 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
                 name: file.name,
                 path: pathJoin(item.path, file.name),
                 type: 'video' as const
+              }
+            } else if (fileType === FileType.Audio) {
+              return {
+                name: file.name,
+                path: pathJoin(item.path, file.name),
+                type: 'audio' as const
               }
             }
             return null
@@ -121,7 +128,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
         <Images className="h-12 w-12 opacity-50" />
         <div className="text-center">
           <p className="text-lg font-medium mb-2">No Media Files</p>
-          <p className="text-sm">This folder does not contain any image or video files</p>
+          <p className="text-sm">This folder does not contain any image, video, or audio files</p>
         </div>
       </div>
     )
@@ -168,8 +175,16 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
                     alt={mediaFile.name}
                     className="w-full h-full"
                   />
-                ) : (
+                ) : mediaFile.type === 'video' ? (
                   <GalleryVideoItem visualValue={getFileUrl(mediaFile.path, true)} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <AudioMiniMelSpectrogram
+                      audioUrl={getFileUrl(mediaFile.path, true)}
+                      height={galleryItemHeight}
+                      allowPopOver={true}
+                    />
+                  </div>
                 )}
               </div>
 

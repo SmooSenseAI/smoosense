@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
 import ImagePreviewer from './previewers/ImagePreviewer'
 import VideoPreviewer from './previewers/VideoPreviewer'
+import AudioPreviewer from './previewers/AudioPreviewer'
 import TextPreviewer from './previewers/TextPreviewer'
 import JsonPreviewer from './previewers/JsonPreviewer'
 import ColumnarTablePreviewer from './previewers/ColumnarTablePreviewer'
@@ -42,11 +43,11 @@ function findNodeById(node: TreeNode | null, targetId: string): TreeNode | null 
 function folderLikelyContainsMedia(folder: TreeNode): boolean {
   if (!folder.isDir || !folder.children) return false
 
-  // Check if any direct children are image or video files
+  // Check if any direct children are image, video, or audio files
   return folder.children.some(child => {
     if (child.isDir) return false
     const fileType = getFileType(child.name)
-    return fileType === FileType.Image || fileType === FileType.Video
+    return fileType === FileType.Image || fileType === FileType.Video || fileType === FileType.Audio
   })
 }
 
@@ -105,6 +106,9 @@ export default function FSItemPreview() {
 
       case FileType.Video:
         return <VideoPreviewer item={viewingItem} />
+
+      case FileType.Audio:
+        return <AudioPreviewer item={viewingItem} />
 
       case FileType.Json:
         return <JsonPreviewer item={viewingItem} />

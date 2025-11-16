@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import CellPopover from '@/components/ui/CellPopover'
 import { isNil } from 'lodash'
 import { proxyedUrl } from '@/lib/utils/urlUtils'
-import AudioPreview from '@/components/audio/AudioPreview'
+import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
 import { useAppSelector } from '@/lib/hooks'
 
 // Lazy load the rich audio player (only loads when popover opens)
@@ -44,7 +44,7 @@ const AudioCellRenderer = memo(function AudioCellRenderer({
 
   const cellContent = (
     <div className="w-full h-full flex items-center justify-center p-1">
-      <AudioPreview audioUrl={audioUrl} height={rowHeight - 8} />
+      <AudioMiniMelSpectrogram audioUrl={audioUrl} height={rowHeight - 8} allowPopOver={false} />
     </div>
   )
 

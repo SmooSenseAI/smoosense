@@ -1,48 +1,42 @@
 'use client'
 
-import { useRef, useEffect, useState, memo } from 'react'
+import { useEffect, useState, memo } from 'react'
+import dynamic from 'next/dynamic'
 import { useAudioData } from '@/lib/hooks/useAudioData'
 import MelSpectrogram from '@/components/audio/MelSpectrogram'
+import CellPopover from '@/components/ui/CellPopover'
 
-interface AudioPreviewProps {
+// Lazy load the rich audio player (only loads when popover opens)
+const RichAudioPlayer = dynamic(() => import('@/components/audio/RichAudioPlayer'), {
+  ssr: false,
+  loading: () => (
+    <div className="p-4 w-full flex items-center justify-center h-[500px]">
+      <div className="flex flex-col items-center space-y-3">
+        <div className="w-12 h-12 border-4 border-muted-foreground border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm text-muted-foreground">Opening...</span>
+      </div>
+    </div>
+  )
+})
+
+interface AudioMiniMelSpectrogramProps {
   audioUrl: string
   height?: number
+  allowPopOver?: boolean
 }
 
 const PREVIEW_DURATION = 5 // seconds
 const SAMPLE_RATE = 16000 // Hz
 const TRIM_THRESHOLD = 0.01 // 1% of max magnitude
 
-const AudioPreview = memo(function AudioPreview({ audioUrl, height = 60 }: AudioPreviewProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
+const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
+  audioUrl,
+  height = 60,
+  allowPopOver = true
+}: AudioMiniMelSpectrogramProps) {
   const [previewSamples, setPreviewSamples] = useState<Float32Array | null>(null)
 
-  // Only load audio data when the cell is visible
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true)
-            // Once visible, stop observing
-            observer.disconnect()
-          }
-        })
-      },
-      { rootMargin: '50px' } // Start loading slightly before entering viewport
-    )
-
-    observer.observe(containerRef.current)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
-
-  const { audioData, isLoading } = useAudioData(isVisible ? audioUrl : '')
+  const { audioData, isLoading } = useAudioData(audioUrl)
 
   // Extract or pad to 5 seconds, with trimming - save to state
   useEffect(() => {
@@ -91,22 +85,21 @@ const AudioPreview = memo(function AudioPreview({ audioUrl, height = 60 }: Audio
     setPreviewSamples(processedSamples)
   }, [audioData])
 
-  if (!isVisible || isLoading || !previewSamples) {
-    return (
-      <div
-        ref={containerRef}
-        className="w-full flex items-center justify-center bg-muted/20"
-        style={{ height }}
-      >
-        {isVisible && (
-          <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
-        )}
-      </div>
-    )
+  const loadingContent = (
+    <div
+      className="w-full flex items-center justify-center bg-muted/20"
+      style={{ height }}
+    >
+      <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
+  if (isLoading || !previewSamples) {
+    return loadingContent
   }
 
-  return (
-    <div ref={containerRef} className="w-full">
+  const melSpectrogramContent = (
+    <div className="w-full">
       <MelSpectrogram
         samples={previewSamples}
         duration={PREVIEW_DURATION}
@@ -117,6 +110,21 @@ const AudioPreview = memo(function AudioPreview({ audioUrl, height = 60 }: Audio
       />
     </div>
   )
+
+  if (!allowPopOver) {
+    return melSpectrogramContent
+  }
+
+  return (
+    <CellPopover
+      cellContent={melSpectrogramContent}
+      popoverContent={<RichAudioPlayer audioUrl={audioUrl} autoPlay />}
+      url={audioUrl}
+      popoverClassName="w-[850px] h-[520px]"
+      cellContentClassName="items-center justify-center"
+      copyValue={audioUrl}
+    />
+  )
 })
 
-export default AudioPreview
+export default AudioMiniMelSpectrogram
