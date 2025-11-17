@@ -15,7 +15,10 @@ function TableSharePopoverContent() {
     const baseUrl = window.location.origin
 
     // Excluded keys
-    const excludedKeys: Array<keyof typeof uiState> = ['baseUrl', 'sqlQuery', 'sqlResult']
+    const excludedKeys: Array<keyof typeof uiState> = [
+        'baseUrl', 'sqlQuery', 'sqlResult',
+        'boxPlotSorting' // Temporarily exclude this complex type data.
+    ]
 
     // Filter out excluded keys and empty values
     const filteredState = pickBy(
