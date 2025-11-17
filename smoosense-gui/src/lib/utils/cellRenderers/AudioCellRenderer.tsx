@@ -55,7 +55,7 @@ const AudioCellRenderer = memo(function AudioCellRenderer({
       cellContent={cellContent}
       popoverContent={popoverContent}
       url={originalUrl}
-      popoverClassName="w-[850px] h-[520px]"
+      popoverClassName="w-[500px] h-[310px]"
       cellContentClassName="items-center justify-center"
       copyValue={originalUrl}
     />

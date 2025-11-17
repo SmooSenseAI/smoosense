@@ -106,7 +106,6 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
         currentTime={0}
         onSeek={() => {}} // No-op for preview
         height={height}
-        showTitle={false}
       />
     </div>
   )
@@ -120,7 +119,7 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
       cellContent={melSpectrogramContent}
       popoverContent={<RichAudioPlayer audioUrl={audioUrl} autoPlay />}
       url={audioUrl}
-      popoverClassName="w-[850px] h-[520px]"
+      popoverClassName="w-[500px] h-[310px]"
       cellContentClassName="items-center justify-center"
       copyValue={audioUrl}
     />

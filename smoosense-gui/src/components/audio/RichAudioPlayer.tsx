@@ -6,8 +6,6 @@ import 'react-h5-audio-player/lib/styles.css'
 import WaveForm from '@/components/audio/WaveForm'
 import MelSpectrogram from '@/components/audio/MelSpectrogram'
 import { useAudioData } from '@/lib/hooks/useAudioData'
-import CopyToClipboard from '@/components/ui/CopyToClipboard'
-import { pathBasename } from '@/lib/utils/pathUtils'
 
 interface RichAudioPlayerProps {
   audioUrl: string
@@ -20,9 +18,6 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false }: RichAudi
 
   // Load audio data (starts loading when this component mounts, i.e., when popover opens)
   const { audioData } = useAudioData(audioUrl)
-
-  // Extract filename from URL
-  const filename = pathBasename(audioUrl) || 'Failed to get name'
 
   // Handle seek from visualizations
   const handleSeek = (time: number) => {
@@ -51,22 +46,7 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false }: RichAudi
   }
 
   return (
-    <div className="p-4 w-full space-y-4">
-      {/* Info bar */}
-      <div className="flex items-center justify-between gap-4 px-2 py-1.5 bg-muted/30 rounded border border-border">
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="flex items-center gap-2 min-w-0">
-            <CopyToClipboard value={audioUrl} className="shrink-0" />
-            <span className="text-sm font-mono truncate text-muted-foreground" title={filename}>
-              {filename} •
-            </span>
-
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground shrink-0">
-            <span>{audioData.duration.toFixed(2)}s</span>
-          </div>
-        </div>
-      </div>
+    <div className="p-2 w-full space-y-2">
 
       {/* Audio player */}
       <AudioPlayer
@@ -85,14 +65,14 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false }: RichAudi
         duration={audioData.duration}
         currentTime={currentTime}
         onSeek={handleSeek}
-        height={80}
+        height={50}
       />
       <MelSpectrogram
         samples={audioData.samples}
         duration={audioData.duration}
         currentTime={currentTime}
         onSeek={handleSeek}
-        height={180}
+        height={120}
       />
     </div>
   )

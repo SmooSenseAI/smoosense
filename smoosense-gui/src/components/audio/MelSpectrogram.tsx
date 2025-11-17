@@ -9,7 +9,6 @@ interface MelSpectrogramProps {
   currentTime: number
   onSeek: (time: number) => void
   height?: number
-  showTitle?: boolean
 }
 
 export default function MelSpectrogram({
@@ -17,13 +16,37 @@ export default function MelSpectrogram({
   duration,
   currentTime,
   onSeek,
-  height = 200,
-  showTitle = true
+  height = 200
 }: MelSpectrogramProps) {
   const spectrogramCanvasRef = useRef<HTMLCanvasElement>(null)
   const playheadCanvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [spectrogramData, setSpectrogramData] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [canvasWidth, setCanvasWidth] = useState(800)
+
+  // Measure container width and update canvas width
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.clientWidth
+        setCanvasWidth(width)
+      }
+    }
+
+    // Initial measurement
+    updateWidth()
+
+    // Watch for resize
+    const resizeObserver = new ResizeObserver(updateWidth)
+    resizeObserver.observe(containerRef.current)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   // Compute mel-spectrogram in Web Worker (background thread)
   useEffect(() => {
@@ -147,7 +170,7 @@ export default function MelSpectrogram({
       ctx.drawImage(img, 0, 0, width, canvasHeight)
     }
     img.src = spectrogramData
-  }, [spectrogramData, height])
+  }, [spectrogramData, height, canvasWidth])
 
   // Draw playhead (updates frequently)
   useEffect(() => {
@@ -197,30 +220,26 @@ export default function MelSpectrogram({
   }
 
   return (
-    <div className={showTitle ? "w-full space-y-2" : "w-full"}>
+    <div className="w-full">
       <div
+        ref={containerRef}
         className="relative w-full cursor-pointer rounded overflow-hidden border border-border"
         style={{ height }}
         onClick={handleClick}
       >
         <canvas
           ref={spectrogramCanvasRef}
-          width={800}
+          width={canvasWidth}
           height={height}
           className="absolute inset-0 w-full h-full"
         />
         <canvas
           ref={playheadCanvasRef}
-          width={800}
+          width={canvasWidth}
           height={height}
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
       </div>
-      {showTitle && (
-        <div className="text-center text-sm text-muted-foreground">
-          Mel Spectrogram
-        </div>
-      )}
     </div>
   )
 }

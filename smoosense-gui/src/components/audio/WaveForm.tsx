@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface WaveFormProps {
   samples: Float32Array
@@ -19,6 +19,31 @@ export default function WaveForm({
 }: WaveFormProps) {
   const waveformCanvasRef = useRef<HTMLCanvasElement>(null)
   const playheadCanvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [canvasWidth, setCanvasWidth] = useState(800)
+
+  // Measure container width and update canvas width
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.clientWidth
+        setCanvasWidth(width)
+      }
+    }
+
+    // Initial measurement
+    updateWidth()
+
+    // Watch for resize
+    const resizeObserver = new ResizeObserver(updateWidth)
+    resizeObserver.observe(containerRef.current)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   // Draw waveform (only once when data is ready)
   useEffect(() => {
@@ -63,7 +88,7 @@ export default function WaveForm({
     ctx.moveTo(0, canvasHeight / 2)
     ctx.lineTo(width, canvasHeight / 2)
     ctx.stroke()
-  }, [samples])
+  }, [samples, canvasWidth])
 
   // Draw playhead (updates frequently)
   useEffect(() => {
@@ -99,27 +124,25 @@ export default function WaveForm({
   }
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full">
       <div
+        ref={containerRef}
         className="relative w-full cursor-pointer rounded overflow-hidden bg-muted/20 border border-border"
         style={{ height }}
         onClick={handleClick}
       >
         <canvas
           ref={waveformCanvasRef}
-          width={800}
+          width={canvasWidth}
           height={height}
           className="absolute inset-0 w-full h-full"
         />
         <canvas
           ref={playheadCanvasRef}
-          width={800}
+          width={canvasWidth}
           height={height}
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
-      </div>
-      <div className="text-center text-sm text-muted-foreground">
-        Waveform
       </div>
     </div>
   )
