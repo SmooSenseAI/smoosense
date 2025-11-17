@@ -1,6 +1,6 @@
 'use client'
 
-import { FileText, Download, ExternalLink } from 'lucide-react'
+import { FileText, Download, ExternalLink, FolderOpen } from 'lucide-react'
 import { useAppSelector } from '@/lib/hooks'
 import { getFileType, FileType } from '@/lib/utils/fileTypes'
 import { pathBasename } from '@/lib/utils/pathUtils'
@@ -51,6 +51,25 @@ function folderLikelyContainsMedia(folder: TreeNode): boolean {
   })
 }
 
+// Helper function to get content summary for a folder
+function getFolderContentSummary(folder: TreeNode): { extensionCounts: Record<string, number>; folderCount: number } | null {
+  if (!folder.isDir || !folder.children) return null
+
+  const folderCount = folder.children.filter(child => child.isDir).length
+  const extensionCounts: Record<string, number> = {}
+
+  folder.children.forEach(child => {
+    if (!child.isDir) {
+      const extension = child.name.includes('.')
+        ? '.' + child.name.split('.').pop()!.toLowerCase()
+        : '(no ext)'
+      extensionCounts[extension] = (extensionCounts[extension] || 0) + 1
+    }
+  })
+
+  return { extensionCounts, folderCount }
+}
+
 export default function FSItemPreview() {
   const viewingId = useAppSelector(state => state.folderTree.viewingId)
   const rootNode = useAppSelector(state => state.folderTree.rootNode)
@@ -82,7 +101,7 @@ export default function FSItemPreview() {
     if (!viewingItem) {
       return (
         <div className="text-center space-y-4">
-          <div className="flex items-center justify-center">
+          <div className="flex items-start justify-center">
             <FileText className="h-12 w-12 text-muted-foreground" />
           </div>
           <div>
@@ -127,10 +146,16 @@ export default function FSItemPreview() {
 
       default:
         // Default view for unsupported file types or directories without media
+        const contentSummary = viewingItem.isDir ? getFolderContentSummary(viewingItem) : null
+
         return (
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center">
-              <FileText className="h-12 w-12 text-muted-foreground" />
+              {viewingItem.isDir ? (
+                <FolderOpen className="h-12 w-12 text-muted-foreground" />
+              ) : (
+                <FileText className="h-12 w-12 text-muted-foreground" />
+              )}
             </div>
             <div>
               <h4 className="text-lg font-medium text-muted-foreground mb-2">
@@ -139,6 +164,29 @@ export default function FSItemPreview() {
               <p className="text-sm text-muted-foreground mb-2">
                 File Type: {viewingItem.isDir ? 'Folder' : fileType || 'Unknown'}
               </p>
+
+              {/* Content Summary for folders */}
+              {contentSummary && (Object.keys(contentSummary.extensionCounts).length > 0 || contentSummary.folderCount > 0) && (
+                <div className="mt-4 mb-2 inline-block">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground justify-center">
+                    {contentSummary.folderCount > 0 && (
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">Folders:</span>
+                        <span>{contentSummary.folderCount}</span>
+                      </div>
+                    )}
+                    {Object.entries(contentSummary.extensionCounts)
+                      .sort(([extA], [extB]) => extA.localeCompare(extB))
+                      .map(([extension, count]) => (
+                        <div key={extension} className="flex items-center gap-1">
+                          <span className="font-medium">{extension}:</span>
+                          <span>{count}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               <p className="text-sm text-muted-foreground">
                 {viewingItem.isDir
                   ? 'This folder does not contain media files for album preview'
@@ -184,7 +232,7 @@ export default function FSItemPreview() {
         )}
       </div>
 
-      <div className="h-full border rounded-lg bg-muted/30 flex items-center justify-center p-4">
+      <div className="h-full border rounded-lg bg-muted/30 flex items-start justify-center p-4">
         {renderContent()}
       </div>
     </div>

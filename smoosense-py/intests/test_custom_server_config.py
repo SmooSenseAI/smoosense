@@ -172,9 +172,9 @@ class TestCustomServerConfig(unittest.TestCase):
         self.assertEqual(data_node.count(), 1, "Data folder not found in navigation")
         logger.info("Found 'data' folder node")
 
-        # Click on the data folder to expand it
-        logger.info("Clicking to expand 'data' folder")
-        data_node.click()
+        # Double-click on the data folder to expand it
+        logger.info("Double-clicking to expand 'data' folder")
+        data_node.dblclick()
 
         # Wait a moment for expansion to complete
         time.sleep(2)

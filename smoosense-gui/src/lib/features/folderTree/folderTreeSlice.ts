@@ -41,22 +41,22 @@ const initialState: FolderTreeState = {
 // Async thunk to load folder contents
 export const loadFolderContents = createAsyncThunk(
   'folderTree/loadFolderContents',
-  async ({ path, limit = 100, showHidden = false }: { 
+  async ({ path, limit = 100, showHidden = false }: {
     path: string
     limit?: number
-    showHidden?: boolean 
+    showHidden?: boolean
   }) => {
     const params = new URLSearchParams({
       path,
       limit: limit.toString(),
       show_hidden: showHidden.toString(),
     })
-    
+
     const response = await fetch(`${API_PREFIX}/ls?${params}`)
     if (!response.ok) {
       throw new Error(`Failed to load folder contents: ${response.statusText}`)
     }
-    
+
     const items: FSItem[] = await response.json()
     return { path, items }
   }
@@ -107,7 +107,7 @@ export const folderTreeSlice = createSlice({
       } else {
         state.expandedPaths.push(path)
       }
-      
+
       if (state.rootNode) {
         state.rootNode = updateNodeInTree(state.rootNode, path, (node) => ({
           ...node,
@@ -115,11 +115,27 @@ export const folderTreeSlice = createSlice({
         }))
       }
     },
+    expandNode: (state, action: PayloadAction<string>) => {
+      const path = action.payload
+      const pathIndex = state.expandedPaths.indexOf(path)
+
+      // Only add if not already expanded
+      if (pathIndex < 0) {
+        state.expandedPaths.push(path)
+      }
+
+      if (state.rootNode) {
+        state.rootNode = updateNodeInTree(state.rootNode, path, (node) => ({
+          ...node,
+          isExpanded: true
+        }))
+      }
+    },
     clearTree: (state) => {
       state.rootNode = null
       state.expandedPaths = []
       state.error = null
-      state.viewingId = null
+      // Don't reset viewingId - it's managed independently by URL params
     },
     setViewingId: (state, action: PayloadAction<string | null>) => {
       state.viewingId = action.payload
@@ -172,7 +188,7 @@ export const folderTreeSlice = createSlice({
             children: items.map(item => createTreeNode(item, path)),
             isLoaded: true,
             loading: false,
-            isExpanded: true,
+            // Keep the current expansion state - don't automatically expand
           }))
           state.rootNode = updatedRootNode
         }
@@ -192,5 +208,5 @@ export const folderTreeSlice = createSlice({
   },
 })
 
-export const { toggleNodeExpansion, clearTree, setViewingId, setNodeLoading } = folderTreeSlice.actions
+export const { toggleNodeExpansion, expandNode, clearTree, setViewingId, setNodeLoading } = folderTreeSlice.actions
 export default folderTreeSlice.reducer

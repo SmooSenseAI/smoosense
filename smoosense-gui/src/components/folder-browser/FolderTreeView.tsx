@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Tree } from 'react-arborist'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import {
@@ -15,18 +16,25 @@ export default function FolderTreeView() {
   const dispatch = useAppDispatch()
   const { rootNode, loading, error } = useAppSelector(state => state.folderTree)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
+  const searchParams = useSearchParams()
   const containerRef = useRef<HTMLDivElement>(null)
   const [height, setHeight] = useState(600)
-  
+
   // Load folder contents when rootFolder changes
+  // Skip if there's a viewing parameter (FolderUrlParamsProvider will handle it)
   useEffect(() => {
+    const viewing = searchParams.get('viewing')
+
     if (rootFolder) {
       dispatch(clearTree())
-      dispatch(loadFolderContents({ path: rootFolder }))
+      // Only load root if there's no viewing parameter
+      if (!viewing || viewing.trim() === '') {
+        dispatch(loadFolderContents({ path: rootFolder }))
+      }
     } else {
       dispatch(clearTree())
     }
-  }, [rootFolder, dispatch])
+  }, [rootFolder, searchParams, dispatch])
 
   // Expand root node when it's first loaded
   useEffect(() => {

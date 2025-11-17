@@ -2,6 +2,7 @@
 
 import { FolderOpen, ChevronRight, MoreHorizontal } from 'lucide-react'
 import FolderTreeView from './FolderTreeView'
+import FolderHelpCard from './FolderHelpCard'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setFileInfoToShow } from '@/lib/features/ui/uiSlice'
 import { pathParent, pathBasename } from '@/lib/utils/pathUtils'
@@ -62,27 +63,30 @@ export default function FolderNavigation() {
   return (
     <div className="h-full w-full border-r bg-muted/10 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-2 border-b">
         <div className="flex items-center space-x-2">
           <FolderOpen className="h-5 w-5 text-muted-foreground" />
           <h3 className="font-medium text-sm">Folder Navigation</h3>
         </div>
 
-        <Select
-            value={fileInfoToShow}
-            onValueChange={(value: 'size' | 'lastModified' | 'lastModifiedRelative') =>
-                dispatch(setFileInfoToShow(value))
-            }
-        >
-          <SelectTrigger className="w-auto h-7 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="size">Size</SelectItem>
-            <SelectItem value="lastModified">Modified Date</SelectItem>
-            <SelectItem value="lastModifiedRelative">Modified (Relative)</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select
+              value={fileInfoToShow}
+              onValueChange={(value: 'size' | 'lastModified' | 'lastModifiedRelative') =>
+                  dispatch(setFileInfoToShow(value))
+              }
+          >
+            <SelectTrigger className="w-auto h-7 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="size">Size</SelectItem>
+              <SelectItem value="lastModified">Modified Date</SelectItem>
+              <SelectItem value="lastModifiedRelative">Modified (Relative)</SelectItem>
+            </SelectContent>
+          </Select>
+          <FolderHelpCard />
+        </div>
       </div>
 
       {/* Breadcrumb */}

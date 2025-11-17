@@ -55,37 +55,37 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
     }
   }, [nodeData.isExpanded, nodeData.isDir, node])
   
-  const handleClick = useCallback(async (e: React.MouseEvent) => {
+  const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
 
     // Set the viewing ID for both files and folders
     dispatch(setViewingId(nodeData.id))
-    
-    if (nodeData.isDir) {
-      if (!nodeData.isLoaded) {
-        // Load children first - expansion will happen automatically when loaded
-        dispatch(loadFolderContents({ path: nodeData.path }))
-      } else {
-        // Children are already loaded, toggle expansion state in Redux
-        dispatch(toggleNodeExpansion(nodeData.path))
-      }
+
+    // If it's a directory and not loaded, load its contents (but don't expand)
+    if (nodeData.isDir && !nodeData.isLoaded) {
+      dispatch(loadFolderContents({ path: nodeData.path }))
     }
   }, [nodeData, dispatch])
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    
-    // Only handle double-click for files (not directories)
-    if (!nodeData.isDir) {
+
+    if (nodeData.isDir) {
+      // For directories, toggle expand/collapse
+      if (!nodeData.isLoaded) {
+        dispatch(loadFolderContents({ path: nodeData.path }))
+      }
+      dispatch(toggleNodeExpansion(nodeData.path))
+    } else {
+      // For files, open table files in Table view
       const fileType = getFileType(nodeData.name)
-      
-      // Open table files in Table view
+
       if (fileType === FileType.ColumnarTable || fileType === FileType.RowTable) {
         const url = `./Table?tablePath=${encodeURIComponent(nodeData.path)}`
         window.open(url, '_blank')
       }
     }
-  }, [nodeData])
+  }, [nodeData, dispatch])
 
   const handleOpenInNewTab = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -126,9 +126,21 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
     }
   }
   
+  const handleExpandClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    // If expanding and not loaded yet, load children first
+    if (!node.isOpen && !nodeData.isLoaded) {
+      dispatch(loadFolderContents({ path: nodeData.path }))
+    }
+
+    // Toggle expansion state in Redux (will sync to react-arborist via useEffect)
+    dispatch(toggleNodeExpansion(nodeData.path))
+  }, [node.isOpen, nodeData.isLoaded, nodeData.path, dispatch])
+
   const renderExpandIcon = () => {
     if (!nodeData.isDir) return <div className="w-4 h-4" />
-    
+
     if (nodeData.loading) {
       return (
         <div className="w-4 h-4 flex items-center justify-center">
@@ -136,8 +148,12 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
         </div>
       )
     }
-    
-    return node.isOpen ? ICONS.CHEVRON_DOWN : ICONS.CHEVRON_RIGHT
+
+    return (
+      <div onClick={handleExpandClick} className="cursor-pointer">
+        {node.isOpen ? ICONS.CHEVRON_DOWN : ICONS.CHEVRON_RIGHT}
+      </div>
+    )
   }
   
   const renderFileInfo = () => {

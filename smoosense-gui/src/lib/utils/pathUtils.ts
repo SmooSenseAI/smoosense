@@ -122,5 +122,39 @@ export function pathExtension(path: string): string {
   return basename.substring(lastDot)
 }
 
+/**
+ * Get the relative path from a base path to a target path
+ * Returns empty string if target doesn't start with base or if they're equal
+ */
+export function pathRelative(targetPath: string, basePath: string): string {
+  if (!targetPath || !basePath || typeof targetPath !== 'string' || typeof basePath !== 'string') {
+    return ''
+  }
+
+  // Normalize trailing slashes for comparison
+  const normalizedBase = basePath.replace(/\/+$/, '')
+  const normalizedTarget = targetPath.replace(/\/+$/, '')
+
+  // If they're the same, return empty string
+  if (normalizedBase === normalizedTarget) {
+    return ''
+  }
+
+  // Check if target starts with base
+  if (!normalizedTarget.startsWith(normalizedBase)) {
+    return ''
+  }
+
+  // Extract the relative part
+  let relativePath = normalizedTarget.substring(normalizedBase.length)
+
+  // Remove leading slash if present
+  if (relativePath.startsWith('/')) {
+    relativePath = relativePath.substring(1)
+  }
+
+  return relativePath
+}
+
 // Keep pathDirname as an alias for backward compatibility
 export const pathDirname = pathParent
