@@ -232,7 +232,7 @@ export default function FSItemPreview() {
         )}
       </div>
 
-      <div className="h-full border rounded-lg bg-muted/30 flex items-start justify-center p-4">
+      <div className="h-full border rounded-lg bg-muted/30 flex items-start justify-center p-4 overflow-auto">
         {renderContent()}
       </div>
     </div>

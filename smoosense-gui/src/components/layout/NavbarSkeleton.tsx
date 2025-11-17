@@ -6,6 +6,7 @@ import React from 'react'
 import Logo from '@/components/common/Logo'
 import GlobalSettingsDropdown from '@/components/settings/GlobalSettings'
 import HelpPopover from '@/components/common/HelpPopover'
+import { NAVBAR_HEIGHT } from '@/constants'
 
 interface NavbarSkeletonProps {
   className?: string
@@ -33,7 +34,7 @@ export default function NavbarSkeleton({
   return (
     <nav className={`border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full ${className}`}>
       {/* Main navbar level */}
-      <div className="flex h-14 items-center px-4 w-full">
+      <div className="flex items-center px-4 w-full" style={{ height: `${NAVBAR_HEIGHT}px` }}>
         {/* Logo - leftmost */}
         <div className="flex items-center gap-2">
           <Logo />
