@@ -5,7 +5,7 @@ import { setActiveTab } from '@/lib/features/ui/uiSlice'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import IconDialog from '@/components/common/IconDialog'
 import AssistantPopover from '@/lib/features/assistant/AssistantPopover'
-import SharePopover from './SharePopover'
+import TableSharePopover from './TableSharePopover'
 import { useAIQuickActions } from '@/lib/hooks/useAIQuickActions'
 import { Folder } from 'lucide-react'
 import DebugStateViewer from '@/components/debug/DebugStateViewer'
@@ -75,7 +75,7 @@ export default function TableNavbar() {
     >
       <FolderBrowserTabContent />
     </IconDialog>,
-    <SharePopover key="share" />,
+    <TableSharePopover key="share" />,
     ...(debugMode ? [<DebugStateViewer key="debug" />, <SqlHistoryViewer key="sql" />] : [])
   ]
 

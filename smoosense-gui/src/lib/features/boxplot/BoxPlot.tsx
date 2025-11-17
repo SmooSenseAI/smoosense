@@ -17,11 +17,15 @@ ModuleRegistry.registerModules([AllCommunityModule])
 export default function BoxPlot() {
   const dispatch = useAppDispatch()
   const { data, loading, error } = useBoxPlot()
-  const boxPlotColumns = useAppSelector((state) => state.ui.boxPlotColumns)
+  const boxPlotColumnsRaw = useAppSelector((state) => state.ui.boxPlotColumns)
   const boxPlotSortBy = useAppSelector((state) => state.ui.boxPlotSortBy)
   const boxPlotBreakdownColumn = useAppSelector((state) => state.ui.boxPlotBreakdownColumn)
-  const boxPlotSorting = useAppSelector((state) => state.ui.boxPlotSorting)
-  
+  const boxPlotSortingRaw = useAppSelector((state) => state.ui.boxPlotSorting)
+
+  // Ensure stable references for array dependencies
+  const boxPlotColumns = useMemo(() => boxPlotColumnsRaw || [], [boxPlotColumnsRaw])
+  const boxPlotSorting = useMemo(() => boxPlotSortingRaw || [], [boxPlotSortingRaw])
+
   const gridRef = useRef<AgGridReact>(null)
   const gridApiRef = useRef<GridApi | null>(null)
   const theme = useAGGridTheme()
