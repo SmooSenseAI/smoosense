@@ -27,6 +27,11 @@ const EXAMPLES: ExampleCard[] = [
     tags: ['bbox', 'image']
   },
   {
+    title: 'Audio Mel-Spectrogram',
+    href: '/example/audiomelspectrogram',
+    tags: ['audio']
+  },
+  {
     title: '3D Objects',
     tags: ['3d'],
     comingSoon: true

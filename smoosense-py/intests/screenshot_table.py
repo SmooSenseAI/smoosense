@@ -66,7 +66,6 @@ class TestTable(BaseIntegrationTest):
                 self.page.keyboard.press("Escape")
                 time.sleep(0.3)
 
-
     def test_header_stats(self) -> None:
         """Test header stats for specific columns and take screenshots."""
         columns = ["iou", "confidence", "match_type", "category_name", "filename"]
