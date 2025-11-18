@@ -73,14 +73,21 @@ export default function TextFilterCard({ columnName, onClose }: TextFilterCardPr
     }
   }, [reduxFilter])
 
-  const applyTextFilterChanges = () => {
+  const applyTextFilterChanges = useCallback(() => {
     if (!debouncedSearchTerm || !debouncedSearchTerm.trim()) {
       applyTextFilter(undefined)
     } else {
       const filter = createTextColumnFilter(debouncedSearchTerm.trim(), nullFilter)
       applyTextFilter(filter)
     }
-  }
+  }, [debouncedSearchTerm, nullFilter, applyTextFilter])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      applyTextFilterChanges()
+    }
+  }, [applyTextFilterChanges])
 
   return (
     <div className="min-w-[400px]">
@@ -103,6 +110,7 @@ export default function TextFilterCard({ columnName, onClose }: TextFilterCardPr
                 type="text"
                 value={searchTerm}
                 onChange={handleSearchTermChange}
+                onKeyDown={handleKeyDown}
                 placeholder="Enter search term..."
                 className="w-full pl-10 pr-4 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
