@@ -122,6 +122,7 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
       popoverClassName="w-[500px] h-[310px]"
       cellContentClassName="items-center justify-center"
       copyValue={audioUrl}
+      side="right"
     />
   )
 })
