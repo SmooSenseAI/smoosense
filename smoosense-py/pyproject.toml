@@ -4,6 +4,25 @@ version = "0.1.14"
 description = "Smoothly make sense of your large multi-modal datasets"
 readme = "README.md"
 requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
+keywords = ["data-analysis", "visualization", "multimodal", "parquet", "csv", "sql", "duckdb"]
+authors = [
+    {name = "SmooSense AI", email = "contact@smoosense.ai"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "boto3>=1.39.11",
     "click>=8.1.8",
@@ -16,6 +35,14 @@ dependencies = [
     "requests>=2.32.3",
     "rich>=14.0.0",
 ]
+
+[project.urls]
+Homepage = "https://smoosense.ai"
+Documentation = "https://smoosense.ai/docs/"
+Repository = "https://github.com/SmooSenseAI/smoosense"
+"Source Code" = "https://github.com/SmooSenseAI/smoosense"
+"Bug Tracker" = "https://github.com/SmooSenseAI/smoosense/issues"
+Changelog = "https://github.com/SmooSenseAI/smoosense/releases"
 
 [project.optional-dependencies]
 jupyter = [
