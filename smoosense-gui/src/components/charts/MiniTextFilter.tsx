@@ -44,23 +44,43 @@ export default function MiniTextFilter({ columnName, initialValue = '' }: MiniTe
     }
   }, [columnName, value, dispatch])
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Prevent parent button from capturing keyboard events
+    e.stopPropagation()
+
     if (e.key === 'Enter') {
       e.preventDefault()
       applyFilter()
     }
-  }, [applyFilter])
+    // Prevent Space from triggering parent button
+    if (e.key === ' ') {
+      e.preventDefault()
+      // Manually insert space into the input
+      const target = e.target as HTMLInputElement
+      const start = target.selectionStart || 0
+      const end = target.selectionEnd || 0
+      const newValue = value.substring(0, start) + ' ' + value.substring(end)
+      setValue(newValue)
+      // Set cursor position after the inserted space
+      setTimeout(() => {
+        target.setSelectionRange(start + 1, start + 1)
+      }, 0)
+    }
+  }, [applyFilter, value])
 
   return (
-    <div className="flex-1 h-full flex items-center px-1">
+    <div
+      className="flex-1 h-full flex items-center px-1"
+      onKeyDown={(e) => e.stopPropagation()}
+      onKeyUp={(e) => e.stopPropagation()}
+    >
       <input
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyDown}
         onBlur={applyFilter}
         onClick={(e) => {
-          e.preventDefault()
           e.stopPropagation()
         }}
         placeholder="Filter text..."
