@@ -31,7 +31,9 @@ const parseTextFilter = (name: string, item: ColumnFilter): string | null => {
   if (isNil(contains) || contains === '') {
     return combineWithFilterNull(name, null, filterNull)
   } else {
-    const expr = `CAST(${sanitizeName(name)} AS VARCHAR) LIKE '%${contains}%'`
+    // Escape single quotes in user input, then wrap with % wildcards
+    const escapedContains = contains.replace(/'/g, "''")
+    const expr = `CAST(${sanitizeName(name)} AS VARCHAR) LIKE '%${escapedContains}%'`
     return combineWithFilterNull(name, expr, filterNull)
   }
 }

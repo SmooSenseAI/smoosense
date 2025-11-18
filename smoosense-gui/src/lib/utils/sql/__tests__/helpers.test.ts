@@ -110,6 +110,13 @@ describe('sanitizeValue', () => {
     expect(sanitizeValue('')).toBe("''")
   })
 
+  it('should escape single quotes in string values', () => {
+    expect(sanitizeValue("O'Brien")).toBe("'O''Brien'")
+    expect(sanitizeValue("it's a test")).toBe("'it''s a test'")
+    expect(sanitizeValue("''")).toBe("''''''")
+    expect(sanitizeValue("test's value's")).toBe("'test''s value''s'")
+  })
+
   it('should convert number values to string without quotes', () => {
     expect(sanitizeValue(123)).toBe('123')
     expect(sanitizeValue(0)).toBe('0')
