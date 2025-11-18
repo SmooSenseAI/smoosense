@@ -75,6 +75,29 @@ describe('parseFilterItem | TEXT filter', () => {
       } as ColumnFilter)).toBe(expected)
     })
   })
+
+  it('should properly escape single quotes in contains value', () => {
+    // Test single quote escaping
+    expect(parseFilterItem('columnName', {
+      filterType: FilterType.TEXT,
+      contains: "O'Brien",
+      null: 'Exclude'
+    })).toBe("CAST(columnName AS VARCHAR) LIKE '%O''Brien%'")
+
+    // Test multiple single quotes
+    expect(parseFilterItem('columnName', {
+      filterType: FilterType.TEXT,
+      contains: "it's a test's value",
+      null: 'N/A'
+    })).toBe("CAST(columnName AS VARCHAR) LIKE '%it''s a test''s value%'")
+
+    // Test with Include null filter
+    expect(parseFilterItem('columnName', {
+      filterType: FilterType.TEXT,
+      contains: "O'Brien",
+      null: 'Include'
+    })).toBe("CAST(columnName AS VARCHAR) LIKE '%O''Brien%' OR columnName IS NULL")
+  })
 })
 
 describe('parseFilterItem | ENUM filter', () => {

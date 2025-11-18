@@ -8,7 +8,9 @@ export const sanitizeValue = (value: unknown): string => {
   if (isNil(value)) {
     return 'NULL'
   } else if (typeof value === 'string') {
-    return `'${value}'`
+    // Escape single quotes by doubling them (SQL standard)
+    const escaped = value.replace(/'/g, "''")
+    return `'${escaped}'`
   } else if (typeof value === 'number') {
     return `${value}`
   } else if (typeof value === 'boolean') {
