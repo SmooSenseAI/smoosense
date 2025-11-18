@@ -1,6 +1,6 @@
 SUB_PROJECTS := smoosense-gui smoosense-py
 
-.PHONY: env build test
+.PHONY: env build test release
 
 .EXPORT_ALL_VARIABLES:
 R2_PARAMS := --profile=r2 --endpoint-url=https://41a336bea9a67c844e5fcba526c53768.r2.cloudflarestorage.com
@@ -44,3 +44,31 @@ test:
 
 publish:
 	make -C smoosense-py publish
+
+release:
+	@echo "Creating new release..."
+	@# Check if on main branch
+	@CURRENT_BRANCH=$$(git rev-parse --abbrev-ref HEAD); \
+	if [ "$$CURRENT_BRANCH" != "main" ]; then \
+		echo "Error: Not on main branch (currently on $$CURRENT_BRANCH)"; \
+		exit 1; \
+	fi
+	@# Check if git tree is clean
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		echo "Error: Git tree is not clean. Please commit or stash your changes."; \
+		git status --short; \
+		exit 1; \
+	fi
+	@echo "✓ On main branch and git tree is clean"
+	@cd smoosense-py && uv version --bump patch
+	@NEW_VERSION=$$(cd smoosense-py && uv version --short) && \
+	echo "New version: $$NEW_VERSION" && \
+	echo "Running tests..." && \
+	make test && \
+	git add -A && \
+	git commit -m "Release $$NEW_VERSION" && \
+	git tag -a "v$$NEW_VERSION" -m "Release v$$NEW_VERSION" && \
+	echo "Created tag v$$NEW_VERSION" && \
+	echo "" && \
+	echo "Release $$NEW_VERSION created successfully!" && \
+	echo "To push: git push origin main && git push origin v$$NEW_VERSION"
