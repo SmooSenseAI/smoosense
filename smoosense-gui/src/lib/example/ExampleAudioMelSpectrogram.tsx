@@ -3,7 +3,6 @@
 import { ResizablePanels } from '@/components/ui/resizable-panels'
 import CustomMarkdown from '@/components/common/CustomMarkdown'
 import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
-import { startCase } from 'lodash'
 
 // Example audio files from ESC-50 dataset subset
 const EXAMPLE_AUDIO_FILES = [
@@ -36,11 +35,6 @@ const EXAMPLE_AUDIO_FILES = [
   'vacuum_cleaner.wav',
   'water_drops.wav'
 ]
-
-// Helper function to convert filename to display name
-function filenameToDisplayName(filename: string): string {
-  return startCase(filename.replace('.wav', ''))
-}
 
 const MARKDOWN_CONTENT = `# Audio Mel-Spectrogram Visualization
 
@@ -102,7 +96,6 @@ function AudioGrid() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {EXAMPLE_AUDIO_FILES.map((filename, index) => {
           const audioUrl = `https://cdn.smoosense.ai/datasets/ESC-50-subset/${filename}`
-          const displayName = filenameToDisplayName(filename)
 
           return (
             <div
@@ -119,7 +112,7 @@ function AudioGrid() {
                 </div>
                 <div className="p-2">
                   <span className="text-sm text-center font-medium line-clamp-1 truncate block">
-                    {displayName}
+                    {filename}
                   </span>
                 </div>
               </div>
