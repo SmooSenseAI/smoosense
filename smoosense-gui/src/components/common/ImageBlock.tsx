@@ -1,7 +1,6 @@
 'use client'
 
 import { useAppSelector } from '@/lib/hooks'
-import { proxyedUrl } from '@/lib/utils/urlUtils'
 
 interface ImageBlockProps {
   src: string
@@ -19,7 +18,6 @@ export default function ImageBlock({
   neverFitCover = false
 }: ImageBlockProps) {
   const cropMediaToFitCover = useAppSelector((state) => state.ui.cropMediaToFitCover)
-  const imageUrl = proxyedUrl(src)
 
   const finalClassName = `${className} ${(cropMediaToFitCover && !neverFitCover) ? 'object-cover' : 'object-contain'}`.trim()
 
@@ -31,7 +29,7 @@ export default function ImageBlock({
 
   return (
     <img
-      src={imageUrl}
+      src={src}
       alt={alt}
       className={finalClassName}
       style={style}

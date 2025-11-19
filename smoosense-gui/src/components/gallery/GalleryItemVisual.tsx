@@ -66,11 +66,11 @@ export default function GalleryItemVisual({
         const bbox = parseBbox(visualValue)
         const imageUrl = row.image_url
 
-        if (!bbox || !imageUrl || typeof imageUrl !== 'string' || !baseUrl) {
+        if (!bbox || !imageUrl || typeof imageUrl !== 'string' || !baseUrl || !tablePath) {
           return null
         }
 
-        const vizUrl = buildBboxVizUrl(imageUrl, [bbox], baseUrl)
+        const vizUrl = buildBboxVizUrl(imageUrl, [bbox], tablePath, baseUrl)
 
         return (
           <iframe

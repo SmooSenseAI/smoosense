@@ -17,6 +17,7 @@ const BboxCellRenderer = memo(function BboxCellRenderer({
   value,
   nodeData
 }: BboxCellRendererProps) {
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const baseUrl = useAppSelector((state) => state.ui.baseUrl)
 
   // Handle empty or invalid values
@@ -38,12 +39,12 @@ const BboxCellRenderer = memo(function BboxCellRenderer({
     return <DefaultCellRenderer value={JSON.stringify(bbox)} type={RenderType.Text} />
   }
 
-  // Construct the viz-bbox.html URL with image URL and baseUrl
-  if (!baseUrl) {
+  // Construct the viz-bbox.html URL with image URL, tablePath, and baseUrl
+  if (!baseUrl || !tablePath) {
     return <DefaultCellRenderer value={JSON.stringify(bbox)} type={RenderType.Text} />
   }
 
-  const vizUrl = buildBboxVizUrl(imageUrl, [bbox], baseUrl)
+  const vizUrl = buildBboxVizUrl(imageUrl, [bbox], tablePath, baseUrl)
 
   // Use IFrameCellRenderer to display the viz
   return <IFrameCellRenderer value={vizUrl} />
