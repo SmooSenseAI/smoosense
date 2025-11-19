@@ -12,6 +12,20 @@ export const getScheme = (url: string): string => {
   }
 }
 
+/**
+ * Check if a string is a URL (http, https, s3, ftp, file, or relative path)
+ */
+export function isUrl(str: string): boolean {
+  return str.startsWith('http://') ||
+         str.startsWith('https://') ||
+         str.startsWith('iframe+http://') ||
+         str.startsWith('iframe+https://') ||
+         str.startsWith('s3://') ||
+         str.startsWith('ftp://') ||
+         str.startsWith('file://') ||
+         str.startsWith('./')
+}
+
 export const needProxy = (url: string): boolean => {
   const scheme = getScheme(url);
   return !['http', 'https', ''].includes(scheme);

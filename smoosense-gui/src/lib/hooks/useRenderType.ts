@@ -164,11 +164,16 @@ export function useVideoColumns(): string[] {
 }
 
 
-export function useImageAndVideoColumns(): string[] {
+/**
+ * Hook to get all columns with media URLs (Image, Video, Audio)
+ * @returns Array of column names that contain media URLs
+ */
+export function useMediaColumns(): string[] {
   const renderTypes = useRenderType()
   return [
     ...getColumnsByRenderType(renderTypes, RenderType.ImageUrl),
-    ...getColumnsByRenderType(renderTypes, RenderType.VideoUrl)
+    ...getColumnsByRenderType(renderTypes, RenderType.VideoUrl),
+    ...getColumnsByRenderType(renderTypes, RenderType.AudioUrl)
   ]
 }
 

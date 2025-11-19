@@ -4,15 +4,12 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import { useProcessedRowData } from '../useProcessedRowData'
 import { useRowData } from '../useRowData'
-import { useImageAndVideoColumns } from '../useRenderType'
 
 // Mock the dependencies
 jest.mock('../useRowData')
-jest.mock('../useRenderType')
 jest.mock('../useAsyncData')
 
 const mockUseRowData = useRowData as jest.MockedFunction<typeof useRowData>
-const mockUseImageAndVideoColumns = useImageAndVideoColumns as jest.MockedFunction<typeof useImageAndVideoColumns>
 
 // Mock useAsyncData
 jest.mock('../useAsyncData', () => ({
@@ -49,9 +46,6 @@ describe('useProcessedRowData', () => {
       setNeedRefresh: jest.fn()
     })
 
-    // Mock useImageAndVideoColumns to return empty array
-    mockUseImageAndVideoColumns.mockReturnValue([])
-
     // Mock useAsyncData to return empty array when given empty rawData
     mockUseAsyncData.mockReturnValue({
       data: [],
@@ -76,9 +70,6 @@ describe('useProcessedRowData', () => {
       setNeedRefresh: jest.fn()
     })
 
-    // Mock useImageAndVideoColumns
-    mockUseImageAndVideoColumns.mockReturnValue(['image_col'])
-
     // Mock useAsyncData
     mockUseAsyncData.mockReturnValue({
       data: [],
@@ -95,7 +86,7 @@ describe('useProcessedRowData', () => {
       fetchAction: expect.any(Function),
       setNeedRefreshAction: expect.any(Function),
       buildParams: expect.any(Function),
-      dependencies: [[], ['image_col']]
+      dependencies: [[]]
     })
 
     // Verify buildParams returns correct value for empty array
@@ -104,8 +95,7 @@ describe('useProcessedRowData', () => {
     const params = buildParams()
 
     expect(params).toEqual({
-      rawData: [],
-      urlColumns: ['image_col']
+      rawData: []
     })
   })
 
@@ -117,9 +107,6 @@ describe('useProcessedRowData', () => {
       error: null,
       setNeedRefresh: jest.fn()
     })
-
-    // Mock useImageAndVideoColumns
-    mockUseImageAndVideoColumns.mockReturnValue([])
 
     // Mock useAsyncData to return loading state
     mockUseAsyncData.mockReturnValue({
@@ -145,8 +132,6 @@ describe('useProcessedRowData', () => {
       setNeedRefresh: jest.fn()
     })
 
-    mockUseImageAndVideoColumns.mockReturnValue([])
-
     // Mock useAsyncData to return null data
     mockUseAsyncData.mockReturnValue({
       data: null,
@@ -170,8 +155,6 @@ describe('useProcessedRowData', () => {
       setNeedRefresh: jest.fn()
     })
 
-    mockUseImageAndVideoColumns.mockReturnValue(['image_col'])
-
     // Mock useAsyncData to simulate processing empty array and returning empty array
     mockUseAsyncData.mockReturnValue({
       data: [], // Processed empty array should still be empty array
@@ -188,8 +171,7 @@ describe('useProcessedRowData', () => {
     const params = buildParams()
 
     expect(params).toEqual({
-      rawData: [],
-      urlColumns: ['image_col']
+      rawData: []
     })
 
     // Final result should be empty array
