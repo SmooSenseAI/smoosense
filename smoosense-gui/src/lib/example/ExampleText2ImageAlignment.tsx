@@ -156,7 +156,7 @@ export default function ExampleText2ImageAlignment({ className }: ExampleText2Im
 
           <div className="mt-6">
             <h3 className="text-lg font-medium mb-3 text-foreground">Data in this page</h3>
-            <div className="h-[500px] border border-border rounded-lg">
+            <div className="h-[500px] border border-border rounded-md">
               <JsonBox src={EXAMPLE_DATA} />
             </div>
           </div>

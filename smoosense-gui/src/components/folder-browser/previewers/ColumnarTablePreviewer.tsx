@@ -90,7 +90,7 @@ export default function ColumnarTablePreviewer({ item }: ColumnarTablePreviewerP
     }
 
     return (
-      <div className="flex-1 border rounded-lg overflow-hidden">
+      <div className="flex-1 border rounded-md overflow-hidden">
         <BasicAGTable data={data as Record<string, unknown>[]} />
       </div>
     )

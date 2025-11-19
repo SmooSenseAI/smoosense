@@ -50,7 +50,7 @@ const BalanceMapTooltip = React.memo(function BalanceMapTooltip({
     .filter(item => item.count > 0) // Only show categories that have data
 
   return (
-    <div className="bg-background border border-border rounded-lg shadow-lg p-3 min-w-[320px] z-50">
+    <div className="bg-background border border-border rounded-md shadow-lg p-3 min-w-[320px] z-50">
       {/* Top section: Pie chart and header side-by-side */}
       <div className="flex gap-3 mb-3">
         {/* Pie chart showing ratio comparison */}

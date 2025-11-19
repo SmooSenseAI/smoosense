@@ -27,7 +27,7 @@ export default function PdfPreviewer({ item }: PdfPreviewerProps) {
       <div className="flex-1 flex items-center justify-center">
         <iframe
           src={pdfUrl}
-          className="w-full h-full rounded-lg border"
+          className="w-full h-full rounded-md border"
           title={item.name}
           onError={() => setHasError(true)}
         />

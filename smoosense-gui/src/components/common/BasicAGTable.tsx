@@ -48,7 +48,7 @@ export default function BasicAGTable({ data, className = '', onGridReady, colDef
   }
   
   return (
-    <div className={`h-full w-full ${className}`}>
+    <div className={`h-full w-full ${className} rounded-md`}>
       <AgGridReact
         theme={theme}
         rowData={data}

@@ -25,7 +25,7 @@ export default function ImagePreviewer({ item }: ImagePreviewerProps) {
           <img
             src={imageUrl}
             alt={item.name}
-            className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm"
+            className="max-w-full max-h-[600px] object-contain rounded-md shadow-sm"
             onError={() => setHasError(true)}
           />
         )}

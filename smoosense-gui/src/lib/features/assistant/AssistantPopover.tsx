@@ -107,10 +107,10 @@ export default function AssistantPopover() {
 
             return (
               <div key={index} className={`flex items-start gap-3 ${message.type === 'user' ? 'justify-end' : ''}`}>
-                <div className={`p-3 rounded-lg max-w-full ${
+                <div className={`p-3 rounded-md max-w-full ${
                   message.type === 'agent'
-                    ? 'bg-muted rounded-lg'
-                    : 'bg-primary text-primary-foreground rounded-lg'
+                    ? 'bg-muted rounded-md'
+                    : 'bg-primary text-primary-foreground rounded-md'
                 }`}>
                   <div className="text-sm">
                     {isAgent ? (
