@@ -27,13 +27,12 @@ export default function BasicAGTable({ data, className = '', onGridReady, colDef
   const baseColumnDefs = inferColumnDefinitions(data)
 
   // Apply overrides if provided
-  const columnDefs = colDefOverrides
-    ? baseColumnDefs.map(colDef => {
-        const fieldName = colDef.field
-        const overrides = fieldName ? colDefOverrides[fieldName] : undefined
-        return overrides ? { ...colDef, ...overrides } : colDef
-      })
-    : baseColumnDefs
+  const columnDefs = baseColumnDefs.map(colDef => {
+    const fieldName = colDef.field
+    const overrides = colDefOverrides && fieldName ? colDefOverrides[fieldName] : undefined
+
+    return overrides ? { ...colDef, ...overrides } : colDef
+  })
 
   // Construct final grid options
   const finalGridOptions: GridOptions = {

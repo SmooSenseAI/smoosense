@@ -62,6 +62,26 @@ For **every cell in every row**:
 [useProcessedRowData.ts](../smoosense-gui/src/lib/hooks/useProcessedRowData.ts)
 - Returns the processed data with all media URLs resolved
 
+## Query Tab Processing
+
+The Query tab also processes media URLs in query results:
+
+**Location**: `SqlQueryPanel.tsx` @ [SqlQueryPanel.tsx](../smoosense-gui/src/components/sql/SqlQueryPanel.tsx)
+
+**Process**:
+1. Execute SQL query via `/api/query` endpoint
+2. Receive results as `{column_names, rows}`
+3. Transform rows using `_.zipObject(column_names, rows)`
+4. **Process media URLs** using same logic as Samples tab:
+   - For each cell, check `needToResolveMediaUrl(value)`
+   - If true, call `resolveAssetUrl(value, tablePath, baseUrl)`
+5. Render in `BasicAGTable` with auto-detected cell renderers
+
+**Media Rendering**:
+- Images displayed in `ImageCellRenderer`
+- Videos displayed in `VideoCellRenderer`
+- Audio displayed in `AudioCellRenderer`
+- Cell renderers auto-detected via `inferRenderTypeFromData()`
 
 ## Backend Integration
 

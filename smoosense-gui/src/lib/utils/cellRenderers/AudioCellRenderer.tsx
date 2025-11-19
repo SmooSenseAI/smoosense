@@ -4,7 +4,7 @@ import { memo } from 'react'
 import dynamic from 'next/dynamic'
 import CellPopover from '@/components/ui/CellPopover'
 import { isNil } from 'lodash'
-import { proxyedUrl } from '@/lib/utils/urlUtils'
+import { needToResolveMediaUrl, resolveAssetUrl } from '../mediaUrlUtils'
 import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
 import { useAppSelector } from '@/lib/hooks'
 
@@ -29,7 +29,14 @@ const AudioCellRenderer = memo(function AudioCellRenderer({
   value
 }: AudioCellRendererProps) {
   const rowHeight = useAppSelector((state) => state.ui.rowHeight)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const baseUrl = useAppSelector((state) => state.ui.baseUrl)
   const originalUrl = String(value).trim()
+
+  // Resolve URL if needed
+  const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
+    ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
+    : originalUrl
 
   // Handle empty or invalid values
   if (isNil(value) || value === '' || !originalUrl) {
@@ -40,7 +47,7 @@ const AudioCellRenderer = memo(function AudioCellRenderer({
     )
   }
 
-  const audioUrl = proxyedUrl(originalUrl)
+  const audioUrl = resolvedUrl
 
   const cellContent = (
     <div className="w-full h-full flex items-center justify-center p-1">

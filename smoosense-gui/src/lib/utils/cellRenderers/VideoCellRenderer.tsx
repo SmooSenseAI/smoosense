@@ -4,6 +4,8 @@ import { memo } from 'react'
 import CellPopover from '@/components/ui/CellPopover'
 import VideoPlayer from '@/components/common/VideoPlayer'
 import { isNil } from 'lodash'
+import { needToResolveMediaUrl, resolveAssetUrl } from '../mediaUrlUtils'
+import { useAppSelector } from '@/lib/hooks'
 
 interface VideoCellRendererProps {
   value: unknown
@@ -12,7 +14,14 @@ interface VideoCellRendererProps {
 const VideoCellRenderer = memo(function VideoCellRenderer({
   value
 }: VideoCellRendererProps) {
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const baseUrl = useAppSelector((state) => state.ui.baseUrl)
   const originalUrl = String(value).trim()
+
+  // Resolve URL if needed
+  const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
+    ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
+    : originalUrl
 
   // Handle empty or invalid values
   if (isNil(value) || value === '' || !originalUrl) {
@@ -28,7 +37,7 @@ const VideoCellRenderer = memo(function VideoCellRenderer({
       className="relative rounded overflow-hidden bg-muted w-full h-full"
     >
       <VideoPlayer
-        src={originalUrl}
+        src={resolvedUrl}
         showControlsAtHover={false}
       />
     </div>
@@ -37,7 +46,7 @@ const VideoCellRenderer = memo(function VideoCellRenderer({
   const popoverContent = (
     <div className="relative">
       <VideoPlayer
-        src={originalUrl}
+        src={resolvedUrl}
         className=""
         alwaysAutoPlay={true}
       />
@@ -49,7 +58,7 @@ const VideoCellRenderer = memo(function VideoCellRenderer({
       cellContent={cellContent}
       cellContentClassName="items-center justify-center"
       popoverContent={popoverContent}
-      url={originalUrl}
+      url={resolvedUrl}
       copyValue={originalUrl}
     />
   )

@@ -4,6 +4,8 @@ import { memo } from 'react'
 import CellPopover from '@/components/ui/CellPopover'
 import ImageBlock from '@/components/common/ImageBlock'
 import { isNil } from 'lodash'
+import { needToResolveMediaUrl, resolveAssetUrl } from '../mediaUrlUtils'
+import { useAppSelector } from '@/lib/hooks'
 
 interface ImageCellRendererProps {
   value: unknown
@@ -12,7 +14,14 @@ interface ImageCellRendererProps {
 const ImageCellRenderer = memo(function ImageCellRenderer({
   value
 }: ImageCellRendererProps) {
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const baseUrl = useAppSelector((state) => state.ui.baseUrl)
   const originalUrl = String(value).trim()
+
+  // Resolve URL if needed
+  const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
+    ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
+    : originalUrl
 
   // Handle empty or invalid values
   if (isNil(value) || value === '' || !originalUrl) {
@@ -25,7 +34,7 @@ const ImageCellRenderer = memo(function ImageCellRenderer({
 
   const cellContent = (
       <ImageBlock
-        src={originalUrl}
+        src={resolvedUrl}
         alt="Image"
         className="rounded transition-opacity w-full h-full"
       />
@@ -34,7 +43,7 @@ const ImageCellRenderer = memo(function ImageCellRenderer({
   const popoverContent = (
     <div className="flex items-center justify-center h-full max-h-full">
       <ImageBlock
-        src={originalUrl}
+        src={resolvedUrl}
         alt="Full size image"
         className="object-contain max-h-full"
         neverFitCover={true}
@@ -46,7 +55,7 @@ const ImageCellRenderer = memo(function ImageCellRenderer({
     <CellPopover
       cellContent={cellContent}
       popoverContent={popoverContent}
-      url={originalUrl}
+      url={resolvedUrl}
       popoverClassName=""
       cellContentClassName="items-center justify-center"
       copyValue={originalUrl}
