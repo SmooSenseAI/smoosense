@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
-import processedRowDataReducer, { fetchProcessedRowData, tablePathToUrl, type ProcessedRowDataState } from '../processedRowDataSlice'
+import processedRowDataReducer, { fetchProcessedRowData, type ProcessedRowDataState } from '../processedRowDataSlice'
+import { resolveAssetUrl } from '@/lib/utils/mediaUrlUtils'
 
 // Mock the dependencies
 jest.mock('@/lib/utils/urlUtils', () => ({
@@ -38,8 +39,8 @@ describe('processedRowDataSlice', () => {
   })
 
   it('should handle fetch with empty data', async () => {
-    const result = await store.dispatch(fetchProcessedRowData({ rawData: [], urlColumns: [] }))
-    
+    const result = await store.dispatch(fetchProcessedRowData({ rawData: [] }))
+
     // Should not dispatch due to shouldWait condition
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((result as any).meta.requestStatus).toBe('fulfilled')
@@ -47,15 +48,14 @@ describe('processedRowDataSlice', () => {
 
   it('should handle fetch with valid data', async () => {
     const testData = [{ id: 1, name: 'test' }]
-    const urlColumns = ['image_url']
-    
-    const result = await store.dispatch(fetchProcessedRowData({ rawData: testData, urlColumns }))
-    
+
+    const result = await store.dispatch(fetchProcessedRowData({ rawData: testData }))
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((result as any).meta.requestStatus).toBe('fulfilled')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((result as any).payload).toEqual(testData)
-    
+
     const state = (store.getState() as TestStore).processedRowData
     expect(state.data).toEqual(testData)
     expect(state.loading).toBe(false)
@@ -63,107 +63,122 @@ describe('processedRowDataSlice', () => {
   })
 })
 
-describe('tablePathToUrl', () => {
+describe('resolveAssetUrl', () => {
   const baseUrl = 'http://localhost:8001'
   const tablePath = '/data/folder/file.parquet'
 
   describe('relative URLs starting with ./', () => {
     it('should resolve relative URL with tablePath', () => {
       const url = './images/photo.jpg'
-      const expected = './api/get-file?path=%2Fdata%2Ffolder%2Fimages%2Fphoto.jpg&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2Fdata%2Ffolder%2Fimages%2Fphoto.jpg&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
 
     it('should resolve relative URL with nested path', () => {
       const url = './subfolder/nested/file.txt'
-      const expected = './api/get-file?path=%2Fdata%2Ffolder%2Fsubfolder%2Fnested%2Ffile.txt&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2Fdata%2Ffolder%2Fsubfolder%2Fnested%2Ffile.txt&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
 
     it('should resolve relative URL with parent directory', () => {
       const url = './../other/file.txt'
-      const expected = './api/get-file?path=%2Fdata%2Ffolder%2F..%2Fother%2Ffile.txt&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2Fdata%2Ffolder%2F..%2Fother%2Ffile.txt&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
   })
 
   describe('absolute file paths starting with /', () => {
     it('should convert absolute path to API URL with baseUrl', () => {
       const url = '/data/images/photo.jpg'
-      const expected = './api/get-file?path=%2Fdata%2Fimages%2Fphoto.jpg&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2Fdata%2Fimages%2Fphoto.jpg&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
 
     it('should handle paths with spaces', () => {
       const url = '/data/path with spaces/file.txt'
-      const expected = './api/get-file?path=%2Fdata%2Fpath+with+spaces%2Ffile.txt&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2Fdata%2Fpath+with+spaces%2Ffile.txt&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
 
     it('should handle paths with special characters', () => {
       const url = '/data/file@#$%.txt'
-      const expected = './api/get-file?path=%2Fdata%2Ffile%40%23%24%25.txt&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2Fdata%2Ffile%40%23%24%25.txt&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
   })
 
   describe('home directory paths starting with ~/', () => {
     it('should convert home path to API URL with baseUrl', () => {
       const url = '~/Documents/file.txt'
-      const expected = './api/get-file?path=%7E%2FDocuments%2Ffile.txt&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%7E%2FDocuments%2Ffile.txt&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
 
     it('should handle home path with nested folders', () => {
       const url = '~/folder/subfolder/file.txt'
-      const expected = './api/get-file?path=%7E%2Ffolder%2Fsubfolder%2Ffile.txt&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%7E%2Ffolder%2Fsubfolder%2Ffile.txt&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+    })
+  })
+
+  describe('S3 URLs', () => {
+    it('should proxy S3 URL through s3-proxy endpoint', () => {
+      const url = 's3://bucket/folder/file.txt'
+      const expected = 'api/s3-proxy?url=' + encodeURIComponent(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+    })
+
+    it('should proxy S3 URL with special characters', () => {
+      const url = 's3://my-bucket/path with spaces/file@#.jpg'
+      const expected = 'api/s3-proxy?url=' + encodeURIComponent(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+    })
+
+    it('should proxy S3 URL with nested paths', () => {
+      const url = 's3://bucket/folder/subfolder/image.png'
+      const expected = 'api/s3-proxy?url=' + encodeURIComponent(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
   })
 
   describe('absolute URLs', () => {
     it('should return HTTP URL unchanged', () => {
       const url = 'http://example.com/image.jpg'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(url)
     })
 
     it('should return HTTPS URL unchanged', () => {
       const url = 'https://example.com/image.jpg'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(url)
-    })
-
-    it('should return S3 URL unchanged', () => {
-      const url = 's3://bucket/folder/file.txt'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(url)
     })
 
     it('should return other protocol URLs unchanged', () => {
       const url = 'ftp://server/file.txt'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(url)
     })
 
     it('should return data URLs unchanged', () => {
       const url = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(url)
     })
   })
 
   describe('edge cases', () => {
     it('should handle root path /', () => {
       const url = '/'
-      const expected = './api/get-file?path=%2F&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2F&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
 
     it('should handle single file in root', () => {
       const url = '/file.txt'
-      const expected = './api/get-file?path=%2Ffile.txt&redirect=false'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
+      const expected = 'api/get-file?path=%2Ffile.txt&redirect=false'
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(baseUrl + '/' + expected)
     })
 
     it('should handle URL with query parameters (absolute URL)', () => {
       const url = 'https://example.com/image.jpg?size=large'
-      expect(tablePathToUrl(url, tablePath, baseUrl)).toBe(url)
+      expect(resolveAssetUrl(url, tablePath, baseUrl)).toBe(url)
     })
   })
 })

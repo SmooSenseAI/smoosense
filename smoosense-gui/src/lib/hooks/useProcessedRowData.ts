@@ -1,6 +1,5 @@
 import { useRowData } from './useRowData'
 import { useAsyncData } from './useAsyncData'
-import { useImageAndVideoColumns } from './useRenderType'
 import { fetchProcessedRowData, setNeedRefresh as setNeedRefreshAction } from '@/lib/features/processedRowData/processedRowDataSlice'
 
 interface UseProcessedRowDataResult {
@@ -13,9 +12,6 @@ interface UseProcessedRowDataResult {
 export function useProcessedRowData(): UseProcessedRowDataResult {
   // Get raw row data first
   const { data: rawData, loading: rawDataLoading, error: rawDataError } = useRowData()
-  
-  // Get URL columns that need proxying
-  const urlColumns = useImageAndVideoColumns()
 
   // Use the async data pattern for processed row data
   const { data: processedData, loading: processedLoading, error: processedError, setNeedRefresh } = useAsyncData({
@@ -23,9 +19,9 @@ export function useProcessedRowData(): UseProcessedRowDataResult {
     fetchAction: fetchProcessedRowData,
     setNeedRefreshAction: setNeedRefreshAction,
     buildParams: () => {
-      return { rawData, urlColumns }
+      return { rawData }
     },
-    dependencies: [rawData, urlColumns]
+    dependencies: [rawData]
   })
 
   return {

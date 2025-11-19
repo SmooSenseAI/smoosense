@@ -4,6 +4,7 @@ import { ColDef, ICellRendererParams } from 'ag-grid-community'
 import type { BaseColDef } from '@/lib/features/colDefs/agSlice'
 import _, { isNil } from 'lodash'
 import { getFileType, FileType } from './fileTypes'
+import { isUrl } from './urlUtils'
 import ImageCellRenderer from './cellRenderers/ImageCellRenderer'
 import VideoCellRenderer from './cellRenderers/VideoCellRenderer'
 import AudioCellRenderer from './cellRenderers/AudioCellRenderer'
@@ -37,17 +38,6 @@ export enum RenderType {
 
 
 // Helper functions for string analysis
-function isUrl(str: string): boolean {
-  return str.startsWith('http://') ||
-         str.startsWith('https://') ||
-         str.startsWith('iframe+http://') ||
-         str.startsWith('iframe+https://') ||
-         str.startsWith('s3://') ||
-         str.startsWith('ftp://') ||
-         str.startsWith('file://') ||
-         str.startsWith('./')
-}
-
 function inferUrlType(str: string): RenderType {
   // Check for iframe+ prefix first
   if (str.startsWith('iframe+http://') || str.startsWith('iframe+https://')) {
