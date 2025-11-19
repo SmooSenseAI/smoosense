@@ -14,6 +14,7 @@ import VideoPreviewer from './previewers/VideoPreviewer'
 import AudioPreviewer from './previewers/AudioPreviewer'
 import TextPreviewer from './previewers/TextPreviewer'
 import JsonPreviewer from './previewers/JsonPreviewer'
+import YamlPreviewer from './previewers/YamlPreviewer'
 import ColumnarTablePreviewer from './previewers/ColumnarTablePreviewer'
 import RowTablePreviewer from './previewers/RowTablePreviewer'
 import AlbumPreviewer from './previewers/AlbumPreviewer'
@@ -132,6 +133,9 @@ export default function FSItemPreview() {
       case FileType.Json:
         return <JsonPreviewer item={viewingItem} />
 
+      case FileType.Yaml:
+        return <YamlPreviewer item={viewingItem} />
+
       case FileType.ColumnarTable:
         return <ColumnarTablePreviewer item={viewingItem} />
 
@@ -198,41 +202,44 @@ export default function FSItemPreview() {
         )
     }
   }
-  
-  return (
-    <div className="h-full w-full p-4">
-      <div className="flex items-center space-x-2 mb-4">
-        {viewingItem ? (
-          <>
-            <h3 className="font-medium text-sm">{pathBasename(viewingItem.path)}</h3>
-            {isTableType && (
+
+  const headerComponent = () => {
+    return viewingItem ? (
+        <>
+          <h3 className="font-medium text-sm">{pathBasename(viewingItem.path)}</h3>
+          {isTableType && (
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleOpenInTable}
-                title="Open in Table view"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleOpenInTable}
+                  title="Open in Table view"
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>
-            )}
-            {!viewingItem.isDir && (
+          )}
+          {!viewingItem.isDir && (
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleDownload}
-                title="Download file"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDownload}
+                  title="Download file"
               >
                 <Download className="h-4 w-4" />
               </Button>
-            )}
-            <CopyToClipboard value={viewingItem.path} />
-          </>
-        ) : (
-          <h3 className="font-medium text-sm">File Previewer</h3>
-        )}
+          )}
+          <CopyToClipboard value={viewingItem.path} />
+        </>
+    ) : (
+        <h3 className="font-medium text-sm">File Previewer</h3>
+    )
+  }
+  return (
+    <div className="h-full w-full p-4 flex flex-col min-h-0">
+      <div className="flex items-center space-x-2 mb-4 shrink-0">
+        {headerComponent()}
       </div>
 
-      <div className="h-full border rounded-lg bg-muted/30 flex items-start justify-center p-4 overflow-auto">
+      <div className="flex-1 min-h-0 border rounded-md bg-muted/30 flex items-start justify-center p-2 overflow-auto">
         {renderContent()}
       </div>
     </div>

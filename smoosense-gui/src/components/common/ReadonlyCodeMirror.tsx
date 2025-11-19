@@ -24,7 +24,7 @@ export default function ReadonlyCodeMirror({
   const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
 
   return (
-    <div className="flex-1 overflow-hidden">
+    <div className="flex-1 overflow-auto rounded-md">
       <CodeMirror
         value={value}
         extensions={extensions}
@@ -33,11 +33,11 @@ export default function ReadonlyCodeMirror({
         readOnly={true}
         basicSetup={{
           lineNumbers: true,
-          foldGutter: false,
-          highlightActiveLine: false,
+          foldGutter: true,
+          highlightActiveLine: true,
           searchKeymap: false,
           autocompletion: false,
-          bracketMatching: false,
+          bracketMatching: true,
           dropCursor: false,
           indentOnInput: false,
         }}

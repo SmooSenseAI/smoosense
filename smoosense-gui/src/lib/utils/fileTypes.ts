@@ -1,5 +1,6 @@
 export enum FileType {
   Json = 'json',
+  Yaml = 'yaml',
   ColumnarTable = 'columnar-table',
   RowTable = 'row-table',
   Image = 'image',
@@ -23,9 +24,14 @@ export function getFileType(fileName: string): FileType {
     }
   }
 
-  // Json files (including YAML)
-  if (['json', 'yaml', 'yml'].includes(extension)) {
+  // Json files
+  if (['json'].includes(extension)) {
     return FileType.Json
+  }
+
+  // YAML files
+  if (['yaml', 'yml'].includes(extension)) {
+    return FileType.Yaml
   }
   
   // Columnar table files (efficient for analytics/aggregation)
