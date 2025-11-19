@@ -3,7 +3,6 @@ import uiReducer from '@/lib/features/ui/uiSlice'
 import columnMetaReducer from '@/lib/features/columnMeta/columnMetaSlice'
 import sqlHistoryReducer from '@/lib/features/sqlHistory/sqlHistorySlice'
 import rowDataReducer from '@/lib/features/rowData/rowDataSlice'
-import processedRowDataReducer from '@/lib/features/processedRowData/processedRowDataSlice'
 import viewingReducer from '@/lib/features/viewing/viewingSlice'
 import agReducer from '@/lib/features/colDefs/agSlice'
 import columnsReducer from '@/lib/features/columns/columnsSlice'
@@ -78,12 +77,6 @@ export function createDefaultTestState(): RootState {
       executions: {} as Record<string, any>,
     },
     rowData: {
-      data: null,
-      loading: false,
-      error: null,
-      needRefresh: false,
-    },
-    processedRowData: {
       data: null,
       loading: false,
       error: null,
@@ -222,7 +215,6 @@ export function createTestStore(stateOverrides?: DeepPartial<RootState>) {
       columnMeta: columnMetaReducer,
       sqlHistory: sqlHistoryReducer,
       rowData: rowDataReducer,
-      processedRowData: processedRowDataReducer,
       viewing: viewingReducer,
       ag: agReducer,
       columns: columnsReducer,

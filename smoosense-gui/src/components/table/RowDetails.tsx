@@ -7,8 +7,7 @@ import JsonBox from '@/components/ui/JsonBox'
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
 import { List, X } from 'lucide-react'
 import { isNil } from 'lodash'
-import { useRenderType } from '@/lib/hooks'
-import { useProcessedRowData } from '@/lib/hooks/useProcessedRowData'
+import { useRenderType, useRowData } from '@/lib/hooks'
 import AutoLink from '@/components/common/AutoLink'
 import { setShowRowDetailsPanel } from '@/lib/features/ui/uiSlice'
 import RichAudioPlayer from '@/components/audio/RichAudioPlayer'
@@ -117,9 +116,9 @@ function renderValueByType(value: unknown, renderType: RenderType): React.ReactN
 }
 
 export default function RowDetails() {
-  // Get data from Redux store (using processed data that includes derived columns)
+  // Get data from Redux store
   const justClickedRowId = useAppSelector((state) => state.viewing.justClickedRowId)
-  const { data: rowData } = useProcessedRowData()
+  const { data: rowData } = useRowData()
   const columnDefs = useAppSelector((state) => state.ag.columnDefs)
   const renderTypeColumns = useRenderType()
 

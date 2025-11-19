@@ -3,7 +3,6 @@ import uiReducer from './features/ui/uiSlice'
 import columnMetaReducer from './features/columnMeta/columnMetaSlice'
 import sqlHistoryReducer from './features/sqlHistory/sqlHistorySlice'
 import rowDataReducer from './features/rowData/rowDataSlice'
-import processedRowDataReducer from './features/processedRowData/processedRowDataSlice'
 import viewingReducer from './features/viewing/viewingSlice'
 import agReducer from './features/colDefs/agSlice'
 import columnsReducer from './features/columns/columnsSlice'
@@ -23,7 +22,6 @@ const storeInstance = configureStore({
     columnMeta: columnMetaReducer,
     sqlHistory: sqlHistoryReducer,
     rowData: rowDataReducer,
-    processedRowData: processedRowDataReducer,
     viewing: viewingReducer,
     ag: agReducer,
     columns: columnsReducer,

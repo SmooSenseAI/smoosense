@@ -1,8 +1,7 @@
 'use client'
 
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import { useRenderType } from '@/lib/hooks'
-import { useProcessedRowData } from '@/lib/hooks/useProcessedRowData'
+import { useRenderType, useRowData } from '@/lib/hooks'
 import { setJustClickedRowId } from '@/lib/features/viewing/viewingSlice'
 import { handPickRow } from '@/lib/features/handPickedRows/handPickedRowsSlice'
 import { isVisualType } from '@/lib/utils/renderTypeUtils'
@@ -12,7 +11,7 @@ import GalleryItem from './GalleryItem'
 
 export default function Gallery() {
   const dispatch = useAppDispatch()
-  const { data: rowData } = useProcessedRowData()
+  const { data: rowData } = useRowData()
   const renderTypeColumns = useRenderType()
   const columnForGalleryVisual = useAppSelector((state) => state.ui.columnForGalleryVisual)
   const columnForGalleryCaption = useAppSelector((state) => state.ui.columnForGalleryCaption)
