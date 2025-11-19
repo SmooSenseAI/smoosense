@@ -4,7 +4,7 @@ import { memo } from 'react'
 import dynamic from 'next/dynamic'
 import CellPopover from '@/components/ui/CellPopover'
 import { isNil } from 'lodash'
-import { needToResolveMediaUrl, resolveAssetUrl } from '../mediaUrlUtils'
+import { mayResolveUrl } from '../mediaUrlUtils'
 import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
 import { useAppSelector } from '@/lib/hooks'
 
@@ -33,10 +33,7 @@ const AudioCellRenderer = memo(function AudioCellRenderer({
   const baseUrl = useAppSelector((state) => state.ui.baseUrl)
   const originalUrl = String(value).trim()
 
-  // Resolve URL if needed
-  const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
-    ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
-    : originalUrl
+  const resolvedUrl = mayResolveUrl({ value, tablePath, baseUrl })
 
   // Handle empty or invalid values
   if (isNil(value) || value === '' || !originalUrl) {

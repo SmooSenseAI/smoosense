@@ -4,7 +4,7 @@ import { memo } from 'react'
 import CellPopover from '@/components/ui/CellPopover'
 import VideoPlayer from '@/components/common/VideoPlayer'
 import { isNil } from 'lodash'
-import { needToResolveMediaUrl, resolveAssetUrl } from '../mediaUrlUtils'
+import { mayResolveUrl } from '../mediaUrlUtils'
 import { useAppSelector } from '@/lib/hooks'
 
 interface VideoCellRendererProps {
@@ -18,10 +18,7 @@ const VideoCellRenderer = memo(function VideoCellRenderer({
   const baseUrl = useAppSelector((state) => state.ui.baseUrl)
   const originalUrl = String(value).trim()
 
-  // Resolve URL if needed
-  const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
-    ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
-    : originalUrl
+  const resolvedUrl = mayResolveUrl({ value, tablePath, baseUrl })
 
   // Handle empty or invalid values
   if (isNil(value) || value === '' || !originalUrl) {

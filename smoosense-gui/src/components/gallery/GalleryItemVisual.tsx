@@ -1,7 +1,7 @@
 'use client'
 
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
-import { needToResolveMediaUrl, resolveAssetUrl } from '@/lib/utils/mediaUrlUtils'
+import { mayResolveUrl } from '@/lib/utils/mediaUrlUtils'
 import { parseBbox, buildBboxVizUrl } from '@/lib/utils/bboxUtils'
 import ImageBlock from '@/components/common/ImageBlock'
 import ImageMask from '@/components/viz/ImageMask'
@@ -27,13 +27,9 @@ export default function GalleryItemVisual({
   const tablePath = useAppSelector((state) => state.ui.tablePath)
   const baseUrl = useAppSelector((state) => state.ui.baseUrl)
 
-  // Helper function to resolve media URL
-  const resolveUrl = (value: unknown): string => {
-    const originalUrl = String(value).trim()
-    return (tablePath && baseUrl && needToResolveMediaUrl(value))
-      ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
-      : originalUrl
-  }
+  // Resolve URLs once to avoid repeated function calls
+  const resolvedVisualUrl = mayResolveUrl({ value: visualValue, tablePath, baseUrl })
+  const resolvedImageUrl = mayResolveUrl({ value: row.image_url, tablePath, baseUrl })
 
   return (
     <div
@@ -42,7 +38,7 @@ export default function GalleryItemVisual({
     >
       {renderType === RenderType.ImageUrl && (
         <ImageBlock
-          src={resolveUrl(visualValue)}
+          src={resolvedVisualUrl}
           alt={`Row ${index + 1}`}
           className="w-full h-full"
         />
@@ -50,19 +46,19 @@ export default function GalleryItemVisual({
 
       {renderType === RenderType.ImageMask && (
         <ImageMask
-          image_url={resolveUrl(row.image_url)}
-          mask_url={resolveUrl(visualValue)}
+          image_url={resolvedImageUrl}
+          mask_url={resolvedVisualUrl}
           alt={`Row ${index + 1}`}
         />
       )}
 
       {renderType === RenderType.VideoUrl && (
-        <GalleryVideoItem visualValue={resolveUrl(visualValue)} />
+        <GalleryVideoItem visualValue={resolvedVisualUrl} />
       )}
 
       {renderType === RenderType.AudioUrl && (
         <div className="w-full h-full flex items-center justify-center">
-          <AudioMiniMelSpectrogram audioUrl={resolveUrl(visualValue)} height={galleryItemHeight} allowPopOver={true} />
+          <AudioMiniMelSpectrogram audioUrl={resolvedVisualUrl} height={galleryItemHeight} allowPopOver={true} />
         </div>
       )}
 

@@ -10,8 +10,6 @@ import { isNil } from 'lodash'
 import { useRenderType, useRowData } from '@/lib/hooks'
 import AutoLink from '@/components/common/AutoLink'
 import { setShowRowDetailsPanel } from '@/lib/features/ui/uiSlice'
-import RichAudioPlayer from '@/components/audio/RichAudioPlayer'
-import { needToResolveMediaUrl, resolveAssetUrl } from '@/lib/utils/mediaUrlUtils'
 
 interface RowDetailsWrapperProps {
   children: React.ReactNode
@@ -52,9 +50,7 @@ function RowDetailsWrapper({ children }: RowDetailsWrapperProps) {
 
 function renderValueByType(
   value: unknown,
-  renderType: RenderType,
-  tablePath: string | null,
-  baseUrl: string | null
+  renderType: RenderType
 ): React.ReactNode {
   if (value === null) return <span className="text-muted-foreground italic">null</span>
   if (value === undefined) return <span className="text-muted-foreground italic">undefined</span>
@@ -76,47 +72,9 @@ function renderValueByType(
       }
       return <span className="text-sm font-mono">{String(value)}</span>
 
-    case RenderType.ImageUrl:
-      if (typeof value === 'string') {
-        const originalUrl = value.trim()
-        const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
-          ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
-          : originalUrl
-        return (
-          <div>
-            <AutoLink url={resolvedUrl} className="text-xs font-mono" />
-          </div>
-        )
-      }
-      return <span className="text-sm font-mono">{String(value)}</span>
-
     case RenderType.IFrame:
       if (typeof value === 'string') {
         return <AutoLink url={value} className="text-xs font-mono" />
-      }
-      return <span className="text-sm font-mono">{String(value)}</span>
-
-    case RenderType.VideoUrl:
-      if (typeof value === 'string') {
-        const originalUrl = value.trim()
-        const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
-          ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
-          : originalUrl
-        return (
-          <div>
-            <AutoLink url={resolvedUrl} className="text-xs font-mono" />
-          </div>
-        )
-      }
-      return <span className="text-sm font-mono">{String(value)}</span>
-
-    case RenderType.AudioUrl:
-      if (typeof value === 'string') {
-        const originalUrl = value.trim()
-        const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
-          ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
-          : originalUrl
-        return <RichAudioPlayer audioUrl={resolvedUrl} autoPlay={false} />
       }
       return <span className="text-sm font-mono">{String(value)}</span>
 
@@ -137,8 +95,6 @@ export default function RowDetails() {
   const { data: rowData } = useRowData()
   const columnDefs = useAppSelector((state) => state.ag.columnDefs)
   const renderTypeColumns = useRenderType()
-  const tablePath = useAppSelector((state) => state.ui.tablePath)
-  const baseUrl = useAppSelector((state) => state.ui.baseUrl)
 
   // Get the selected row data
   const selectedRow = !isNil(justClickedRowId) && rowData
@@ -186,7 +142,7 @@ export default function RowDetails() {
                 </CardHeader>
                 <CardContent className="pt-0 px-3 pb-2">
                   <div className="text-sm text-foreground break-words max-h-[450px] overflow-y-auto">
-                    {renderValueByType(value, renderType, tablePath, baseUrl)}
+                    {renderValueByType(value, renderType)}
                   </div>
                 </CardContent>
               </Card>

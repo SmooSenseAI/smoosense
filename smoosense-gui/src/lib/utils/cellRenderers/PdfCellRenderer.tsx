@@ -3,16 +3,20 @@
 import { memo } from 'react'
 import { FileText } from 'lucide-react'
 import CellPopover from '@/components/ui/CellPopover'
-import { proxyedUrl } from '@/lib/utils/urlUtils'
-import {pathBasename} from "@/lib/utils/pathUtils";
+import { mayResolveUrl } from '@/lib/utils/mediaUrlUtils'
+import { pathBasename } from "@/lib/utils/pathUtils"
+import { useAppSelector } from '@/lib/hooks'
 
 interface PdfCellRendererProps {
   value: unknown
 }
 
 const PdfCellRenderer = memo(function PdfCellRenderer({ value }: PdfCellRendererProps) {
-  const originalUrl = String(value)
-  const pdfUrl = proxyedUrl(originalUrl)
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
+  const baseUrl = useAppSelector((state) => state.ui.baseUrl)
+  const originalUrl = String(value).trim()
+
+  const resolvedUrl = mayResolveUrl({ value, tablePath, baseUrl })
 
   // Extract filename from URL
   const filename = pathBasename(originalUrl)
@@ -26,7 +30,7 @@ const PdfCellRenderer = memo(function PdfCellRenderer({ value }: PdfCellRenderer
 
   const popoverContent = (
     <iframe
-      src={pdfUrl}
+      src={resolvedUrl}
       className="w-full h-full border-0"
       title="PDF Preview"
     />
@@ -36,8 +40,8 @@ const PdfCellRenderer = memo(function PdfCellRenderer({ value }: PdfCellRenderer
     <CellPopover
       cellContent={cellContent}
       popoverContent={popoverContent}
-      url={pdfUrl}
-      copyValue={pdfUrl}
+      url={resolvedUrl}
+      copyValue={originalUrl}
       popoverClassName="w-[600px] h-[500px]"
     />
   )

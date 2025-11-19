@@ -51,19 +51,18 @@ describe('needToResolveMediaUrl', () => {
       expect(needToResolveMediaUrl('s3://my-bucket/images/photo.jpg')).toBe(true)
       expect(needToResolveMediaUrl('s3://bucket/video.mp4')).toBe(true)
       expect(needToResolveMediaUrl('s3://bucket/music.wav')).toBe(true)
+      expect(needToResolveMediaUrl('s3://bucket/document.pdf')).toBe(true)
     })
 
     it('should return false for S3 URLs without media extensions', () => {
       expect(needToResolveMediaUrl('s3://bucket/file.txt')).toBe(false)
       expect(needToResolveMediaUrl('s3://bucket/data.csv')).toBe(false)
-      expect(needToResolveMediaUrl('s3://bucket/document.pdf')).toBe(false)
     })
   })
 
   describe('strings with path prefixes but non-media extensions', () => {
     it('should return false for relative paths with non-media extensions', () => {
       expect(needToResolveMediaUrl('./file.txt')).toBe(false)
-      expect(needToResolveMediaUrl('./document.pdf')).toBe(false)
       expect(needToResolveMediaUrl('./data.json')).toBe(false)
     })
 
@@ -100,6 +99,11 @@ describe('needToResolveMediaUrl', () => {
       expect(needToResolveMediaUrl('./voice.ogg')).toBe(true)
       expect(needToResolveMediaUrl('./song.m4a')).toBe(true)
     })
+
+    it('should return true for relative PDF paths', () => {
+      expect(needToResolveMediaUrl('./document.pdf')).toBe(true)
+      expect(needToResolveMediaUrl('./docs/report.pdf')).toBe(true)
+    })
   })
 
   describe('valid media URLs with absolute paths', () => {
@@ -118,6 +122,11 @@ describe('needToResolveMediaUrl', () => {
       expect(needToResolveMediaUrl('/audio/sound.mp3')).toBe(true)
       expect(needToResolveMediaUrl('/music/track.wav')).toBe(true)
     })
+
+    it('should return true for absolute PDF paths', () => {
+      expect(needToResolveMediaUrl('/documents/report.pdf')).toBe(true)
+      expect(needToResolveMediaUrl('/home/user/file.pdf')).toBe(true)
+    })
   })
 
   describe('valid media URLs with home paths', () => {
@@ -134,6 +143,11 @@ describe('needToResolveMediaUrl', () => {
     it('should return true for home audio paths', () => {
       expect(needToResolveMediaUrl('~/Music/song.mp3')).toBe(true)
       expect(needToResolveMediaUrl('~/audio.wav')).toBe(true)
+    })
+
+    it('should return true for home PDF paths', () => {
+      expect(needToResolveMediaUrl('~/Documents/report.pdf')).toBe(true)
+      expect(needToResolveMediaUrl('~/file.pdf')).toBe(true)
     })
   })
 

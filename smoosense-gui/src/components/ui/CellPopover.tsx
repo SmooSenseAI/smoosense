@@ -100,6 +100,7 @@ export default function CellPopover({
     <div className='flex flex-col h-full min-h-0'>
       <CellPopoverContentHeader
         url={url}
+        title={copyValue || undefined}
         isExpanded={isExpanded}
         onToggleExpand={handleToggleExpand}
         onClose={handleClose}

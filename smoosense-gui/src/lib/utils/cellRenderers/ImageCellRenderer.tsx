@@ -4,7 +4,7 @@ import { memo } from 'react'
 import CellPopover from '@/components/ui/CellPopover'
 import ImageBlock from '@/components/common/ImageBlock'
 import { isNil } from 'lodash'
-import { needToResolveMediaUrl, resolveAssetUrl } from '../mediaUrlUtils'
+import { mayResolveUrl } from '../mediaUrlUtils'
 import { useAppSelector } from '@/lib/hooks'
 
 interface ImageCellRendererProps {
@@ -17,11 +17,9 @@ const ImageCellRenderer = memo(function ImageCellRenderer({
   const tablePath = useAppSelector((state) => state.ui.tablePath)
   const baseUrl = useAppSelector((state) => state.ui.baseUrl)
   const originalUrl = String(value).trim()
+  console.log('Image original url', originalUrl)
 
-  // Resolve URL if needed
-  const resolvedUrl = (tablePath && baseUrl && needToResolveMediaUrl(value))
-    ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
-    : originalUrl
+  const resolvedUrl = mayResolveUrl({ value, tablePath, baseUrl })
 
   // Handle empty or invalid values
   if (isNil(value) || value === '' || !originalUrl) {

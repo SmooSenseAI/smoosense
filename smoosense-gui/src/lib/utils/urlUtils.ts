@@ -23,7 +23,9 @@ export function isUrl(str: string): boolean {
          str.startsWith('s3://') ||
          str.startsWith('ftp://') ||
          str.startsWith('file://') ||
-         str.startsWith('./')
+         str.startsWith('./') ||
+         str.startsWith('~/') ||
+         str.startsWith('/')
 }
 
 export const needProxy = (url: string): boolean => {
