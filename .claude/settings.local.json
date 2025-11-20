@@ -16,7 +16,8 @@
       "Bash(pnpm lint:*)",
       "Bash(make test:*)",
       "Bash(python -m pytest:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(pnpm run lint:*)"
     ],
     "deny": [],
     "ask": []

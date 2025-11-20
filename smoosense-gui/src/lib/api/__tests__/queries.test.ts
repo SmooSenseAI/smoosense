@@ -358,18 +358,60 @@ describe('getColumnMetadata', () => {
         status: 'success'
       }
 
+      // Use a file type that doesn't get any stats (e.g., .json)
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockMetadataResponse,
       } as Response)
 
-      const result = await getColumnMetadata('/test/file.csv', mockDispatch, 'duckdb')
+      const result = await getColumnMetadata('/test/file.json', mockDispatch, 'duckdb')
 
       expect(result).toHaveLength(1)
       expect(result[0].stats).toBeNull()
-      
+
       // Should only call the metadata query, not stats query
       expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('should fetch row table stats for CSV files', async () => {
+      const mockMetadataResponse = {
+        column_names: ['column_name', 'column_type'],
+        rows: [
+          ['id', 'INTEGER']
+        ],
+        runtime: 0.1,
+        status: 'success'
+      }
+
+      const mockStatsResponse = {
+        column_names: ['column_name', 'column_type', 'min', 'max', 'approx_unique', 'avg', 'std', 'q25', 'q50', 'q75', 'count', 'null_percentage'],
+        rows: [
+          ['id', 'INTEGER', 1, 100, 100, 50, 25, 25, 50, 75, 100, 0]
+        ],
+        runtime: 0.2,
+        status: 'success'
+      }
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => mockMetadataResponse,
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => mockStatsResponse,
+        } as Response)
+
+      const result = await getColumnMetadata('/test/file.csv', mockDispatch, 'duckdb')
+
+      expect(result).toHaveLength(1)
+      expect(result[0].stats).not.toBeNull()
+      expect(result[0].stats?.min).toBe(1)
+      expect(result[0].stats?.max).toBe(100)
+      expect(result[0].stats?.cntAll).toBe(100)
+
+      // Should call metadata query and row table stats query
+      expect(mockFetch).toHaveBeenCalledTimes(2)
     })
 
     it('should handle singleValue correctly when min equals max', async () => {
