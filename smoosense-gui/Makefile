@@ -6,6 +6,7 @@ env:
 
 # Run development server
 dev:
+	rm -rf .next
 	pnpm run dev
 
 # Build for production

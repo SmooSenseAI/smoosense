@@ -6,6 +6,7 @@ export enum FileType {
   Image = 'image',
   Video = 'video',
   Audio = 'audio',
+  Model3D = 'model-3d',
   Text = 'text',
   Pdf = 'pdf',
   Unknown = 'unknown'
@@ -57,6 +58,11 @@ export function getFileType(fileName: string): FileType {
   // Audio files
   if (['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'wma', 'opus', 'webm'].includes(extension)) {
     return FileType.Audio
+  }
+
+  // 3D model files
+  if (['glb'].includes(extension)) {
+    return FileType.Model3D
   }
 
   // PDF files

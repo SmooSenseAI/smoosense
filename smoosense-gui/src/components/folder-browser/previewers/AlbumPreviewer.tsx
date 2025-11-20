@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Images } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { type TreeNode } from '@/lib/features/folderTree/folderTreeSlice'
 import { getFileType, FileType } from '@/lib/utils/fileTypes'
 import { pathJoin } from '@/lib/utils/pathUtils'
@@ -15,6 +16,12 @@ import AlbumHeaderControls from './AlbumHeaderControls'
 import PreviewLoading from './shared/PreviewLoading'
 import PreviewError from './shared/PreviewError'
 
+// Dynamic import for Model3DPreviewer to avoid SSR issues
+const Model3DPreviewer = dynamic(() => import('./Model3DPreviewer'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">Loading 3D...</div>
+})
+
 interface AlbumPreviewerProps {
   item: TreeNode
 }
@@ -22,7 +29,7 @@ interface AlbumPreviewerProps {
 interface MediaFile {
   name: string
   path: string
-  type: 'image' | 'video' | 'audio'
+  type: 'image' | 'video' | 'audio' | 'model3d'
 }
 
 const ITEMS_PER_PAGE = 10
@@ -50,7 +57,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
           limit: 1000  // Load more items to find media files
         })).unwrap()
 
-        // Filter for image, video, and audio files
+        // Filter for image, video, audio, and 3D model files
         const media: MediaFile[] = result.items
           .filter(file => !file.isDir)
           .map(file => {
@@ -72,6 +79,12 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
                 name: file.name,
                 path: pathJoin(item.path, file.name),
                 type: 'audio' as const
+              }
+            } else if (fileType === FileType.Model3D) {
+              return {
+                name: file.name,
+                path: pathJoin(item.path, file.name),
+                type: 'model3d' as const
               }
             }
             return null
@@ -178,7 +191,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
                   />
                 ) : mediaFile.type === 'video' ? (
                   <GalleryVideoItem visualValue={getFileUrl(mediaFile.path, true)} />
-                ) : (
+                ) : mediaFile.type === 'audio' ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <AudioMiniMelSpectrogram
                       audioUrl={getFileUrl(mediaFile.path, true)}
@@ -186,6 +199,8 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
                       allowPopOver={true}
                     />
                   </div>
+                ) : (
+                  <Model3DPreviewer modelUrl={getFileUrl(mediaFile.path)} />
                 )}
               </div>
 

@@ -19,10 +19,15 @@ import ColumnarTablePreviewer from './previewers/ColumnarTablePreviewer'
 import RowTablePreviewer from './previewers/RowTablePreviewer'
 import AlbumPreviewer from './previewers/AlbumPreviewer'
 
-// Dynamic import for PdfPreviewer to avoid SSR issues
+// Dynamic imports to avoid SSR issues
 const PdfPreviewer = dynamic(() => import('./previewers/PdfPreviewer'), {
   ssr: false,
   loading: () => <div className="text-sm text-muted-foreground">Loading PDF viewer...</div>
+})
+
+const Model3DPreviewer = dynamic(() => import('./previewers/Model3DPreviewer'), {
+  ssr: false,
+  loading: () => <div className="text-sm text-muted-foreground">Loading 3D viewer...</div>
 })
 
 // Helper function to find a node by ID in the tree
@@ -44,11 +49,13 @@ function findNodeById(node: TreeNode | null, targetId: string): TreeNode | null 
 function folderLikelyContainsMedia(folder: TreeNode): boolean {
   if (!folder.isDir || !folder.children) return false
 
-  // Check if any direct children are image, video, or audio files
+  const mediaTypes = [FileType.Image, FileType.Video, FileType.Audio, FileType.Model3D]
+
+  // Check if any direct children are image, video, audio, or 3D model files
   return folder.children.some(child => {
     if (child.isDir) return false
     const fileType = getFileType(child.name)
-    return fileType === FileType.Image || fileType === FileType.Video || fileType === FileType.Audio
+    return mediaTypes.includes(fileType)
   })
 }
 
@@ -147,6 +154,9 @@ export default function FSItemPreview() {
 
       case FileType.Pdf:
         return <PdfPreviewer item={viewingItem} />
+
+      case FileType.Model3D:
+        return <Model3DPreviewer modelUrl={getFileUrl(viewingItem.path)} />
 
       default:
         // Default view for unsupported file types or directories without media
