@@ -3,7 +3,7 @@
 import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAppDispatch } from '@/lib/hooks'
-import { setRootFolder } from '@/lib/features/ui/uiSlice'
+import { setRootFolder, setBaseUrl } from '@/lib/features/ui/uiSlice'
 import { setViewingId, loadFolderContents, expandNode } from '@/lib/features/folderTree/folderTreeSlice'
 import { pathJoin, pathParent } from '@/lib/utils/pathUtils'
 import type { AppDispatch } from '@/lib/store'
@@ -58,6 +58,23 @@ function FolderUrlParamsProviderInner({ children }: { children: React.ReactNode 
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    // Extract and set baseUrl (remove trailing slash and last segment from pathname)
+    if (typeof window !== 'undefined') {
+      let pathname = window.location.pathname
+
+      // Remove trailing slash if present
+      if (pathname.endsWith('/')) {
+        pathname = pathname.slice(0, -1)
+      }
+
+      // Remove the last segment (e.g., /FolderBrowser)
+      const lastSlashIndex = pathname.lastIndexOf('/')
+      const pathWithoutLastSegment = lastSlashIndex > 0 ? pathname.substring(0, lastSlashIndex) : ''
+
+      const baseUrl = window.location.origin + pathWithoutLastSegment
+      dispatch(setBaseUrl(baseUrl))
+    }
+
     const urlRootFolder = searchParams.get('rootFolder')
     const viewing = searchParams.get('viewing')
 

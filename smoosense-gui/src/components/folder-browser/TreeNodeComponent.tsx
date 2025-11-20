@@ -5,6 +5,7 @@ import { NodeApi } from 'react-arborist'
 import { ExternalLink, RefreshCw } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { loadFolderContents, setViewingId, toggleNodeExpansion } from '@/lib/features/folderTree/folderTreeSlice'
+import { setTablePath } from '@/lib/features/ui/uiSlice'
 import { cn } from '@/lib/utils'
 import { getFileType, FileType } from '@/lib/utils/fileTypes'
 import { ICONS } from '@/lib/utils/iconUtils'
@@ -60,6 +61,14 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
 
     // Set the viewing ID for both files and folders
     dispatch(setViewingId(nodeData.id))
+
+    // If it's a table file, set tablePath so cell renderers can resolve media URLs
+    if (!nodeData.isDir) {
+      const fileType = getFileType(nodeData.name)
+      if (fileType === FileType.ColumnarTable || fileType === FileType.RowTable) {
+        dispatch(setTablePath(nodeData.path))
+      }
+    }
 
     // If it's a directory and not loaded, load its contents (but don't expand)
     if (nodeData.isDir && !nodeData.isLoaded) {
