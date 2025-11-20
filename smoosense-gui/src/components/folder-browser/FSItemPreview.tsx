@@ -156,7 +156,7 @@ export default function FSItemPreview() {
         return <PdfPreviewer item={viewingItem} />
 
       case FileType.Model3D:
-        return <Model3DPreviewer modelUrl={getFileUrl(viewingItem.path)} />
+        return <Model3DPreviewer modelUrl={getFileUrl(viewingItem.path, true)} />
 
       default:
         // Default view for unsupported file types or directories without media

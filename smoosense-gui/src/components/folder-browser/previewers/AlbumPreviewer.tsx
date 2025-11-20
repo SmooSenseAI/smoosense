@@ -200,7 +200,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
                     />
                   </div>
                 ) : (
-                  <Model3DPreviewer modelUrl={getFileUrl(mediaFile.path)} />
+                  <Model3DPreviewer modelUrl={getFileUrl(mediaFile.path, true)} />
                 )}
               </div>
 
