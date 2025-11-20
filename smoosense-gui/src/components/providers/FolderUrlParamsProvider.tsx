@@ -4,8 +4,8 @@ import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAppDispatch } from '@/lib/hooks'
 import { setRootFolder, setBaseUrl } from '@/lib/features/ui/uiSlice'
-import { setViewingId, loadFolderContents, expandNode } from '@/lib/features/folderTree/folderTreeSlice'
-import { pathJoin, pathParent } from '@/lib/utils/pathUtils'
+import { setViewingId, loadFolderContents, expandNode, type FSItem } from '@/lib/features/folderTree/folderTreeSlice'
+import { pathJoin, pathParent, pathBasename } from '@/lib/utils/pathUtils'
 import type { AppDispatch } from '@/lib/store'
 
 // Recursively ensure a path and all its ancestors are expanded
@@ -19,34 +19,43 @@ async function expandTreeToViewing(
   const fullPath = pathJoin(urlRootFolder, viewing)
   dispatch(setViewingId(fullPath))
 
-  const ensurePathExpanded = async (path: string): Promise<void> => {
-
+  // Returns the loaded items for the path, or null if it's a file
+  const ensurePathExpanded = async (path: string): Promise<FSItem[] | null> => {
     // Base case: if this is the root folder, load and expand it
     if (path === urlRootFolder) {
-      await dispatch(loadFolderContents({ path: urlRootFolder })).unwrap()
+      const result = await dispatch(loadFolderContents({ path: urlRootFolder })).unwrap()
       dispatch(expandNode(urlRootFolder))
-      return
-    } else {
-      const parent = pathParent(path)
-
-      // If no valid parent, load and expand root
-      if (!parent || parent === path || parent === '') {
-        await dispatch(loadFolderContents({ path: urlRootFolder })).unwrap()
-        dispatch(expandNode(urlRootFolder))
-        return
-      }
-
-      // Recursive case: ensure parent is expanded first
-      await ensurePathExpanded(parent)
-      // Load this path's contents
-      await dispatch(loadFolderContents({ path })).unwrap()
-      // Expand this path (so its children can be visible)
-      dispatch(expandNode(path))
+      return result.items
     }
+
+    const parent = pathParent(path)
+
+    // If no valid parent, load and expand root
+    if (!parent || parent === path || parent === '') {
+      const result = await dispatch(loadFolderContents({ path: urlRootFolder })).unwrap()
+      dispatch(expandNode(urlRootFolder))
+      return result.items
+    }
+
+    // Recursive case: ensure parent is expanded first
+    const parentItems = await ensurePathExpanded(parent)
+
+    // Check if current path is a directory based on parent's loaded items
+    const itemName = pathBasename(path)
+    const currentItem = parentItems?.find(item => item.name === itemName)
+
+    if (currentItem?.isDir) {
+      // It's a directory, load its contents and expand it
+      const result = await dispatch(loadFolderContents({ path })).unwrap()
+      dispatch(expandNode(path))
+      return result.items
+    }
+
+    // It's a file or not found, don't try to load
+    return null
   }
 
   try {
-    // Ensure the viewing target and all its ancestors are expanded
     await ensurePathExpanded(fullPath)
   } catch (error) {
     console.error('Failed to expand tree to viewing path:', error)
