@@ -6,6 +6,7 @@ import { Camera, Render, Light } from '@playcanvas/react/components'
 import { OrbitControls } from '@playcanvas/react/scripts'
 import { useModel } from '@playcanvas/react/hooks'
 import { Entity as PcEntity, BoundingBox, RenderComponent, CameraComponent } from 'playcanvas'
+import { Loader2 } from 'lucide-react'
 
 interface Model3DPreviewerProps {
   modelUrl: string
@@ -88,6 +89,11 @@ function ModelEntity({
 export default function Model3DPreviewer({ modelUrl }: Model3DPreviewerProps) {
   const [bounds, setBounds] = useState<ModelBounds | null>(null)
 
+  // Reset bounds when modelUrl changes to show spinner
+  useEffect(() => {
+    setBounds(null)
+  }, [modelUrl])
+
   // Callback ref to enable scene color map immediately when camera entity mounts
   const cameraEntityRef = useCallback((entity: PcEntity | null) => {
     if (entity) {
@@ -117,11 +123,17 @@ export default function Model3DPreviewer({ modelUrl }: Model3DPreviewerProps) {
 
   return (
     <div
-      className="w-full h-full"
+      className="w-full h-full relative"
       style={{
         background: 'linear-gradient(to bottom, #a8b5c8 0%, #8a9ab0 100%)'
       }}
     >
+      {/* Loading spinner */}
+      {!bounds && (
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <Loader2 className="h-8 w-8 animate-spin text-white/70" />
+        </div>
+      )}
       <Application key={modelUrl}>
         {/* Camera with orbit controls */}
         <Entity ref={cameraEntityRef} position={[pivotPoint[0], pivotPoint[1], pivotPoint[2] + idealDistance]}>
