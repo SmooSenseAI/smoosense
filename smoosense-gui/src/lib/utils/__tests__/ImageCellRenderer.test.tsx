@@ -70,28 +70,18 @@ describe('ImageCellRenderer', () => {
   })
 
   describe('Proxied URLs', () => {
+    // Set up Redux state with tablePath and baseUrl for URL resolution
+    const testState = {
+      ui: {
+        tablePath: 's3://test-bucket/data.parquet',
+        baseUrl: 'http://localhost:8000'
+      }
+    }
+
     it('should use proxied URL for S3 image URLs', () => {
       const s3Url = 's3://bucket/image.jpg'
-      const expectedProxiedUrl = './api/s3-proxy?url=' + encodeURIComponent(s3Url)
-      renderWithProvider(<ImageCellRenderer value={s3Url} />)
-      const img = screen.getByRole('img', { name: 'Image' })
-      expect(img).toBeInTheDocument()
-      expect(img).toHaveAttribute('src', expectedProxiedUrl)
-    })
-
-    it('should use proxied URL for FTP image URLs', () => {
-      const ftpUrl = 'ftp://server/image.png'
-      const expectedProxiedUrl = './api/s3-proxy?url=' + encodeURIComponent(ftpUrl)
-      renderWithProvider(<ImageCellRenderer value={ftpUrl} />)
-      const img = screen.getByRole('img', { name: 'Image' })
-      expect(img).toBeInTheDocument()
-      expect(img).toHaveAttribute('src', expectedProxiedUrl)
-    })
-
-    it('should use proxied URL for file:// URLs', () => {
-      const fileUrl = 'file:///local/image.gif'
-      const expectedProxiedUrl = './api/s3-proxy?url=' + encodeURIComponent(fileUrl)
-      renderWithProvider(<ImageCellRenderer value={fileUrl} />)
+      const expectedProxiedUrl = 'http://localhost:8000/api/s3-proxy?url=' + encodeURIComponent(s3Url)
+      renderWithProvider(<ImageCellRenderer value={s3Url} />, testState)
       const img = screen.getByRole('img', { name: 'Image' })
       expect(img).toBeInTheDocument()
       expect(img).toHaveAttribute('src', expectedProxiedUrl)
@@ -115,8 +105,8 @@ describe('ImageCellRenderer', () => {
 
     it('should properly encode URLs with special characters for proxy', () => {
       const s3UrlWithSpaces = 's3://bucket/path with spaces/image.jpg'
-      const expectedProxiedUrl = './api/s3-proxy?url=' + encodeURIComponent(s3UrlWithSpaces)
-      renderWithProvider(<ImageCellRenderer value={s3UrlWithSpaces} />)
+      const expectedProxiedUrl = 'http://localhost:8000/api/s3-proxy?url=' + encodeURIComponent(s3UrlWithSpaces)
+      renderWithProvider(<ImageCellRenderer value={s3UrlWithSpaces} />, testState)
       const img = screen.getByRole('img', { name: 'Image' })
       expect(img).toBeInTheDocument()
       expect(img).toHaveAttribute('src', expectedProxiedUrl)

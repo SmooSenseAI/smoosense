@@ -1,9 +1,8 @@
 'use client'
 
-import { ReactNode, useState } from 'react'
-import { X, Maximize2, Minimize2, ExternalLink, Copy, Check } from 'lucide-react'
+import { ReactNode } from 'react'
+import { X, Maximize2, Minimize2, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { isNil } from 'lodash'
 
 interface HeaderButtonProps {
   onClick: () => void
@@ -30,8 +29,10 @@ function HeaderButton({ onClick, title, children, className = "" }: HeaderButton
 }
 
 interface CellPopoverContentHeaderProps {
-  /** URL to display with copy and open functionality */
+  /** URL to display with open functionality */
   url?: string | null
+  /** Title text to display */
+  title?: string | null
   /** Whether the popover is expanded */
   isExpanded: boolean
   /** Handler for expand/collapse toggle */
@@ -41,29 +42,16 @@ interface CellPopoverContentHeaderProps {
 }
 
 /**
- * Header component for CellPopover that shows URL with copy/open functionality
+ * Header component for CellPopover that shows URL with open functionality
  * and expand/close controls
  */
 export default function CellPopoverContentHeader({
   url,
+  title,
   isExpanded,
   onToggleExpand,
   onClose
 }: CellPopoverContentHeaderProps) {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    if (!url) return
-
-    try {
-      const textToCopy = isNil(url) ? 'null' : String(url)
-      await navigator.clipboard.writeText(textToCopy)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Fallback for older browsers or clipboard API errors
-    }
-  }
 
   const handleOpenInNewTab = () => {
     if (url) {
@@ -71,30 +59,25 @@ export default function CellPopoverContentHeader({
     }
   }
 
+  const displayText = title || url
+
   return (
     <div className="flex items-center justify-between border-b p-2 gap-2 bg-muted/50">
       <div className="flex-1 min-w-0">
-        {url && (
+        {displayText && (
           <div className="flex items-center gap-2">
             <code className="flex-1 text-xs bg-muted px-2 py-1 rounded truncate">
-              {url}
+              {displayText}
             </code>
-            <HeaderButton
-              onClick={handleCopy}
-              title={copied ? 'Copied!' : 'Copy to clipboard'}
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </HeaderButton>
-            <HeaderButton
-              onClick={handleOpenInNewTab}
-              title="Open in new tab"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </HeaderButton>
+
+            {url && (
+              <HeaderButton
+                onClick={handleOpenInNewTab}
+                title="Open in new tab"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </HeaderButton>
+            )}
           </div>
         )}
       </div>

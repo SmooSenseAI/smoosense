@@ -4,9 +4,8 @@ import { useRef, useCallback, useImperativeHandle, forwardRef, useMemo, memo, us
 import { shallowEqual } from 'react-redux'
 import { AgGridReact } from 'ag-grid-react'
 import { GridReadyEvent, GridApi, ColumnResizedEvent, ColumnVisibleEvent, RowClickedEvent, SortChangedEvent } from 'ag-grid-community'
-import { useAGGridTheme, useAg, useRenderType } from '@/lib/hooks'
+import { useAGGridTheme, useAg, useRenderType, useRowData } from '@/lib/hooks'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import { useProcessedRowData } from '@/lib/hooks/useProcessedRowData'
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import { expandColDef, RenderType } from '@/lib/utils/agGridCellRenderers'
 import { AlertCircle } from 'lucide-react'
@@ -52,7 +51,7 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
   const gridApiRef = useRef<GridApi | null>(null)
   
   // Always call hooks - but handle null tablePath gracefully in the hooks
-  const { data, error: dataError } = useProcessedRowData()
+  const { data, error: dataError } = useRowData()
   const { ag: baseColumnDefs } = useAg()
   const renderTypeColumns = useRenderType()
 

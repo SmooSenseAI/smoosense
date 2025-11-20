@@ -12,6 +12,7 @@ from werkzeug.wrappers import Response
 from smoosense.exceptions import AccessDeniedException, InvalidInputException
 from smoosense.utils.api import handle_api_errors, require_arg
 from smoosense.utils.local_fs import LocalFileSystem
+from smoosense.utils.mime_types import get_mime_type
 from smoosense.utils.s3_fs import S3FileSystem
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ def create_streaming_response(
     flask_response.headers["Access-Control-Allow-Origin"] = "*"
     flask_response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     flask_response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    flask_response.headers["Content-Disposition"] = "inline"
     return flask_response
 
 
@@ -49,10 +51,6 @@ def get_file() -> Response:
     path = require_arg("path")
     redirect_param = request.args.get("redirect", "false").lower() == "true"
     ext = os.path.splitext(path)[1].lower()
-    mime_type = {
-        ".json": "application/json",
-        ".txt": "text/plain",
-    }
 
     if path.startswith("http://"):
         logger.info(f"Proxying HTTP URL {path}")
@@ -60,9 +58,7 @@ def get_file() -> Response:
             response = requests.get(path, stream=True, timeout=30)
             response.raise_for_status()
 
-            content_type = response.headers.get(
-                "content-type", mime_type.get(ext, "application/octet-stream")
-            )
+            content_type = response.headers.get("content-type", get_mime_type(ext))
 
             def generate() -> Generator[bytes, None, None]:
                 for chunk in response.iter_content(chunk_size=8192):
@@ -104,7 +100,7 @@ def get_file() -> Response:
                             break
                         yield chunk
 
-                content_type = mime_type.get(ext, "application/octet-stream")
+                content_type = get_mime_type(ext)
                 return create_streaming_response(generate(), content_type)
             except Exception as e:
                 logger.error(f"Failed to proxy S3 file {path}: {e}")
@@ -114,11 +110,13 @@ def get_file() -> Response:
         if path.startswith("~"):
             path = os.path.expanduser(path)
         logger.info(f"Sending file {path}")
-        file_response = send_file(path, mimetype=mime_type.get(ext, "application/octet-stream"))
+        file_response = send_file(path, mimetype=get_mime_type(ext))
         # Add CORS headers for local file responses
         file_response.headers["Access-Control-Allow-Origin"] = "*"
         file_response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
         file_response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        file_response.headers["Content-Disposition"] = "inline"
+
         return file_response
 
 

@@ -7,12 +7,9 @@ import JsonBox from '@/components/ui/JsonBox'
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
 import { List, X } from 'lucide-react'
 import { isNil } from 'lodash'
-import { useRenderType } from '@/lib/hooks'
-import { useProcessedRowData } from '@/lib/hooks/useProcessedRowData'
+import { useRenderType, useRowData } from '@/lib/hooks'
 import AutoLink from '@/components/common/AutoLink'
 import { setShowRowDetailsPanel } from '@/lib/features/ui/uiSlice'
-import RichAudioPlayer from '@/components/audio/RichAudioPlayer'
-import { proxyedUrl } from '@/lib/utils/urlUtils'
 
 interface RowDetailsWrapperProps {
   children: React.ReactNode
@@ -51,10 +48,13 @@ function RowDetailsWrapper({ children }: RowDetailsWrapperProps) {
 
 
 
-function renderValueByType(value: unknown, renderType: RenderType): React.ReactNode {
+function renderValueByType(
+  value: unknown,
+  renderType: RenderType
+): React.ReactNode {
   if (value === null) return <span className="text-muted-foreground italic">null</span>
   if (value === undefined) return <span className="text-muted-foreground italic">undefined</span>
-  
+
   switch (renderType) {
     case RenderType.Json:
       if (typeof value === 'object' && !isNil(value)) {
@@ -71,55 +71,28 @@ function renderValueByType(value: unknown, renderType: RenderType): React.ReactN
         }
       }
       return <span className="text-sm font-mono">{String(value)}</span>
-    
-    case RenderType.ImageUrl:
-      if (typeof value === 'string') {
-        return (
-          <div>
-            <AutoLink url={value} className="text-xs font-mono" />
-          </div>
-        )
-      }
-      return <span className="text-sm font-mono">{String(value)}</span>
-    
+
     case RenderType.IFrame:
       if (typeof value === 'string') {
         return <AutoLink url={value} className="text-xs font-mono" />
       }
       return <span className="text-sm font-mono">{String(value)}</span>
-    
-    case RenderType.VideoUrl:
-      if (typeof value === 'string') {
-        return (
-          <div>
-            <AutoLink url={value} className="text-xs font-mono" />
-          </div>
-        )
-      }
-      return <span className="text-sm font-mono">{String(value)}</span>
-
-    case RenderType.AudioUrl:
-      if (typeof value === 'string') {
-        const audioUrl = proxyedUrl(value)
-        return <RichAudioPlayer audioUrl={audioUrl} autoPlay={false} />
-      }
-      return <span className="text-sm font-mono">{String(value)}</span>
 
     case RenderType.Boolean:
       return <span className={`font-medium`}>{String(value)}</span>
-    
+
     case RenderType.Number:
       return <span className="font-mono">{String(value)}</span>
-    
+
     default:
       return <span className="text-sm font-mono">{String(value)}</span>
   }
 }
 
 export default function RowDetails() {
-  // Get data from Redux store (using processed data that includes derived columns)
+  // Get data from Redux store
   const justClickedRowId = useAppSelector((state) => state.viewing.justClickedRowId)
-  const { data: rowData } = useProcessedRowData()
+  const { data: rowData } = useRowData()
   const columnDefs = useAppSelector((state) => state.ag.columnDefs)
   const renderTypeColumns = useRenderType()
 

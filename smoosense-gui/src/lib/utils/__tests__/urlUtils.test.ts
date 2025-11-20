@@ -1,4 +1,4 @@
-import { getScheme, needProxy, proxyedUrl, isOnCloud } from '../urlUtils'
+import { getScheme, isOnCloud } from '../urlUtils'
 import { getFileUrl } from '../apiUtils'
 
 describe('urlUtils', () => {
@@ -39,82 +39,6 @@ describe('urlUtils', () => {
     it('should return empty string for URL without scheme', () => {
       expect(getScheme('example.com')).toBe('')
       expect(getScheme('/local/path')).toBe('')
-    })
-  })
-
-  describe('needProxy', () => {
-    it('should return false for HTTP URLs', () => {
-      expect(needProxy('http://example.com')).toBe(false)
-    })
-
-    it('should return false for HTTPS URLs', () => {
-      expect(needProxy('https://example.com')).toBe(false)
-    })
-
-    it('should return false for URLs without scheme', () => {
-      expect(needProxy('example.com')).toBe(false)
-      expect(needProxy('/local/path')).toBe(false)
-    })
-
-    it('should return true for S3 URLs', () => {
-      expect(needProxy('s3://bucket/file.txt')).toBe(true)
-    })
-
-    it('should return true for FTP URLs', () => {
-      expect(needProxy('ftp://server/file.txt')).toBe(true)
-    })
-
-    it('should return true for file URLs', () => {
-      expect(needProxy('file:///local/path')).toBe(true)
-    })
-
-    it('should return true for custom scheme URLs', () => {
-      expect(needProxy('custom://protocol/resource')).toBe(true)
-    })
-  })
-
-  describe('proxyedUrl', () => {
-    it('should return original URL for HTTP URLs', () => {
-      const url = 'http://example.com/file.txt'
-      expect(proxyedUrl(url)).toBe(url)
-    })
-
-    it('should return original URL for HTTPS URLs', () => {
-      const url = 'https://example.com/file.txt'
-      expect(proxyedUrl(url)).toBe(url)
-    })
-
-    it('should return proxied URL for S3 URLs', () => {
-      const url = 's3://bucket/file.txt'
-      const expected = `./api/s3-proxy?url=${encodeURIComponent(url)}`
-      expect(proxyedUrl(url)).toBe(expected)
-    })
-
-    it('should return proxied URL for FTP URLs', () => {
-      const url = 'ftp://server/file.txt'
-      const expected = `./api/s3-proxy?url=${encodeURIComponent(url)}`
-      expect(proxyedUrl(url)).toBe(expected)
-    })
-
-    it('should properly encode URL parameters', () => {
-      const url = 's3://bucket/path with spaces/file.txt'
-      const expected = `./api/s3-proxy?url=${encodeURIComponent(url)}`
-      expect(proxyedUrl(url)).toBe(expected)
-    })
-
-    it('should return relative URLs unchanged when starting with ./', () => {
-      const url = './images/small.jpg'
-      expect(proxyedUrl(url)).toBe(url)
-    })
-
-    it('should return URLs unchanged when starting with /', () => {
-      const url = '/local/file.txt'
-      expect(proxyedUrl(url)).toBe(url)
-    })
-
-    it('should return URLs unchanged when starting with ~/', () => {
-      const url = '~/home/file.txt'
-      expect(proxyedUrl(url)).toBe(url)
     })
   })
 

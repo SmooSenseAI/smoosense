@@ -7,7 +7,7 @@ import {getFileType, FileType} from './fileTypes'
  * Returns true if:
  * - Value is a string
  * - AND starts with ./, /, ~/, or s3://
- * - AND has a media file extension (image, video, or audio)
+ * - AND has a media file extension (image, video, audio, or pdf)
  */
 export const needToResolveMediaUrl = (value: unknown): boolean => {
   // Must be a string
@@ -26,9 +26,9 @@ export const needToResolveMediaUrl = (value: unknown): boolean => {
     return false
   }
 
-  // Must be a media file
+  // Must be a media file (image, video, audio, or pdf)
   const fileType = getFileType(value)
-  return fileType === FileType.Image || fileType === FileType.Video || fileType === FileType.Audio
+  return [FileType.Image, FileType.Video, FileType.Audio, FileType.Pdf].includes(fileType)
 }
 
 /**
@@ -80,6 +80,31 @@ function resolveRelativePath(tablePath: string, relativePath: string): string {
   // Case 3: Local file path (e.g., /data/folder/file.parquet)
   const dirPath = pathDirname(tablePath)
   return pathJoin(dirPath, cleanRelative)
+}
+
+/**
+ * Conditionally resolve a media URL if needed
+ * @param params - Object containing value, tablePath, and baseUrl
+ * @param params.value - The value to check and potentially resolve
+ * @param params.tablePath - The current table path (for resolving relative paths like ./)
+ * @param params.baseUrl - The base URL to prepend (for absolute paths like / or ~/)
+ * @returns The resolved URL if resolution was needed, otherwise the original value as string
+ */
+export const mayResolveUrl = ({
+  value,
+  tablePath,
+  baseUrl
+}: {
+  value: unknown
+  tablePath: string | null
+  baseUrl: string | null
+}): string => {
+  const originalUrl = String(value).trim()
+
+  // Resolve URL if needed
+  return (tablePath && baseUrl && needToResolveMediaUrl(value))
+    ? resolveAssetUrl(originalUrl, tablePath, baseUrl)
+    : originalUrl
 }
 
 /**

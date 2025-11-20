@@ -2,7 +2,6 @@
 
 import { memo, useRef, useEffect, useState } from 'react'
 import { useAppSelector } from '@/lib/hooks'
-import { proxyedUrl } from '@/lib/utils/urlUtils'
 import { Play } from 'lucide-react'
 
 export interface VideoPlayerProps {
@@ -26,8 +25,6 @@ const VideoPlayer = memo(function VideoPlayer({
   const galleryVideoMuted = useAppSelector((state) => state.ui.galleryVideoMuted)
   const autoPlayAllVideos = useAppSelector((state) => state.ui.autoPlayAllVideos)
   const cropMediaToFitCover = useAppSelector((state) => state.ui.cropMediaToFitCover)
-
-  const videoUrl = proxyedUrl(src)
 
   // Apply crop fit logic - always take full width and height
   const finalClassName = cropMediaToFitCover
@@ -108,7 +105,7 @@ const VideoPlayer = memo(function VideoPlayer({
     >
       <video
         ref={videoRef}
-        src={videoUrl}
+        src={src}
         className={finalClassName}
         muted={galleryVideoMuted}
         autoPlay={shouldAutoPlay}

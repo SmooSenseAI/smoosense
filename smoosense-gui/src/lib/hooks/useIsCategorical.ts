@@ -58,7 +58,7 @@ export function useIsCategorical(columnName: string): {
       // - cardinality is low
       // - cntD < 5 OR distinct ratio < 10%
       if (cardinality === 'low' && !isNil(cntD) && !isNil(distinctRatio)) {
-        isCategorical = cntD < 5 || (distinctRatio < 0.1 && cntD < 100);
+        isCategorical = distinctRatio < 0.3 && cntD < 100;
       } else if (cardinality === 'high') {
         isCategorical = false
       }

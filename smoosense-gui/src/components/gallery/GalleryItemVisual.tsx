@@ -1,7 +1,7 @@
 'use client'
 
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
-import { proxyedUrl } from '@/lib/utils/urlUtils'
+import { mayResolveUrl } from '@/lib/utils/mediaUrlUtils'
 import { parseBbox, buildBboxVizUrl } from '@/lib/utils/bboxUtils'
 import ImageBlock from '@/components/common/ImageBlock'
 import ImageMask from '@/components/viz/ImageMask'
@@ -24,7 +24,12 @@ export default function GalleryItemVisual({
   index,
   galleryItemHeight
 }: GalleryItemVisualProps) {
+  const tablePath = useAppSelector((state) => state.ui.tablePath)
   const baseUrl = useAppSelector((state) => state.ui.baseUrl)
+
+  // Resolve URLs once to avoid repeated function calls
+  const resolvedVisualUrl = mayResolveUrl({ value: visualValue, tablePath, baseUrl })
+  const resolvedImageUrl = mayResolveUrl({ value: row.image_url, tablePath, baseUrl })
 
   return (
     <div
@@ -33,7 +38,7 @@ export default function GalleryItemVisual({
     >
       {renderType === RenderType.ImageUrl && (
         <ImageBlock
-          src={String(visualValue)}
+          src={resolvedVisualUrl}
           alt={`Row ${index + 1}`}
           className="w-full h-full"
         />
@@ -41,19 +46,19 @@ export default function GalleryItemVisual({
 
       {renderType === RenderType.ImageMask && (
         <ImageMask
-          image_url={String(row.image_url)}
-          mask_url={String(visualValue)}
+          image_url={resolvedImageUrl}
+          mask_url={resolvedVisualUrl}
           alt={`Row ${index + 1}`}
         />
       )}
 
       {renderType === RenderType.VideoUrl && (
-        <GalleryVideoItem visualValue={String(visualValue)} />
+        <GalleryVideoItem visualValue={resolvedVisualUrl} />
       )}
 
       {renderType === RenderType.AudioUrl && (
         <div className="w-full h-full flex items-center justify-center">
-          <AudioMiniMelSpectrogram audioUrl={proxyedUrl(String(visualValue))} height={galleryItemHeight} allowPopOver={true} />
+          <AudioMiniMelSpectrogram audioUrl={resolvedVisualUrl} height={galleryItemHeight} allowPopOver={true} />
         </div>
       )}
 
@@ -61,11 +66,11 @@ export default function GalleryItemVisual({
         const bbox = parseBbox(visualValue)
         const imageUrl = row.image_url
 
-        if (!bbox || !imageUrl || typeof imageUrl !== 'string' || !baseUrl) {
+        if (!bbox || !imageUrl || typeof imageUrl !== 'string' || !baseUrl || !tablePath) {
           return null
         }
 
-        const vizUrl = buildBboxVizUrl(imageUrl, [bbox], baseUrl)
+        const vizUrl = buildBboxVizUrl(imageUrl, [bbox], tablePath, baseUrl)
 
         return (
           <iframe
@@ -87,7 +92,7 @@ export default function GalleryItemVisual({
 
         return (
           <iframe
-            src={proxyedUrl(iframeUrl)}
+            src={iframeUrl}
             className="w-full h-full border-0"
             title={`Row ${index + 1}`}
             style={{ backgroundColor: 'transparent' }}
