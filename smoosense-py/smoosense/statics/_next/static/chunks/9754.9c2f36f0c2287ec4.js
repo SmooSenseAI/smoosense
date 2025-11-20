@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[9754],{59370:(e,h,t)=>{t.d(h,{A:()=>k});let k=(0,t(67831).A)("chevron-right",[["path",{d:"m9 18 6-6-6-6",key:"mthhwq"}]])},94049:(e,h,t)=>{t.d(h,{A:()=>k});let k=(0,t(67831).A)("chevron-left",[["path",{d:"m15 18-6-6 6-6",key:"1wnfg3"}]])}}]);
