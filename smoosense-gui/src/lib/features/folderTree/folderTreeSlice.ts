@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import {pathJoin, pathBasename, pathParent} from '@/lib/utils/pathUtils'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
+import { getFileType, FileType } from '@/lib/utils/fileTypes'
+import { setTablePath } from '@/lib/features/ui/uiSlice'
+import type { AppDispatch } from '@/lib/store'
 
 export interface FSItem {
   name: string
@@ -208,5 +211,20 @@ export const folderTreeSlice = createSlice({
   },
 })
 
-export const { toggleNodeExpansion, expandNode, clearTree, setViewingId, setNodeLoading } = folderTreeSlice.actions
+export const { toggleNodeExpansion, expandNode, clearTree, setNodeLoading } = folderTreeSlice.actions
+const { setViewingId: setViewingIdAction } = folderTreeSlice.actions
+
+// Thunk to set viewing ID and also set tablePath if it's a table file
+export const setViewingId = (id: string | null) => (dispatch: AppDispatch) => {
+  dispatch(setViewingIdAction(id))
+
+  // If id is provided and it's a table file, set tablePath
+  if (id) {
+    const fileType = getFileType(id)
+    if (fileType === FileType.ColumnarTable || fileType === FileType.RowTable) {
+      dispatch(setTablePath(id))
+    }
+  }
+}
+
 export default folderTreeSlice.reducer
