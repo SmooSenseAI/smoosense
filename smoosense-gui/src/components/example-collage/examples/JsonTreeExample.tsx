@@ -1,9 +1,12 @@
 'use client'
 
-import JsonBox from '@/components/ui/JsonBox'
+import { useMemo } from 'react'
+import BasicAGTable from '@/components/common/BasicAGTable'
+import { ColDef } from 'ag-grid-community'
+import JsonCellRenderer from '@/lib/utils/cellRenderers/JsonCellRenderer'
 
 // Example data from ImageMaskExample
-const EXAMPLE_DATA = [
+const EXAMPLE_JSON = [
   {
     "image_url": "https://cdn.smoosense.ai/datasets/text-2-image-feedback/images/image_quality_sd_1.jpg",
     "image_mask_alignment": "https://cdn.smoosense.ai/datasets/text-2-image-feedback/image_mask_alignment/image_quality_sd_1.png",
@@ -24,10 +27,37 @@ const EXAMPLE_DATA = [
   }
 ]
 
+// Table data with one row containing the JSON
+const TABLE_DATA = [
+  {
+    column1: 'example 1',
+    json_data: EXAMPLE_JSON
+  },
+  {
+    column1: 'example 2',
+    json_data: EXAMPLE_JSON
+  }
+]
+
 export function JsonTreeVisual() {
+  const colDefOverrides = useMemo((): Record<string, Partial<ColDef>> => ({
+    json_data: {
+      headerName: 'raw_data',
+      flex: 1,
+      cellRenderer: JsonCellRenderer
+    }
+  }), [])
+
   return (
     <div className="w-full h-full">
-      <JsonBox src={EXAMPLE_DATA} showControls={true} />
+      <BasicAGTable
+        data={TABLE_DATA}
+        colDefOverrides={colDefOverrides}
+        gridOptionOverrides={{
+          rowHeight: 60,
+          headerHeight: 30
+        }}
+      />
     </div>
   )
 }

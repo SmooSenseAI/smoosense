@@ -26,22 +26,22 @@ const examples = [
     description: <ImageMaskDescription />,
     visual: <ImageMaskVisual />,
     colSpan: 2 as const,
-    rowSpan: 2 as const,
+    rowSpan: 1 as const,
   },
   {
     id: 'video-side-by-side',
     title: 'Video Play Side-by-Side',
     description: <VideoSideBySideDescription />,
     visual: <VideoSideBySideVisual />,
-    colSpan: 1 as const,
-    rowSpan: 2 as const,
+    colSpan: 2 as const,
+    rowSpan: 1 as const,
   },
   {
     id: 'audio-spectrogram',
     title: 'Audio Mel-Spectrogram',
     description: <AudioSpectrogramDescription />,
     visual: <AudioSpectrogramVisual />,
-    colSpan: 1 as const,
+    colSpan: 2 as const,
     rowSpan: 1 as const,
   },
   {
@@ -61,28 +61,29 @@ const examples = [
     rowSpan: 2 as const,
   },
   {
-    id: 'bounding-box',
-    title: 'Object Detection Bounding Box',
-    description: <BoundingBoxDescription />,
-    visual: <BoundingBoxVisual />,
-    colSpan: 1 as const,
-    rowSpan: 2 as const,
-  },
-  {
     id: 'json-tree',
-    title: 'JSON Tree View',
+    title: 'JSON Tree View in Table Cells',
     description: <JsonTreeDescription />,
     visual: <JsonTreeVisual />,
     colSpan: 1 as const,
-    rowSpan: 2 as const,
+    rowSpan: 1 as const,
   },
+  {
+    id: 'bounding-box',
+    title: 'Bounding Box and Image Annotations',
+    description: <BoundingBoxDescription />,
+    visual: <BoundingBoxVisual />,
+    colSpan: 2 as const,
+    rowSpan: 1 as const,
+  },
+
 ]
 
 export default function CollagePage() {
   return (
     <ExamplePageLayout title="Multimodal visualizations, integrated with table and gallery">
       <div className="">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[200px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[200px]">
           {examples.map((example) => (
             <ExampleTile
               key={example.id}

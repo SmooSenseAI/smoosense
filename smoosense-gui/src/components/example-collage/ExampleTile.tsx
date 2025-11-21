@@ -13,13 +13,20 @@ export interface ExampleTileProps {
   title: string
   description?: ReactNode
   visual?: ReactNode
-  colSpan?: 1 | 2
+  colSpan?: 1 | 2 | 3 | 4
   rowSpan?: 1 | 2
 }
 
 export default function ExampleTile({ title, description, visual, colSpan = 1, rowSpan = 1 }: ExampleTileProps) {
+  const colSpanClass = {
+    1: '',
+    2: 'md:col-span-2',
+    3: 'md:col-span-3',
+    4: 'md:col-span-4',
+  }[colSpan] || ''
+
   const spanClasses = [
-    colSpan === 2 ? 'md:col-span-2' : '',
+    colSpanClass,
     rowSpan === 2 ? 'row-span-2' : '',
   ].filter(Boolean).join(' ')
 
