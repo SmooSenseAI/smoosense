@@ -43,7 +43,7 @@ export default function NavbarSkeleton({
         {/* Title or Tab list - center, or flex spacer if neither */}
         {title ? (
           <div className="flex-1 flex justify-center">
-            <span className="text-sm font-medium text-muted-foreground truncate max-w-md">
+            <span className="font-medium truncate max-w-md">
               {title}
             </span>
           </div>
