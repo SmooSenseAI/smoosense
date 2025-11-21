@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import _ from 'lodash'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setSqlQuery, setSqlResult } from '@/lib/features/ui/uiSlice'
@@ -52,14 +52,14 @@ export default function SqlQueryPanel() {
     }
   }, [isLoading, startTime])
 
-  // Transform data for BasicAGTable only when needed
-  const getTableData = (): RowObject[] => {
+  // Transform data for BasicAGTable only when currentResult changes
+  const tableData = useMemo((): RowObject[] => {
     if (!currentResult || currentResult.status !== 'success') {
       return []
     }
-    
+
     return currentResult.rows.map(row => _.zipObject(currentResult.column_names, row)) as RowObject[]
-  }
+  }, [currentResult])
 
   // Format elapsed time for display
   const formatElapsedTime = (ms: number): string => {
@@ -209,7 +209,7 @@ export default function SqlQueryPanel() {
         )}
 
         {currentResult && currentResult.status === 'success' && currentResult.rows.length > 0 && (
-          <BasicAGTable data={getTableData()} />
+          <BasicAGTable data={tableData} />
         )}
 
         {currentResult && currentResult.status === 'success' && currentResult.rows.length === 0 && (
