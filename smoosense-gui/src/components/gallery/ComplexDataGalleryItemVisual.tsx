@@ -6,6 +6,7 @@ import { FileType } from '@/lib/utils/fileTypes'
 import { mayResolveUrl } from '@/lib/utils/mediaUrlUtils'
 import { useAppSelector } from '@/lib/hooks'
 import AudioPage from '@/lib/utils/mediaList/AudioPage'
+import ImageBlock from '@/components/common/ImageBlock'
 import _ from 'lodash'
 
 interface ComplexDataGalleryItemVisualProps {
@@ -53,13 +54,14 @@ const ComplexDataGalleryItemVisual = memo(function ComplexDataGalleryItemVisual(
   // Check for image list
   if (isAllUrlType(strings, FileType.Image)) {
     return (
-      <div className="grid grid-cols-2 gap-1 p-1 h-full overflow-auto">
+      <div className="grid grid-cols-2 gap-1 p-1 h-full overflow-auto content-start">
         {resolvedUrls.map((url, index) => (
-          <img
+          <ImageBlock
             key={index}
             src={url}
             alt={validUrls[index]}
-            className="w-full h-auto object-cover rounded"
+            showPopover={true}
+            className="w-full h-auto rounded"
           />
         ))}
       </div>
