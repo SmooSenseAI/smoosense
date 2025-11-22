@@ -35,7 +35,7 @@ export default function GalleryControls({ }: GalleryControlsProps) {
           label="Visual Column"
           candidateRenderTypes={[
               RenderType.IFrame, RenderType.ImageUrl, RenderType.VideoUrl, RenderType.ImageMask,
-              RenderType.Bbox, RenderType.AudioUrl
+              RenderType.Bbox, RenderType.AudioUrl, RenderType.Json
           ]}
         />
 

@@ -31,7 +31,7 @@ describe('cardinalitySlice', () => {
     const columnMeta: ColumnMeta = {
       column_name: 'is_active',
       duckdbType: 'BOOLEAN',
-      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: true, isString: false, isPrimitive: true, agType: 'boolean', isDatetime: false, isNumericArray: false },
+      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: true, isString: false, isPrimitive: true, agType: 'boolean', isDatetime: false, isNumericArray: false, isArray: false },
       stats: null
     }
 
@@ -57,7 +57,7 @@ describe('cardinalitySlice', () => {
     const columnMeta: ColumnMeta = {
       column_name: 'empty_col',
       duckdbType: 'VARCHAR',
-      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: true, isPrimitive: true, agType: 'text', isDatetime: false, isNumericArray: false },
+      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: true, isPrimitive: true, agType: 'text', isDatetime: false, isNumericArray: false, isArray: false },
       stats: { min: null, max: null, cntAll: 100, cntNull: 100, hasNull: true, singleValue: false, allNull: true }
     }
 
@@ -83,7 +83,7 @@ describe('cardinalitySlice', () => {
     const columnMeta: ColumnMeta = {
       column_name: 'constant_col',
       duckdbType: 'VARCHAR',
-      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: true, isPrimitive: true, agType: 'text', isDatetime: false, isNumericArray: false },
+      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: true, isPrimitive: true, agType: 'text', isDatetime: false, isNumericArray: false, isArray: false },
       stats: { min: 'constant', max: 'constant', cntAll: 100, cntNull: 0, hasNull: false, singleValue: true, allNull: false }
     }
 
@@ -109,7 +109,7 @@ describe('cardinalitySlice', () => {
     const columnMeta: ColumnMeta = {
       column_name: 'complex_col',
       duckdbType: 'STRUCT',
-      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: false, isPrimitive: false, agType: 'text', isDatetime: false, isNumericArray: false },
+      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: false, isPrimitive: false, agType: 'text', isDatetime: false, isNumericArray: false, isArray: false },
       stats: null
     }
 
@@ -135,7 +135,7 @@ describe('cardinalitySlice', () => {
     const columnMeta: ColumnMeta = {
       column_name: 'normal_col',
       duckdbType: 'VARCHAR',
-      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: true, isPrimitive: true, agType: 'text', isDatetime: false, isNumericArray: false },
+      typeShortcuts: { isInteger: false, isFloat: false, isNumeric: false, isBoolean: false, isString: true, isPrimitive: true, agType: 'text', isDatetime: false, isNumericArray: false, isArray: false },
       stats: null
     }
 

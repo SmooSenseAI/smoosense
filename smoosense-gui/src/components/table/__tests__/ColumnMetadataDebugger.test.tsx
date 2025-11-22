@@ -47,7 +47,8 @@ describe('ColumnMetadataDebugger', () => {
         isPrimitive: true,
         agType: 'boolean',
         isDatetime: false,
-        isNumericArray: false
+        isNumericArray: false,
+        isArray: false
       },
       stats: {
         min: null,

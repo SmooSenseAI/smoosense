@@ -28,6 +28,8 @@ interface CellPopoverProps {
   align?: "start" | "center" | "end"
   /** Value to copy when copy button is clicked. If null, no copy button is shown */
   copyValue?: string | null
+  /** Title to display in header. If not provided, falls back to copyValue */
+  title?: string
 }
 
 /**
@@ -48,7 +50,8 @@ export default function CellPopover({
   onOpenChange,
   side = "top",
   align = "start",
-  copyValue = null
+  copyValue = null,
+  title
 }: CellPopoverProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -100,7 +103,7 @@ export default function CellPopover({
     <div className='flex flex-col h-full min-h-0'>
       <CellPopoverContentHeader
         url={url}
-        title={copyValue || undefined}
+        title={title || copyValue || undefined}
         isExpanded={isExpanded}
         onToggleExpand={handleToggleExpand}
         onClose={handleClose}

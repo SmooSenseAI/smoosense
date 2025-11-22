@@ -54,6 +54,8 @@ export interface TypeShortcuts {
   isDatetime: boolean
   /** True if the type is a numeric array (ends with [] and base type is numeric) */
   isNumericArray: boolean
+  /** True if the type is an array type (ends with []) */
+  isArray: boolean
 }
 
 /**
@@ -109,6 +111,7 @@ export function computeTypeShortcuts(type: string): TypeShortcuts {
     agType,
     isDatetime,
     isNumericArray,
+    isArray,
   }
 }
 

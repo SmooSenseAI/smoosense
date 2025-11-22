@@ -22,6 +22,7 @@ describe('computeTypeShortcuts', () => {
           agType: 'number',
           isDatetime: false,
           isNumericArray: false,
+          isArray: false,
         })
       })
     })
@@ -49,6 +50,7 @@ describe('computeTypeShortcuts', () => {
           agType: 'number',
           isDatetime: false,
           isNumericArray: false,
+          isArray: false,
         })
       })
     })
@@ -77,6 +79,7 @@ describe('computeTypeShortcuts', () => {
           agType: 'text',
           isDatetime: false,
           isNumericArray: false,
+          isArray: false,
         })
       })
     })
@@ -101,6 +104,7 @@ describe('computeTypeShortcuts', () => {
         agType: 'boolean',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       })
     })
   })
@@ -121,6 +125,7 @@ describe('computeTypeShortcuts', () => {
           agType: 'dateString',
           isDatetime: true,
           isNumericArray: false,
+          isArray: false,
         })
       })
     })
@@ -139,6 +144,7 @@ describe('computeTypeShortcuts', () => {
         agType: 'text',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       })
     })
   })
@@ -156,6 +162,7 @@ describe('computeTypeShortcuts', () => {
         agType: 'text',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       })
     })
 
@@ -171,6 +178,7 @@ describe('computeTypeShortcuts', () => {
         agType: 'text',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       })
     })
   })

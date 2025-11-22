@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { GridReadyEvent, ColDef, GridOptions } from 'ag-grid-community'
 import { useAGGridTheme, useAGGridDefaultColDef, useAGGridOptions, useAppSelector } from '@/lib/hooks'
@@ -17,7 +18,7 @@ interface BasicAGTableProps {
 }
 
 
-export default function BasicAGTable({ data, className = '', onGridReady, colDefOverrides, gridOptionOverrides }: BasicAGTableProps) {
+const BasicAGTable = memo(function BasicAGTable({ data, className = '', onGridReady, colDefOverrides, gridOptionOverrides }: BasicAGTableProps) {
   const theme = useAGGridTheme()
   const defaultColDef = useAGGridDefaultColDef()
   const baseGridOptions = useAGGridOptions()
@@ -58,4 +59,6 @@ export default function BasicAGTable({ data, className = '', onGridReady, colDef
       />
     </div>
   )
-}
+})
+
+export default BasicAGTable

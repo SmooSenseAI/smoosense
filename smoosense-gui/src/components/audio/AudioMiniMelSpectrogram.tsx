@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, memo } from 'react'
+import { useEffect, useState, useRef, memo } from 'react'
 import dynamic from 'next/dynamic'
 import { useAudioData } from '@/lib/hooks/useAudioData'
 import MelSpectrogram from '@/components/audio/MelSpectrogram'
@@ -35,8 +35,39 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
   allowPopOver = true
 }: AudioMiniMelSpectrogramProps) {
   const [previewSamples, setPreviewSamples] = useState<Float32Array | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  const { audioData, isLoading } = useAudioData(audioUrl)
+  // Track visibility with Intersection Observer
+  useEffect(() => {
+    const element = containerRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true)
+            // Once visible, stop observing
+            observer.unobserve(element)
+          }
+        })
+      },
+      {
+        rootMargin: '50px', // Start loading slightly before visible
+        threshold: 0
+      }
+    )
+
+    observer.observe(element)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  // Only load audio when visible
+  const { audioData, isLoading } = useAudioData(isVisible ? audioUrl : '')
 
   // Extract or pad to 5 seconds, with trimming - save to state
   useEffect(() => {
@@ -87,6 +118,7 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
 
   const loadingContent = (
     <div
+      ref={containerRef}
       className="w-full flex items-center justify-center bg-muted/20"
       style={{ height }}
     >
@@ -94,7 +126,8 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
     </div>
   )
 
-  if (isLoading || !previewSamples) {
+  // Show placeholder until visible, or while loading
+  if (!isVisible || isLoading || !previewSamples) {
     return loadingContent
   }
 

@@ -7,6 +7,7 @@ import ImageBlock from '@/components/common/ImageBlock'
 import ImageMask from '@/components/viz/ImageMask'
 import GalleryVideoItem from './GalleryVideoItem'
 import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
+import ComplexDataGalleryItemVisual from './ComplexDataGalleryItemVisual'
 import { useAppSelector } from '@/lib/hooks'
 
 interface GalleryItemVisualProps {
@@ -99,6 +100,13 @@ export default function GalleryItemVisual({
           />
         )
       })()}
+
+      {renderType === RenderType.Json && (
+        <ComplexDataGalleryItemVisual
+          value={visualValue}
+          galleryItemHeight={galleryItemHeight}
+        />
+      )}
     </div>
   )
 }

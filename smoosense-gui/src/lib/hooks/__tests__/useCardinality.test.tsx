@@ -9,15 +9,17 @@ jest.mock('../useColumnMeta', () => ({
     columnMeta: {
       column_name: 'test_col',
       duckdbType: 'VARCHAR',
-      typeShortcuts: { 
-        isInteger: false, 
-        isFloat: false, 
-        isNumeric: false, 
-        isBoolean: false, 
-        isString: true, 
-        isPrimitive: true, 
-        agType: 'text', 
-        isDatetime: false 
+      typeShortcuts: {
+        isInteger: false,
+        isFloat: false,
+        isNumeric: false,
+        isBoolean: false,
+        isString: true,
+        isPrimitive: true,
+        agType: 'text',
+        isDatetime: false,
+        isNumericArray: false,
+        isArray: false
       },
       stats: null
     },
@@ -112,7 +114,8 @@ describe('useCardinality', () => {
           isPrimitive: true,
           agType: 'text',
           isDatetime: false,
-          isNumericArray: false
+          isNumericArray: false,
+          isArray: false
         },
         stats: null
       },

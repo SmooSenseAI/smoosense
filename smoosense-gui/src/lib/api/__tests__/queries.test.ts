@@ -53,6 +53,7 @@ describe('getColumnMetadata', () => {
         agType: 'number',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       },
       stats: null
     })
@@ -71,6 +72,7 @@ describe('getColumnMetadata', () => {
         agType: 'text',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       },
       stats: null
     })
@@ -89,6 +91,7 @@ describe('getColumnMetadata', () => {
         agType: 'number',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       },
       stats: null
     })
@@ -107,6 +110,7 @@ describe('getColumnMetadata', () => {
         agType: 'boolean',
         isDatetime: false,
         isNumericArray: false,
+        isArray: false,
       },
       stats: null
     })
@@ -125,6 +129,7 @@ describe('getColumnMetadata', () => {
         agType: 'dateString',
         isDatetime: true,
         isNumericArray: false,
+        isArray: false,
       },
       stats: null
     })
