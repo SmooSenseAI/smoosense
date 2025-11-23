@@ -1,6 +1,6 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useState, useRef, useEffect } from 'react'
 import _ from 'lodash'
 import CellPopover from '@/components/ui/CellPopover'
 import ImageBlock from '@/components/common/ImageBlock'
@@ -16,6 +16,23 @@ const ImageListCellRenderer = memo(function ImageListCellRenderer({
 }: ImageListCellRendererProps) {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
   const baseUrl = useAppSelector((state) => state.ui.baseUrl)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(0)
+
+  // Track container width with ResizeObserver
+  useEffect(() => {
+    const element = containerRef.current
+    if (!element) return
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width)
+      }
+    })
+
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
 
   // Filter out empty strings and resolve URLs
   const validUrls = _.compact(value.map(url => url.trim()))
@@ -25,18 +42,20 @@ const ImageListCellRenderer = memo(function ImageListCellRenderer({
 
   if (resolvedUrls.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+      <div ref={containerRef} className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
         No images
       </div>
     )
   }
 
-  // Number of images to show in cell preview
-  const previewCount = 5
+  // Calculate preview count based on container width
+  // Assume each image needs ~60px minimum width
+  const imageMinWidth = 80
+  const previewCount = Math.max(2, Math.min(resolvedUrls.length, Math.floor(containerWidth / imageMinWidth) || 5))
 
   // Cell content: show first few images in a row
   const cellContent = (
-    <div className="flex gap-1 w-full h-full overflow-hidden items-center">
+    <div className="relative flex gap-1 w-full h-full overflow-hidden items-center">
       {resolvedUrls.slice(0, previewCount).map((url, index) => (
         <ImageBlock
           key={index}
@@ -47,7 +66,7 @@ const ImageListCellRenderer = memo(function ImageListCellRenderer({
         />
       ))}
       {resolvedUrls.length > previewCount && (
-        <span className="text-xs text-muted-foreground flex-shrink-0">
+        <span className="absolute bottom-1 right-1 text-xs text-muted-foreground bg-background/80 px-1 rounded">
           +{resolvedUrls.length - previewCount}
         </span>
       )}
@@ -73,14 +92,16 @@ const ImageListCellRenderer = memo(function ImageListCellRenderer({
   )
 
   return (
-    <CellPopover
-      cellContent={cellContent}
-      popoverContent={popoverContent}
-      popoverClassName="w-[600px] h-[500px] p-0"
-      cellContentClassName="items-center justify-center"
-      copyValue={validUrls.join('\n')}
-      title={`${resolvedUrls.length} images`}
-    />
+    <div ref={containerRef} className="w-full h-full">
+      <CellPopover
+        cellContent={cellContent}
+        popoverContent={popoverContent}
+        popoverClassName="w-[600px] h-[500px] p-0"
+        cellContentClassName="items-center justify-center"
+        copyValue={validUrls.join('\n')}
+        title={`${resolvedUrls.length} images`}
+      />
+    </div>
   )
 })
 
