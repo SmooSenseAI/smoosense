@@ -49,6 +49,20 @@ export function useAudioData(audioUrl: string): UseAudioDataResult {
         const response = await fetch(audioUrl)
         if (cancelled) return
 
+        if (!response.ok) {
+          const status = response.status
+          if (status === 401) {
+            throw new Error(`Unauthorized: ${audioUrl}`)
+          } else if (status === 403) {
+            throw new Error(`Access denied: ${audioUrl}`)
+          } else if (status === 404) {
+            throw new Error(`File not found: ${audioUrl}`)
+          } else if (status >= 500) {
+            throw new Error(`Server error: ${audioUrl}`)
+          }
+          throw new Error(`HTTP error ${status}: ${audioUrl}`)
+        }
+
         const arrayBuffer = await response.arrayBuffer()
         if (cancelled) return
 

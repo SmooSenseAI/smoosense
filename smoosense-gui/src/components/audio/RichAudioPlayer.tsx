@@ -17,7 +17,7 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false }: RichAudi
   const [currentTime, setCurrentTime] = useState(0)
 
   // Load audio data (starts loading when this component mounts, i.e., when popover opens)
-  const { audioData } = useAudioData(audioUrl)
+  const { audioData, isLoading, error } = useAudioData(audioUrl)
 
   // Handle seek from visualizations
   const handleSeek = (time: number) => {
@@ -33,10 +33,22 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false }: RichAudi
     }
   }
 
-  // Show loading spinner while audio is being downloaded/decoded
-  if (!audioData) {
+  // Show error message if loading failed
+  if (error) {
     return (
-      <div className="p-4 w-full flex items-center justify-center h-[500px]">
+      <div className="p-4 w-full flex items-center justify-start h-[280px]">
+        <div className="flex flex-col items-start space-y-3 text-destructive max-w-full overflow-hidden">
+          <span className="text-sm font-medium">Failed to load audio</span>
+          <span className="text-xs break-all line-clamp-3 text-left">{error.message}</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Show loading spinner while audio is being downloaded/decoded
+  if (isLoading || !audioData) {
+    return (
+      <div className="p-4 w-full flex items-center justify-center h-[280px]">
         <div className="flex flex-col items-center space-y-3">
           <div className="w-12 h-12 border-4 border-muted-foreground border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-muted-foreground">Loading audio...</span>

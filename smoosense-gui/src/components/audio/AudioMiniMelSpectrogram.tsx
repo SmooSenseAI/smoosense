@@ -67,7 +67,7 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
   }, [])
 
   // Only load audio when visible
-  const { audioData, isLoading } = useAudioData(isVisible ? audioUrl : '')
+  const { audioData, isLoading, error } = useAudioData(isVisible ? audioUrl : '')
 
   // Extract or pad to 5 seconds, with trimming - save to state
   useEffect(() => {
@@ -127,8 +127,34 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
   )
 
   // Show placeholder until visible, or while loading
-  if (!isVisible || isLoading || !previewSamples) {
+  if (!isVisible || isLoading) {
     return loadingContent
+  }
+
+  // Show error message if loading failed
+  if (error) {
+    return (
+      <div
+        ref={containerRef}
+        className="w-full flex items-center justify-start bg-muted/20 text-destructive text-xs p-1 overflow-hidden"
+        style={{ height }}
+      >
+        <span className="break-all line-clamp-3 text-left">{error.message}</span>
+      </div>
+    )
+  }
+
+  // Show message if no audio data
+  if (!previewSamples) {
+    return (
+      <div
+        ref={containerRef}
+        className="w-full flex items-center justify-center bg-muted/20 text-muted-foreground text-xs"
+        style={{ height }}
+      >
+        No audio data
+      </div>
+    )
   }
 
   const melSpectrogramContent = (
