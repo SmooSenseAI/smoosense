@@ -63,7 +63,7 @@ const initialState: UiState = {
   galleryItemWidth: 200,
   galleryItemHeight: 200,
   galleryCaptionHeight: 60,
-  cropMediaToFitCover: true,
+  cropMediaToFitCover: false,
   galleryVideoMuted: true,
   autoPlayAllVideos: true,
   showRowDetailsPanel: true,
