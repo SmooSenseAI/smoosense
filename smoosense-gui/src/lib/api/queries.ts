@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { computeTypeShortcuts, type TypeShortcuts } from '@/lib/utils/duckdbTypes'
-import { isStructType, flattenStructFields } from '@/lib/utils/structParser'
+import { isStructType, flattenStructFields, isHuggingFaceMediaType } from '@/lib/utils/structParser'
 import { addExecution } from '@/lib/features/sqlHistory/sqlHistorySlice'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
 import { getTableStats } from './stats'
@@ -172,8 +172,8 @@ export async function getColumnMetadata(
       stats: stats?.[columnName] || null
     })
 
-    // If it's a struct type, flatten the fields and add them as separate columns
-    if (isStructType(duckdbType)) {
+    // If it's a struct type (but not HuggingFace media), flatten the fields and add them as separate columns
+    if (isStructType(duckdbType) && !isHuggingFaceMediaType(duckdbType)) {
       try {
         const flattenedFields = flattenStructFields(columnName, duckdbType)
 
