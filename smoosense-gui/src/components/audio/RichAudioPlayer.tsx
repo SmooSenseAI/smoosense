@@ -10,9 +10,10 @@ import { useAudioData } from '@/lib/hooks/useAudioData'
 interface RichAudioPlayerProps {
   audioUrl: string
   autoPlay?: boolean
+  alt?: string
 }
 
-export default function RichAudioPlayer({ audioUrl, autoPlay = false }: RichAudioPlayerProps) {
+export default function RichAudioPlayer({ audioUrl, autoPlay = false, alt }: RichAudioPlayerProps) {
   const audioRef = useRef<AudioPlayer>(null)
   const [currentTime, setCurrentTime] = useState(0)
 
@@ -37,9 +38,9 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false }: RichAudi
   if (error) {
     return (
       <div className="p-4 w-full flex items-center justify-start h-[280px]">
-        <div className="flex flex-col items-start space-y-3 text-destructive max-w-full overflow-hidden">
-          <span className="text-sm font-medium">Failed to load audio</span>
-          <span className="text-xs break-all line-clamp-3 text-left">{error.message}</span>
+        <div className="flex flex-col items-start space-y-3 max-w-full overflow-hidden">
+          {alt && <span className="text-sm font-medium text-foreground break-all line-clamp-2">{alt}</span>}
+          <span className="text-xs break-all line-clamp-3 text-left text-destructive">{error.message}</span>
         </div>
       </div>
     )

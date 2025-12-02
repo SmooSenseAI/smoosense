@@ -25,6 +25,42 @@ interface AudioCellRendererProps {
   value: unknown
 }
 
+interface AudioCellContentProps {
+  audioUrl: string
+  copyValue: string
+  rowHeight: number
+  alt?: string
+}
+
+/**
+ * Shared audio cell content component that can be used with any audio URL (URL or data URL)
+ */
+export const AudioCellContent = memo(function AudioCellContent({
+  audioUrl,
+  copyValue,
+  rowHeight,
+  alt
+}: AudioCellContentProps) {
+  const cellContent = (
+    <div className="w-full h-full flex items-center justify-center p-1">
+      <AudioMiniMelSpectrogram audioUrl={audioUrl} height={rowHeight - 8} allowPopOver={false} alt={alt} />
+    </div>
+  )
+
+  const popoverContent = <RichAudioPlayer audioUrl={audioUrl} autoPlay alt={alt} />
+
+  return (
+    <CellPopover
+      cellContent={cellContent}
+      popoverContent={popoverContent}
+      url={copyValue}
+      popoverClassName="w-[500px] h-[310px]"
+      cellContentClassName="items-center justify-center"
+      copyValue={copyValue}
+    />
+  )
+})
+
 const AudioCellRenderer = memo(function AudioCellRenderer({
   value
 }: AudioCellRendererProps) {
@@ -44,24 +80,12 @@ const AudioCellRenderer = memo(function AudioCellRenderer({
     )
   }
 
-  const audioUrl = resolvedUrl
-
-  const cellContent = (
-    <div className="w-full h-full flex items-center justify-center p-1">
-      <AudioMiniMelSpectrogram audioUrl={audioUrl} height={rowHeight - 8} allowPopOver={false} />
-    </div>
-  )
-
-  const popoverContent = <RichAudioPlayer audioUrl={audioUrl} autoPlay />
-
   return (
-    <CellPopover
-      cellContent={cellContent}
-      popoverContent={popoverContent}
-      url={originalUrl}
-      popoverClassName="w-[500px] h-[310px]"
-      cellContentClassName="items-center justify-center"
+    <AudioCellContent
+      audioUrl={resolvedUrl}
       copyValue={originalUrl}
+      rowHeight={rowHeight}
+      alt={originalUrl}
     />
   )
 })

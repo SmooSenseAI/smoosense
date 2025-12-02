@@ -279,3 +279,38 @@ export function isStructType(type: string): boolean {
   const trimmed = type.trim().toUpperCase()
   return trimmed.startsWith('STRUCT') && !trimmed.endsWith('[]')
 }
+
+/**
+ * Check if a DuckDB type is a HuggingFace media struct type
+ * HuggingFace media has the format: STRUCT(bytes BLOB, path VARCHAR)
+ */
+export function isHuggingFaceMediaType(type: string): boolean {
+  if (!isStructType(type)) {
+    return false
+  }
+
+  try {
+    const fields = parseStructType(type)
+
+    // Must have exactly 2 fields
+    if (fields.length !== 2) {
+      return false
+    }
+
+    // Check for bytes BLOB field
+    const bytesField = fields.find(f => f.name.toLowerCase() === 'bytes')
+    if (!bytesField || bytesField.type.toUpperCase() !== 'BLOB') {
+      return false
+    }
+
+    // Check for path VARCHAR field
+    const pathField = fields.find(f => f.name.toLowerCase() === 'path')
+    if (!pathField || !pathField.type.toUpperCase().startsWith('VARCHAR')) {
+      return false
+    }
+
+    return true
+  } catch {
+    return false
+  }
+}

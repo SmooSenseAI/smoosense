@@ -7,17 +7,29 @@ import { isUrl, isAllUrlType } from './urlUtils'
  * Check if a render type is a media type (image, video, pdf, or image mask)
  */
 export function isMediaType(renderType: RenderType): boolean {
-  return renderType === RenderType.ImageUrl ||
-         renderType === RenderType.VideoUrl ||
-         renderType === RenderType.PdfUrl ||
-         renderType === RenderType.ImageMask
+  return [
+    RenderType.ImageUrl,
+    RenderType.VideoUrl,
+    RenderType.PdfUrl,
+    RenderType.ImageMask
+  ].includes(renderType)
 }
 
 /**
- * Check if a render type supports visual content (media + iframe + bbox + audio + json)
+ * Check if a render type supports visual content (media + iframe + bbox + audio + json + huggingface media)
  */
 export function isVisualType(renderType: RenderType): boolean {
-  return isMediaType(renderType) || renderType === RenderType.IFrame || renderType === RenderType.Bbox || renderType === RenderType.AudioUrl || renderType === RenderType.Json
+  return [
+    RenderType.ImageUrl,
+    RenderType.VideoUrl,
+    RenderType.PdfUrl,
+    RenderType.ImageMask,
+    RenderType.IFrame,
+    RenderType.Bbox,
+    RenderType.AudioUrl,
+    RenderType.Json,
+    RenderType.HuggingFaceMedia
+  ].includes(renderType)
 }
 
 // Helper functions for string analysis

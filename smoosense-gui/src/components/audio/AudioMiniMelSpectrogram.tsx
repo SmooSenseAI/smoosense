@@ -23,6 +23,7 @@ interface AudioMiniMelSpectrogramProps {
   audioUrl: string
   height?: number
   allowPopOver?: boolean
+  alt?: string
 }
 
 const PREVIEW_DURATION = 5 // seconds
@@ -32,7 +33,8 @@ const TRIM_THRESHOLD = 0.01 // 1% of max magnitude
 const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
   audioUrl,
   height = 60,
-  allowPopOver = true
+  allowPopOver = true,
+  alt
 }: AudioMiniMelSpectrogramProps) {
   const [previewSamples, setPreviewSamples] = useState<Float32Array | null>(null)
   const [isVisible, setIsVisible] = useState(false)
@@ -136,10 +138,11 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
     return (
       <div
         ref={containerRef}
-        className="w-full flex items-center justify-start bg-muted/20 text-destructive text-xs p-1 overflow-hidden"
+        className="w-full flex flex-col justify-center bg-muted/20 text-xs p-1 overflow-hidden"
         style={{ height }}
       >
-        <span className="break-all line-clamp-3 text-left">{error.message}</span>
+        {alt && <span className="break-all line-clamp-1 text-left text-foreground">{alt}</span>}
+        <span className="break-all line-clamp-2 text-left text-destructive">{error.message}</span>
       </div>
     )
   }
@@ -176,7 +179,7 @@ const AudioMiniMelSpectrogram = memo(function AudioMiniMelSpectrogram({
   return (
     <CellPopover
       cellContent={melSpectrogramContent}
-      popoverContent={<RichAudioPlayer audioUrl={audioUrl} autoPlay />}
+      popoverContent={<RichAudioPlayer audioUrl={audioUrl} autoPlay alt={alt} />}
       url={audioUrl}
       popoverClassName="w-[500px] h-[310px]"
       cellContentClassName="items-center justify-center"

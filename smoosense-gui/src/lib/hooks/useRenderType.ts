@@ -5,6 +5,7 @@ import { useDerivedColumns } from './useDerivedColumns'
 import { initializeRenderTypes } from '@/lib/features/renderType/renderTypeSlice'
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
 import { inferRenderTypeFromData } from '@/lib/utils/renderTypeUtils'
+import { isHuggingFaceMediaType } from '@/lib/utils/structParser'
 import type { ColumnMeta } from '@/lib/api/queries'
 import { isNil, isEmpty, map, fromPairs } from 'lodash'
 
@@ -12,10 +13,16 @@ import { isNil, isEmpty, map, fromPairs } from 'lodash'
  * Infer render type for a column using metadata type shortcuts and min/max values as samples
  */
 function inferColumnRenderType(columnMeta: ColumnMeta): RenderType {
+  const duckdbType = columnMeta.duckdbType || ''
+
   // Check if column type is BLOB - treat as Text for rendering
-  const duckdbType = columnMeta.duckdbType?.toUpperCase().trim()
-  if (duckdbType === 'BLOB') {
+  if (duckdbType.toUpperCase().trim() === 'BLOB') {
     return RenderType.Text
+  }
+
+  // Check if column type is HuggingFace media struct
+  if (isHuggingFaceMediaType(duckdbType)) {
+    return RenderType.HuggingFaceMedia
   }
 
   // Smart initialization based on column type shortcuts
