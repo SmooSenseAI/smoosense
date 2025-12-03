@@ -2,6 +2,7 @@
 
 import {RenderType} from '@/lib/utils/agGridCellRenderers'
 import ColumnDropdown from '@/components/common/ColumnDropdown'
+import VisualColumnDropdown from '@/components/settings/VisualColumnDropdown'
 import ButtonRandomSamples from '@/components/common/ButtonRandomSamples'
 import GalleryMoreControls from './GalleryMoreControls'
 import {useAppDispatch, useAppSelector} from '@/lib/hooks'
@@ -11,10 +12,10 @@ import {Button} from '@/components/ui/button'
 import {Play, Square} from 'lucide-react'
 
 interface GalleryControlsProps {
-  rowData: Record<string, unknown>[]
+  showRandom?: boolean
 }
 
-export default function GalleryControls({ }: GalleryControlsProps) {
+export default function GalleryControls({ showRandom = true }: GalleryControlsProps) {
   const dispatch = useAppDispatch()
   const columnForGalleryVisual = useAppSelector((state) => state.ui.columnForGalleryVisual)
   const autoPlayAllVideos = useAppSelector((state) => state.ui.autoPlayAllVideos)
@@ -30,14 +31,7 @@ export default function GalleryControls({ }: GalleryControlsProps) {
   return (
     <div className="flex-shrink-0 p-4 border-b bg-background">
       <div className="flex gap-4 items-center">
-        <ColumnDropdown
-          settingKey="columnForGalleryVisual"
-          label="Visual Column"
-          candidateRenderTypes={[
-              RenderType.IFrame, RenderType.ImageUrl, RenderType.VideoUrl, RenderType.ImageMask,
-              RenderType.Bbox, RenderType.AudioUrl, RenderType.Json, RenderType.HuggingFaceMedia
-          ]}
-        />
+        <VisualColumnDropdown />
 
         <ColumnDropdown
           settingKey="columnForGalleryCaption"
@@ -45,7 +39,7 @@ export default function GalleryControls({ }: GalleryControlsProps) {
           candidateRenderTypes={[RenderType.Text, RenderType.Number, RenderType.WordScores]}
         />
 
-        <ButtonRandomSamples />
+        {showRandom && <ButtonRandomSamples />}
 
         {isVideoColumn && (
           <Button

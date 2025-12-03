@@ -21,7 +21,7 @@ export default function Gallery() {
   if (!rowData || rowData.length === 0) {
     return (
       <div className="h-full flex flex-col">
-        <GalleryControls rowData={[]} />
+        <GalleryControls />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <p className="text-lg font-medium mb-2">No data available</p>
@@ -40,7 +40,7 @@ export default function Gallery() {
   if (!hasVisualColumns) {
     return (
       <div className="h-full flex flex-col">
-        <GalleryControls rowData={rowData} />
+        <GalleryControls />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <p className="text-lg font-medium mb-2">No visual columns found</p>
@@ -81,7 +81,7 @@ export default function Gallery() {
 
   return (
     <div className="h-full flex flex-col">
-      <GalleryControls rowData={rowData} />
+      <GalleryControls />
 
       {/* Gallery Grid */}
       <div className="flex-1 overflow-auto p-4">

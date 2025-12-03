@@ -66,9 +66,9 @@ export default function CellPopoverContentHeader({
       <div className="flex-1 min-w-0">
         {displayText && (
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-xs bg-muted px-2 py-1 rounded truncate">
+            <span className="flex-1 text-sm font-medium truncate">
               {displayText}
-            </code>
+            </span>
 
             {url && (
               <HeaderButton

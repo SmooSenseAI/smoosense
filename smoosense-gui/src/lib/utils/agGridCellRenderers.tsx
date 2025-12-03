@@ -50,9 +50,10 @@ interface CellRendererProps {
   value: unknown
   type: RenderType
   nodeData?: Record<string, unknown>
+  columnName?: string
 }
 
-function CellRenderer({ value, type, nodeData }: CellRendererProps) {
+function CellRenderer({ value, type, nodeData, columnName }: CellRendererProps) {
   // Use specialized renderers for specific types
   switch (type) {
     case RenderType.ImageUrl:
@@ -85,7 +86,7 @@ function CellRenderer({ value, type, nodeData }: CellRendererProps) {
     case RenderType.HuggingFaceMedia:
       return <HuggingFaceMediaCellRenderer value={value}/>
     case RenderType.Embedding:
-      return <EmbeddingCellRenderer value={value}/>
+      return <EmbeddingCellRenderer value={value} columnName={columnName}/>
     case RenderType.Text:
       return <TextCellRenderer value={value}/>
     default:
@@ -95,9 +96,14 @@ function CellRenderer({ value, type, nodeData }: CellRendererProps) {
 
 export function createCellRenderer(type: RenderType) {
   const TypedCellRenderer = (params: ICellRendererParams) => (
-    <CellRenderer value={params.value} type={type} nodeData={params.node?.data} />
+    <CellRenderer
+      value={params.value}
+      type={type}
+      nodeData={params.node?.data}
+      columnName={params.colDef?.field}
+    />
   )
-  
+
   TypedCellRenderer.displayName = `CellRenderer_${type}`
   return TypedCellRenderer
 }
@@ -114,9 +120,16 @@ export function createCellRendererSelector(type: RenderType) {
     }
 
     // Use regular cell renderer for normal rows
-    return <CellRenderer value={params.value} type={type} nodeData={params.node?.data} />
+    return (
+      <CellRenderer
+        value={params.value}
+        type={type}
+        nodeData={params.node?.data}
+        columnName={params.colDef?.field}
+      />
+    )
   }
-  
+
   CellRendererSelector.displayName = `CellRendererSelector_${type}`
   return CellRendererSelector
 }
