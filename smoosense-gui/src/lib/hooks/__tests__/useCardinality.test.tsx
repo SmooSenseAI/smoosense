@@ -117,7 +117,8 @@ describe('useCardinality', () => {
           isNumericArray: false,
           isArray: false
         },
-        stats: null
+        stats: null,
+        embDim: null
       },
       loading: false,
       error: null,

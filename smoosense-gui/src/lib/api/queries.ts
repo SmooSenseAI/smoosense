@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { computeTypeShortcuts, type TypeShortcuts } from '@/lib/utils/duckdbTypes'
 import { isStructType, flattenStructFields, isHuggingFaceMediaType } from '@/lib/utils/structParser'
+import { isFloatArrayType, getEmbeddingDimensions } from '@/lib/utils/sql/emb'
 import { addExecution } from '@/lib/features/sqlHistory/sqlHistorySlice'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
 import { getTableStats } from './stats'
@@ -34,6 +35,7 @@ interface ColumnMeta {
   duckdbType: string
   typeShortcuts: TypeShortcuts
   stats: Stats | null
+  embDim: number | null
 }
 
 
@@ -158,6 +160,19 @@ export async function getColumnMetadata(
   // Get stats if available (Lance, Parquet, or row-based tables)
   const stats = await getTableStats(tablePath, dispatch, queryEngine)
 
+  // Find candidate columns for embedding dimension check
+  const embCandidates: string[] = []
+  for (const row of rows) {
+    const columnName = String(row.column_name)
+    const duckdbType = String(row.column_type)
+    if (isFloatArrayType(duckdbType)) {
+      embCandidates.push(columnName)
+    }
+  }
+
+  // Get embedding dimensions for candidate columns
+  const embDims = await getEmbeddingDimensions(tablePath, dispatch, queryEngine, embCandidates)
+
   const columns: ColumnMeta[] = []
 
   for (const row of rows) {
@@ -169,7 +184,8 @@ export async function getColumnMetadata(
       column_name: columnName,
       duckdbType,
       typeShortcuts: computeTypeShortcuts(duckdbType),
-      stats: stats?.[columnName] || null
+      stats: stats?.[columnName] || null,
+      embDim: embDims[columnName] ?? null
     })
 
     // If it's a struct type (but not HuggingFace media), flatten the fields and add them as separate columns
@@ -182,7 +198,8 @@ export async function getColumnMetadata(
             column_name: field.column_name,
             duckdbType: field.duckdbType,
             typeShortcuts: computeTypeShortcuts(field.duckdbType),
-            stats: stats?.[field.column_name] || null
+            stats: stats?.[field.column_name] || null,
+            embDim: null
           })
         }
       } catch (error) {
@@ -192,7 +209,7 @@ export async function getColumnMetadata(
     }
   }
 
-  
+
   return columns
 }
 

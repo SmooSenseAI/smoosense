@@ -29,7 +29,7 @@ describe('uiSlice', () => {
 
     expect(state.debugMode).toBe(false)
     expect(state.activeTab).toBe('Table')
-    expect(state.cropMediaToFitCover).toBe(true)
+    expect(state.cropMediaToFitCover).toBe(false)
     expect(state.galleryVideoMuted).toBe(true)
     expect(state.autoPlayAllVideos).toBe(true)
     expect(state.showRowDetailsPanel).toBe(true)

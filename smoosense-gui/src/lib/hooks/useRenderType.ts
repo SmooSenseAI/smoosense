@@ -25,6 +25,11 @@ function inferColumnRenderType(columnMeta: ColumnMeta): RenderType {
     return RenderType.HuggingFaceMedia
   }
 
+  // Check if column is an embedding (has embDim set)
+  if (columnMeta.embDim !== null) {
+    return RenderType.Embedding
+  }
+
   // Smart initialization based on column type shortcuts
   if (columnMeta.typeShortcuts) {
     const { isBoolean, isNumeric, isDatetime, isPrimitive, isNumericArray } = columnMeta.typeShortcuts

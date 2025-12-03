@@ -55,7 +55,8 @@ describe('getColumnMetadata', () => {
         isNumericArray: false,
         isArray: false,
       },
-      stats: null
+      stats: null,
+      embDim: null
     })
 
     // Test string column
@@ -74,7 +75,8 @@ describe('getColumnMetadata', () => {
         isNumericArray: false,
         isArray: false,
       },
-      stats: null
+      stats: null,
+      embDim: null
     })
 
     // Test decimal column (complex type)
@@ -93,7 +95,8 @@ describe('getColumnMetadata', () => {
         isNumericArray: false,
         isArray: false,
       },
-      stats: null
+      stats: null,
+      embDim: null
     })
 
     // Test boolean column
@@ -112,7 +115,8 @@ describe('getColumnMetadata', () => {
         isNumericArray: false,
         isArray: false,
       },
-      stats: null
+      stats: null,
+      embDim: null
     })
 
     // Test datetime column
@@ -131,7 +135,8 @@ describe('getColumnMetadata', () => {
         isNumericArray: false,
         isArray: false,
       },
-      stats: null
+      stats: null,
+      embDim: null
     })
   })
 
@@ -221,7 +226,8 @@ describe('getColumnMetadata', () => {
         isInteger: true,
         isNumeric: true
       }),
-      stats: null
+      stats: null,
+      embDim: null
     })
 
     expect(result[3]).toEqual({
@@ -230,7 +236,8 @@ describe('getColumnMetadata', () => {
       typeShortcuts: expect.objectContaining({
         isString: true
       }),
-      stats: null
+      stats: null,
+      embDim: null
     })
 
     expect(result[4]).toEqual({
@@ -240,7 +247,8 @@ describe('getColumnMetadata', () => {
         isInteger: true,
         isNumeric: true
       }),
-      stats: null
+      stats: null,
+      embDim: null
     })
   })
 
@@ -322,7 +330,8 @@ describe('getColumnMetadata', () => {
           hasNull: false,
           singleValue: false,
           allNull: false
-        }
+        },
+        embDim: null
       })
 
       expect(result[1]).toEqual({
@@ -337,7 +346,8 @@ describe('getColumnMetadata', () => {
           hasNull: true,
           singleValue: false,
           allNull: false
-        }
+        },
+        embDim: null
       })
 
       // Verify that both metadata and stats queries were called

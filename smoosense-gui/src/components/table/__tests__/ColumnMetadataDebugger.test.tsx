@@ -58,7 +58,8 @@ describe('ColumnMetadataDebugger', () => {
         hasNull: false,
         singleValue: false,
         allNull: false
-      }
+      },
+      embDim: null
     }
   ]
 
