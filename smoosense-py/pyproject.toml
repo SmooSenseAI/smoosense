@@ -28,12 +28,16 @@ dependencies = [
     "click>=8.1.8",
     "duckdb>=1.2.1",
     "flask>=3.1.0",
+    "hdbscan>=0.8.40",
     "lancedb>=0.25.2",
     "pyarrow>=20.0.0",
     "pydantic>=2.11.7",
     "pytz>=2025.2",
     "requests>=2.32.3",
     "rich>=14.0.0",
+    "tqdm>=4.67.1",
+    "transformers>=4.57.3",
+    "umap-learn>=0.5.9.post2",
 ]
 
 [project.urls]
@@ -53,6 +57,10 @@ jupyter = [
 daft = [
     "smoosense[jupyter]",
     "daft>=0.3.0",
+]
+images = [
+    "torch>=2.0.0",
+    "pillow>=10.0.0",
 ]
 
 [dependency-groups]
@@ -90,6 +98,7 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 sense = "smoosense.cli:main"
+sense-ingest-images = "smoosense.images.ingest:main"
 
 # Ruff configuration
 [tool.ruff]
@@ -140,5 +149,5 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*"]
+module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*", "torch.*", "PIL.*", "transformers.*", "tqdm.*"]
 ignore_missing_imports = true
