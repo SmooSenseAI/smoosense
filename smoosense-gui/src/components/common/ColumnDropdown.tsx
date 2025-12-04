@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { useRenderType } from '@/lib/hooks'
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
-import { setColumnForGalleryVisual, setColumnForGalleryCaption, setHistogramColumn, setBubblePlotXColumn, setBubblePlotYColumn, setHeatmapXColumn, setHeatmapYColumn } from '@/lib/features/ui/uiSlice'
+import { setColumnForGalleryVisual, setColumnForGalleryCaption, setHistogramColumn, setBubblePlotXColumn, setBubblePlotYColumn, setHeatmapXColumn, setHeatmapYColumn, setEmbColumn } from '@/lib/features/ui/uiSlice'
 import { 
   Select,
   SelectContent,
@@ -28,6 +28,7 @@ type UIState = {
   bubblePlotYColumn: string
   heatmapXColumn: string
   heatmapYColumn: string
+  embColumn: string
 }
 
 const actionMap = {
@@ -38,6 +39,7 @@ const actionMap = {
   bubblePlotYColumn: setBubblePlotYColumn,
   heatmapXColumn: setHeatmapXColumn,
   heatmapYColumn: setHeatmapYColumn,
+  embColumn: setEmbColumn,
 } as const
 
 export default function ColumnDropdown({ 

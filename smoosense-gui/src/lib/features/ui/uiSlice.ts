@@ -6,6 +6,8 @@ interface UiState {
   debugMode: boolean
   activeTab: string
   activePlotTab: string
+  activeEmbTab: 'Retrieve' | '2D' | 'Cluster'
+  embColumn: string | null
   tablePath: string | null
   rootFolder: string | null
   baseUrl: string | null
@@ -46,8 +48,10 @@ interface UiState {
 const initialState: UiState = {
   fontSize: 14,
   debugMode: false,
-  activeTab: 'Table',
+  activeTab: 'Embedding',
   activePlotTab: 'BubblePlot',
+  activeEmbTab: '2D',
+  embColumn: null,
   tablePath: null,
   rootFolder: null,
   baseUrl: null,
@@ -104,6 +108,12 @@ export const uiSlice = createSlice({
     },
     setActivePlotTab: (state, action: PayloadAction<string>) => {
       state.activePlotTab = action.payload
+    },
+    setActiveEmbTab: (state, action: PayloadAction<'Retrieve' | '2D' | 'Cluster'>) => {
+      state.activeEmbTab = action.payload
+    },
+    setEmbColumn: (state, action: PayloadAction<string | null>) => {
+      state.embColumn = action.payload
     },
     setTablePath: (state, action: PayloadAction<string | null>) => {
       state.tablePath = action.payload
@@ -253,6 +263,8 @@ export const {
   setDebugMode,
   setActiveTab,
   setActivePlotTab,
+  setActiveEmbTab,
+  setEmbColumn,
   setTablePath,
   setRootFolder,
   setBaseUrl,

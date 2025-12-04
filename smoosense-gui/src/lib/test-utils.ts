@@ -32,6 +32,8 @@ export function createDefaultTestState(): RootState {
       debugMode: false,
       activeTab: 'Table',
       activePlotTab: 'BubblePlot',
+      activeEmbTab: 'Retrieve' as const,
+      embColumn: null,
       tablePath: null,
       rootFolder: '~',
       baseUrl: null,

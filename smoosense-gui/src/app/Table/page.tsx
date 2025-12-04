@@ -13,6 +13,7 @@ import RowDetails from '@/components/table/RowDetails'
 import Gallery from '@/components/gallery/Gallery'
 import ColumnFilters from '@/components/filters/ColumnFilters'
 import PlotTabContent from '@/components/layout/PlotTabContent'
+import EmbeddingTabContent from '@/components/layout/EmbeddingTabContent'
 import Summary from '@/components/Summary'
 import SqlQueryPanel from '@/components/sql/SqlQueryPanel'
 import HandPickedRowsTable from '@/components/handpick/HandPickedRowsTable'
@@ -168,6 +169,8 @@ function TablePageInner() {
           </div>
         ) : activeTab === 'Plot' ? (
           <PlotTabContent />
+        ) : activeTab === 'Embedding' ? (
+          <EmbeddingTabContent />
         ) : activeTab === 'HandPick' ? (
           <div className="h-full">
             <HandPickedRowsTable />
