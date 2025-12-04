@@ -19,6 +19,8 @@ logger = getLogger(__name__)
 class TestParquet(BaseIntegrationTest):
     """Test cases for Parquet file functionality."""
 
+    headless: bool = False
+
     @classmethod
     def setUpClass(cls) -> None:
         """Set up server, browser and Parquet-specific configuration."""
@@ -57,6 +59,7 @@ class TestParquet(BaseIntegrationTest):
                 table_url = self._get_table_url(table_path)
                 response = self.page.goto(table_url)
                 self.assertEqual(response.status, 200)
+                self.page.wait_for_load_state("networkidle")
 
                 # Set theme mode
                 logger.info(f"Setting theme to {mode} mode")

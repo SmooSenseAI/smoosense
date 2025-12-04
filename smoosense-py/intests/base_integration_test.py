@@ -100,6 +100,8 @@ class ServerFixture:
 class BaseIntegrationTest(unittest.TestCase):
     """Base test class for integration tests with server and browser management."""
 
+    headless: bool = True
+
     @classmethod
     def setUpClass(cls) -> None:
         """Set up server and browser for all tests in the class."""
@@ -109,11 +111,11 @@ class BaseIntegrationTest(unittest.TestCase):
 
         # Start Playwright
         cls.playwright = sync_playwright().start()
-        cls.browser = cls.playwright.chromium.launch(headless=True)
+        cls.browser = cls.playwright.chromium.launch(headless=cls.headless)
 
         # Ensure screenshots directory exists
-        cls.screenshots_dir = Path("intests/screenshots")
-        cls.screenshots_dir.mkdir(exist_ok=True)
+        cls.screenshots_dir = Path(__file__).parent.parent.parent / "landing/public/images/screenshots"
+        cls.screenshots_dir.mkdir(parents=True, exist_ok=True)
 
     @classmethod
     def tearDownClass(cls) -> None:

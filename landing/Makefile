@@ -3,8 +3,6 @@ env:
 
 dev:
 	rm -rf .next
-	rm -rf ./public/images/screenshots
-	cp -r ../smoosense-py/intests/screenshots ./public/images/screenshots
 	pnpm run dev
 
 build:
