@@ -1,10 +1,11 @@
 /** @type {import('next').NextConfig} */
+const webpack = require('webpack');
 
 const commonConfig = {
     // React Strict Mode causes intentional double execution to help catch bugs
     // Turn it off when optimize rendering performance
     reactStrictMode: true,
-    
+
     webpack(config: any) {
         config.module.rules.push({
           test: /\.ya?ml$/,
@@ -26,6 +27,13 @@ const commonConfig = {
                 'canvas-prebuilt': false
             });
         }
+
+        // Ignore sync-ammo module from @playcanvas/react (optional physics dependency)
+        config.plugins.push(
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^sync-ammo$/,
+            })
+        );
 
         return config;
     }
