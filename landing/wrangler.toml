@@ -1,0 +1,8 @@
+name = "smoosense-landing"
+compatibility_date = "2024-09-25"
+pages_build_output_dir = "out"
+
+# Custom domain will be configured via Cloudflare Dashboard or CLI
+# The site will be available at: https://smoosense.ai
+
+
