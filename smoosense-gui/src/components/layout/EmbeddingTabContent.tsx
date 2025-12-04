@@ -5,9 +5,9 @@ import { setActiveEmbTab } from '@/lib/features/ui/uiSlice'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizablePanels } from '@/components/ui/resizable-panels'
 import ColumnFilters from '@/components/filters/ColumnFilters'
-import EmbeddingControls from '@/components/emb/EmbeddingControls'
+import Umap2D from '@/components/emb/Umap2D'
 
-const embTabs = ['Retrieve', '2D', 'Cluster'] as const
+const embTabs = ['Retrieve', 'UMAP', 'Cluster'] as const
 
 export default function EmbeddingTabContent() {
   const dispatch = useAppDispatch()
@@ -24,9 +24,6 @@ export default function EmbeddingTabContent() {
 
       {/* Middle Panel - Embedding visualization with Tab Selection */}
       <div className="h-full flex flex-col">
-        {/* Embedding Controls - Column Selection */}
-        <EmbeddingControls />
-
         {/* Embedding Tab Selection */}
         <div className="flex-shrink-0 p-2 border-b border-border bg-background flex justify-center">
           <Tabs
@@ -53,21 +50,22 @@ export default function EmbeddingTabContent() {
         </div>
 
         {/* Embedding Component */}
-        <div className="flex-1 bg-muted/20 flex items-center justify-center">
+        <div className="flex-1 bg-muted/20">
           {activeEmbTab === 'Retrieve' ? (
-            <div className="text-muted-foreground text-center">
-              <p className="text-lg font-medium">Retrieve</p>
-              <p className="text-sm">Similarity search placeholder</p>
+            <div className="h-full flex items-center justify-center text-muted-foreground text-center">
+              <div>
+                <p className="text-lg font-medium">Retrieve</p>
+                <p className="text-sm">Similarity search placeholder</p>
+              </div>
             </div>
-          ) : activeEmbTab === '2D' ? (
-            <div className="text-muted-foreground text-center">
-              <p className="text-lg font-medium">2D Projection</p>
-              <p className="text-sm">UMAP/t-SNE visualization placeholder</p>
-            </div>
+          ) : activeEmbTab === 'UMAP' ? (
+            <Umap2D />
           ) : activeEmbTab === 'Cluster' ? (
-            <div className="text-muted-foreground text-center">
-              <p className="text-lg font-medium">Cluster</p>
-              <p className="text-sm">Clustering visualization placeholder</p>
+            <div className="h-full flex items-center justify-center text-muted-foreground text-center">
+              <div>
+                <p className="text-lg font-medium">Cluster</p>
+                <p className="text-sm">Clustering visualization placeholder</p>
+              </div>
             </div>
           ) : null}
         </div>

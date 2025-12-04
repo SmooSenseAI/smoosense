@@ -6,8 +6,10 @@ interface UiState {
   debugMode: boolean
   activeTab: string
   activePlotTab: string
-  activeEmbTab: 'Retrieve' | '2D' | 'Cluster'
+  activeEmbTab: 'Retrieve' | 'UMAP' | 'Cluster'
   embColumn: string | null
+  umapNNeighbors: number
+  umapMinDist: number
   tablePath: string | null
   rootFolder: string | null
   baseUrl: string | null
@@ -48,10 +50,12 @@ interface UiState {
 const initialState: UiState = {
   fontSize: 14,
   debugMode: false,
-  activeTab: 'Embedding',
+  activeTab: 'Table',
   activePlotTab: 'BubblePlot',
-  activeEmbTab: '2D',
+  activeEmbTab: 'UMAP',
   embColumn: null,
+  umapNNeighbors: 15,
+  umapMinDist: 0.1,
   tablePath: null,
   rootFolder: null,
   baseUrl: null,
@@ -109,11 +113,17 @@ export const uiSlice = createSlice({
     setActivePlotTab: (state, action: PayloadAction<string>) => {
       state.activePlotTab = action.payload
     },
-    setActiveEmbTab: (state, action: PayloadAction<'Retrieve' | '2D' | 'Cluster'>) => {
+    setActiveEmbTab: (state, action: PayloadAction<'Retrieve' | 'UMAP' | 'Cluster'>) => {
       state.activeEmbTab = action.payload
     },
     setEmbColumn: (state, action: PayloadAction<string | null>) => {
       state.embColumn = action.payload
+    },
+    setUmapNNeighbors: (state, action: PayloadAction<number>) => {
+      state.umapNNeighbors = Math.max(2, Math.min(100, action.payload))
+    },
+    setUmapMinDist: (state, action: PayloadAction<number>) => {
+      state.umapMinDist = Math.max(0, Math.min(1, action.payload))
     },
     setTablePath: (state, action: PayloadAction<string | null>) => {
       state.tablePath = action.payload
@@ -265,6 +275,8 @@ export const {
   setActivePlotTab,
   setActiveEmbTab,
   setEmbColumn,
+  setUmapNNeighbors,
+  setUmapMinDist,
   setTablePath,
   setRootFolder,
   setBaseUrl,

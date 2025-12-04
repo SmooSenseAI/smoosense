@@ -152,17 +152,11 @@ def process_images(
 
             # Compute CLIP embedding
             if use_clip and clip_model is not None and clip_processor is not None:
-                clip_embedding = compute_clip_embedding(
-                    image, clip_model, clip_processor, device
-                )
+                clip_embedding = compute_clip_embedding(image, clip_model, clip_processor, device)
                 record["clip_embedding"] = clip_embedding
 
             # Compute DINOv2 embedding
-            if (
-                use_dinov2
-                and dinov2_model is not None
-                and dinov2_processor is not None
-            ):
+            if use_dinov2 and dinov2_model is not None and dinov2_processor is not None:
                 dinov2_embedding = compute_dinov2_embedding(
                     image, dinov2_model, dinov2_processor, device
                 )
