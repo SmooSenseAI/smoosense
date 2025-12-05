@@ -3,15 +3,40 @@
 import { useState, useRef, useEffect, memo } from 'react'
 import CellPopover from '@/components/ui/CellPopover'
 import CopyToClipboard from '@/components/ui/CopyToClipboard'
+import JsonCellRenderer from './JsonCellRenderer'
 import { useAppSelector } from '@/lib/hooks'
 
 interface TextCellRendererProps {
   value: unknown
 }
 
-const TextCellRenderer = memo(function TextCellRenderer({ 
+/**
+ * Try to parse a string as JSON if it looks like JSON.
+ * Returns the parsed object/array if successful, null otherwise.
+ */
+function tryParseJson(value: unknown): object | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  // Only attempt parsing if it starts with [ or {
+  if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) return null
+  try {
+    const parsed = JSON.parse(trimmed)
+    // Ensure it's an object or array, not a primitive
+    if (typeof parsed === 'object' && parsed !== null) {
+      return parsed
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+const TextCellRenderer = memo(function TextCellRenderer({
   value
 }: TextCellRendererProps) {
+  // Check if the text value is actually JSON (computed once, not a hook)
+  const parsedJson = tryParseJson(value)
+
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const textRef = useRef<HTMLSpanElement>(null)
@@ -52,6 +77,11 @@ const TextCellRenderer = memo(function TextCellRenderer({
       }
     }
   }, [value])
+
+  // If it's valid JSON, delegate to JsonCellRenderer (after all hooks)
+  if (parsedJson !== null) {
+    return <JsonCellRenderer value={parsedJson} />
+  }
 
   const cellContent = (
     <div 

@@ -138,6 +138,7 @@ export default function JsonBox({ src, className = '', showControls = true }: Js
           numberOfArrayGroupsToDisplay={1}
           displayArrayKey={false}
           sortKeys={sortKeys}
+          name={null}
           style={{
             backgroundColor: 'transparent'
           }}

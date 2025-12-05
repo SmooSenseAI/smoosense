@@ -37,7 +37,7 @@ const JsonCellRenderer = memo(function JsonCellRenderer({
     <CellPopover
       cellContent={cellContent}
       popoverContent={popoverContent}
-      popoverClassName="w-96 h-80 p-0"
+      popoverClassName="w-[450px] h-[500px] p-0"
       copyValue={JSON.stringify(value)}
     />
   )
