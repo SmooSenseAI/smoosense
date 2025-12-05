@@ -3,6 +3,7 @@ from timeit import default_timer
 
 from flask import Blueprint, Response, current_app, jsonify, request
 
+from smoosense.handlers.auth import requires_auth_api
 from smoosense.lance.table_client import LanceTableClient
 from smoosense.utils.api import handle_api_errors
 from smoosense.utils.duckdb_connections import check_permissions
@@ -13,6 +14,7 @@ query_bp = Blueprint("query", __name__)
 
 
 @query_bp.post("/query")
+@requires_auth_api
 @handle_api_errors
 def run_query() -> Response:
     time_start = default_timer()

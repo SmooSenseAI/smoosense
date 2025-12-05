@@ -4,9 +4,11 @@ SmooSense supports optional authentication using Auth0. When configured, all pag
 
 ## Overview
 
-Authentication is **optional** by default. If no Auth0 credentials are configured, SmooSense runs without authentication and all pages are publicly accessible. This is suitable for local development or private deployments.
+Authentication is **optional** by default. If no Auth0 credentials are configured, SmooSense runs without authentication and all pages and APIs are publicly accessible. This is suitable for local development or private deployments.
 
-When Auth0 is configured, users must authenticate before accessing any page. Unauthenticated users are redirected to Auth0's login page.
+When Auth0 is configured:
+- **Pages**: Unauthenticated users are redirected to Auth0's login page
+- **APIs**: Unauthenticated requests return a `401 Unauthorized` JSON error
 
 ## Setting Up Auth0
 
@@ -91,6 +93,19 @@ Or if not authenticated:
   "authenticated": false
 }
 ```
+
+### API Authentication Errors
+
+When authentication is enabled and an API is called without a valid session, it returns:
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Authentication required"
+}
+```
+
+With HTTP status code `401`.
 
 ## Restricting Access by Email Domain
 

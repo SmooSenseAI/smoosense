@@ -4,6 +4,7 @@ from typing import Optional
 from flask import Blueprint, Response, current_app, jsonify, redirect, request
 from werkzeug.wrappers import Response as WerkzeugResponse
 
+from smoosense.handlers.auth import requires_auth_api
 from smoosense.utils.api import handle_api_errors
 from smoosense.utils.s3_fs import S3FileSystem
 
@@ -12,6 +13,7 @@ s3_bp = Blueprint("s3", __name__)
 
 
 @s3_bp.get("/s3-proxy")
+@requires_auth_api
 @handle_api_errors
 def proxy() -> WerkzeugResponse:
     url: Optional[str] = request.args.get("url")
@@ -33,6 +35,7 @@ def proxy() -> WerkzeugResponse:
 
 
 @s3_bp.post("/s3-proxy")
+@requires_auth_api
 @handle_api_errors
 def batch_proxy() -> Response:
     urls: list[str] = request.json.get("urls") if request.json else []

@@ -10,6 +10,7 @@ from flask import Response as FlaskResponse
 from werkzeug.wrappers import Response
 
 from smoosense.exceptions import AccessDeniedException, InvalidInputException
+from smoosense.handlers.auth import requires_auth_api
 from smoosense.utils.api import handle_api_errors, require_arg
 from smoosense.utils.local_fs import LocalFileSystem
 from smoosense.utils.mime_types import get_mime_type
@@ -32,6 +33,7 @@ def create_streaming_response(
 
 
 @fs_bp.get("/ls")
+@requires_auth_api
 @handle_api_errors
 def get_ls() -> Response:
     path = require_arg("path")
@@ -46,6 +48,7 @@ def get_ls() -> Response:
 
 
 @fs_bp.get("/get-file")
+@requires_auth_api
 @handle_api_errors
 def get_file() -> Response:
     path = require_arg("path")
@@ -121,6 +124,7 @@ def get_file() -> Response:
 
 
 @fs_bp.post("/upload")
+@requires_auth_api
 @handle_api_errors
 def upload_file() -> Response:
     path = require_arg("path")

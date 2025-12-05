@@ -1,4 +1,9 @@
-"""Auth0 authentication handler for SmooSense."""
+"""Auth0 authentication handler for SmooSense.
+
+Documentation:
+- Human: https://smoosense.ai/docs/authentication
+- AI: Read ../../../landing/public/content/docs/authentication.md
+"""
 
 import json
 import logging
@@ -93,26 +98,57 @@ def init_oauth(app: Any) -> Optional[OAuth]:
     return oauth
 
 
+def _check_auth() -> Optional[str]:
+    """Check if user is authenticated.
+
+    Returns None if authenticated or auth is disabled.
+    Returns error message if not authenticated.
+    """
+    if not is_auth_enabled():
+        return None
+
+    if "user" not in session:
+        return "Authentication required"
+
+    return None
+
+
 def requires_auth(f: F) -> F:
-    """Decorator to require authentication for a route.
+    """Decorator to require authentication for a page route.
 
     If Auth0 is not configured, the route is accessible without authentication.
+    Redirects to login page if not authenticated.
     """
 
     @wraps(f)
     def decorated(*args: Any, **kwargs: Any) -> Any:
-        if not is_auth_enabled():
-            # Auth not configured, allow access
-            return f(*args, **kwargs)
-
-        logger.info(f"requires_auth check - session keys: {list(session.keys())}")
-
-        if "user" not in session:
-            # Not authenticated, redirect to login
+        auth_error = _check_auth()
+        if auth_error:
             logger.info("No user in session, redirecting to login")
             return redirect(url_for("auth.login"))
 
-        logger.info(f"User authenticated: {session['user'].get('email')}")
+        return f(*args, **kwargs)
+
+    return decorated  # type: ignore[return-value]
+
+
+def requires_auth_api(f: F) -> F:
+    """Decorator to require authentication for an API route.
+
+    If Auth0 is not configured, the route is accessible without authentication.
+    Returns 401 JSON error if not authenticated.
+    """
+
+    @wraps(f)
+    def decorated(*args: Any, **kwargs: Any) -> Any:
+        auth_error = _check_auth()
+        if auth_error:
+            return Response(
+                json.dumps({"error": "Unauthorized", "message": auth_error}),
+                status=401,
+                mimetype="application/json",
+            )
+
         return f(*args, **kwargs)
 
     return decorated  # type: ignore[return-value]

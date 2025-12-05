@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request
 from werkzeug.wrappers import Response
 
 from smoosense.exceptions import InvalidInputException
+from smoosense.handlers.auth import requires_auth_api
 from smoosense.lance.db_client import LanceDBClient
 from smoosense.lance.table_client import LanceTableClient
 from smoosense.utils.api import handle_api_errors, require_arg
@@ -13,6 +14,7 @@ lance_bp = Blueprint("lance", __name__)
 
 
 @lance_bp.get("/lance/list-tables")
+@requires_auth_api
 @handle_api_errors
 def list_tables() -> Response:
     """List all tables in a Lance database directory."""
@@ -34,6 +36,7 @@ def list_tables() -> Response:
 
 
 @lance_bp.get("/lance/list-versions")
+@requires_auth_api
 @handle_api_errors
 def list_versions() -> Response:
     """List all versions of a table in a Lance database."""
@@ -56,6 +59,7 @@ def list_versions() -> Response:
 
 
 @lance_bp.get("/lance/list-indices")
+@requires_auth_api
 @handle_api_errors
 def list_indices() -> Response:
     """List all indices of a table in a Lance database."""
@@ -78,6 +82,7 @@ def list_indices() -> Response:
 
 
 @lance_bp.get("/lance/list-columns")
+@requires_auth_api
 @handle_api_errors
 def list_columns() -> Response:
     """List all columns of a table in a Lance database."""

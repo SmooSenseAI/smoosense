@@ -5,6 +5,7 @@ import numpy as np
 import umap
 from flask import Blueprint, Response, current_app, jsonify, request
 
+from smoosense.handlers.auth import requires_auth_api
 from smoosense.lance.table_client import LanceTableClient
 from smoosense.utils.api import handle_api_errors
 
@@ -13,6 +14,7 @@ umap_bp = Blueprint("umap", __name__)
 
 
 @umap_bp.post("/umap")
+@requires_auth_api
 @handle_api_errors
 def compute_umap() -> Response:
     """Compute UMAP 2D projection for embedding column."""

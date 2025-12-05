@@ -8,6 +8,7 @@ from flask import Blueprint, current_app, jsonify
 from werkzeug.wrappers import Response
 
 from smoosense.exceptions import InvalidInputException
+from smoosense.handlers.auth import requires_auth_api
 from smoosense.utils.api import handle_api_errors, require_arg
 from smoosense.utils.s3_fs import S3FileSystem
 
@@ -16,6 +17,7 @@ parquet_bp = Blueprint("parquet", __name__)
 
 
 @parquet_bp.get("/parquet/info")
+@requires_auth_api
 @handle_api_errors
 def parquet_info() -> Response:
     """Get metadata information about a Parquet file."""
