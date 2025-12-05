@@ -13,7 +13,7 @@ from typing import Any, Callable, Optional, TypeVar, Union
 from urllib.parse import quote_plus, urlencode
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Response, current_app, redirect, session, url_for
+from flask import Blueprint, Response, current_app, redirect, request, session, url_for
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 auth_bp = Blueprint("auth", __name__)
@@ -118,13 +118,16 @@ def requires_auth(f: F) -> F:
 
     If Auth0 is not configured, the route is accessible without authentication.
     Redirects to login page if not authenticated.
+    Saves the original URL to redirect back after login.
     """
 
     @wraps(f)
     def decorated(*args: Any, **kwargs: Any) -> Any:
         auth_error = _check_auth()
         if auth_error:
-            logger.info("No user in session, redirecting to login")
+            # Save the original URL to redirect back after login
+            session["next_url"] = request.url
+            logger.info(f"No user in session, redirecting to login. Will return to: {request.url}")
             return redirect(url_for("auth.login"))
 
         return f(*args, **kwargs)
@@ -175,8 +178,6 @@ def login() -> AnyResponse:
 @auth_bp.route("/callback")
 def callback() -> AnyResponse:
     """Handle Auth0 callback after login."""
-    from flask import request
-
     logger.info(f"Auth0 callback received. Args: {request.args}")
 
     oauth = current_app.config.get("OAUTH")
@@ -244,6 +245,9 @@ def callback() -> AnyResponse:
         logger.info(f"Auth0 callback successful for user: {userinfo.get('email')}")
         logger.info(f"Auth0 userinfo: {userinfo}")
 
+        # Get the original URL before clearing it from session
+        next_url = session.pop("next_url", "/")
+
         # Store only essential user info to avoid cookie size limits
         # Full token can be 4KB+ which exceeds browser cookie limits
         session["user"] = {
@@ -254,7 +258,8 @@ def callback() -> AnyResponse:
         }
         session.modified = True
         logger.info(f"Session after setting user - keys: {list(session.keys())}")
-        return redirect("/")
+        logger.info(f"Redirecting to: {next_url}")
+        return redirect(next_url)
     except Exception as e:
         logger.exception(f"Auth0 callback failed: {e}")
         return Response(
