@@ -23,9 +23,9 @@ When Auth0 is configured, users must authenticate before accessing any page. Una
 In your Auth0 application settings, configure:
 
 - **Allowed Callback URLs**: `http://localhost:8000/auth/callback`
-- **Allowed Logout URLs**: `http://localhost:8000`
+- **Allowed Logout URLs**: `http://localhost:8000, http://localhost:8000/auth/login`
 
-For production, replace `localhost:8000` with your actual domain.
+For production, replace `localhost:8000` with your actual domain (e.g., `https://app.example.com` and `https://app.example.com/auth/login`).
 
 ### 3. Set Environment Variables
 
@@ -65,16 +65,15 @@ SmooSense provides the following authentication endpoints:
 
 | Endpoint | Description |
 |----------|-------------|
-| `/auth/login` | Initiates Auth0 login flow |
-| `/auth/logout` | Clears session and logs out from Auth0 |
+| `/auth/login` | Initiates Auth0 login flow (shows account picker) |
+| `/auth/logout` | Clears session, logs out from Auth0, and redirects to home |
+| `/auth/retry` | Clears session, logs out from Auth0, and redirects to login |
 | `/auth/callback` | Handles OAuth callback from Auth0 |
 | `/auth/me` | Returns current user info as JSON |
 
 ### Check Authentication Status
 
-```bash
-curl http://localhost:8000/auth/me
-```
+Visit `/auth/me` in your browser to check the current authentication status.
 
 Returns:
 ```json
