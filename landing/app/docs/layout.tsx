@@ -22,7 +22,8 @@ export default function DocsLayout({
   // Remove trailing slash and get the last segment
   const pathSegments = pathname.replace(/\/$/, '').split('/')
   const currentSlug = pathSegments[pathSegments.length - 1]
-  const currentDoc = docsConfig.find(doc => doc.slug === currentSlug)
+  const allDocs = docsConfig.flatMap(section => section.items)
+  const currentDoc = allDocs.find(doc => doc.slug === currentSlug)
   const pageTitle = currentDoc ? currentDoc.label : 'Documentation'
 
   return (
@@ -51,35 +52,41 @@ export default function DocsLayout({
                 borderRadius="xl"
                 p={4}
               >
-                <Box
-                  fontSize="sm"
-                  fontWeight="bold"
-                  mb={3}
-                  color="gray.900"
-                  _dark={{ color: 'white' }}
-                >
-                  Table of Contents
-                </Box>
-                <VStack align="stretch" spacing={2}>
-                  {docsConfig.map((item) => (
-                    <Link
-                      key={item.slug}
-                      as={NextLink}
-                      href={`/docs/${item.slug}`}
-                      fontSize="sm"
-                      color={currentSlug === item.slug ? 'primary.500' : 'gray.600'}
-                      _dark={{
-                        color: currentSlug === item.slug ? 'primary.300' : 'gray.400'
-                      }}
-                      _hover={{
-                        color: 'primary.500',
-                        _dark: { color: 'primary.300' }
-                      }}
-                      transition="color 0.2s"
-                      fontWeight={currentSlug === item.slug ? 'semibold' : 'normal'}
-                    >
-                      {item.label}
-                    </Link>
+                <VStack align="stretch" spacing={4}>
+                  {docsConfig.map((section) => (
+                    <Box key={section.title}>
+                      <Box
+                        fontSize="sm"
+                        fontWeight="bold"
+                        mb={2}
+                        color="gray.900"
+                        _dark={{ color: 'white' }}
+                      >
+                        {section.title}
+                      </Box>
+                      <VStack align="stretch" spacing={1} pl={2}>
+                        {section.items.map((item) => (
+                          <Link
+                            key={item.slug}
+                            as={NextLink}
+                            href={`/docs/${item.slug}`}
+                            fontSize="sm"
+                            color={currentSlug === item.slug ? 'primary.500' : 'gray.600'}
+                            _dark={{
+                              color: currentSlug === item.slug ? 'primary.300' : 'gray.400'
+                            }}
+                            _hover={{
+                              color: 'primary.500',
+                              _dark: { color: 'primary.300' }
+                            }}
+                            transition="color 0.2s"
+                            fontWeight={currentSlug === item.slug ? 'semibold' : 'normal'}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </VStack>
+                    </Box>
                   ))}
                 </VStack>
               </Box>

@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { docsConfig } from '../docs-config'
 
 export function generateStaticParams() {
-  return docsConfig.map(doc => ({ slug: doc.slug }))
+  return docsConfig.flatMap(section => section.items.map(doc => ({ slug: doc.slug })))
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
