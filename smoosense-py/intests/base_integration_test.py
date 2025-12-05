@@ -114,7 +114,9 @@ class BaseIntegrationTest(unittest.TestCase):
         cls.browser = cls.playwright.chromium.launch(headless=cls.headless)
 
         # Ensure screenshots directory exists
-        cls.screenshots_dir = Path(__file__).parent.parent.parent / "landing/public/images/screenshots"
+        cls.screenshots_dir = (
+            Path(__file__).parent.parent.parent / "landing/public/images/screenshots"
+        )
         cls.screenshots_dir.mkdir(parents=True, exist_ok=True)
 
     @classmethod

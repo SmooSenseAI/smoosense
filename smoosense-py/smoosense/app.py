@@ -8,6 +8,7 @@ from botocore.client import BaseClient
 from flask import Flask
 from pydantic import ConfigDict, validate_call
 
+from smoosense.handlers.auth import auth_bp, init_oauth
 from smoosense.handlers.fs import fs_bp
 from smoosense.handlers.lance import lance_bp
 from smoosense.handlers.pages import pages_bp
@@ -65,7 +66,16 @@ class SmooSenseApp:
         app.config["DUCKDB_CONNECTION_MAKER"] = self.duckdb_connection_maker
         app.config["PASSOVER_CONFIG"] = self.passover_config
 
+        # Initialize Auth0 if configured
+        oauth = init_oauth(app)
+        if oauth is not None:
+            app.config["OAUTH"] = oauth
+            logger.info("Auth0 authentication enabled")
+        else:
+            logger.info("Auth0 not configured, running without authentication")
+
         # Register blueprints
+        app.register_blueprint(auth_bp, url_prefix="/auth")
         app.register_blueprint(query_bp, url_prefix="/api")
         app.register_blueprint(fs_bp, url_prefix="/api")
         app.register_blueprint(lance_bp, url_prefix="/api")

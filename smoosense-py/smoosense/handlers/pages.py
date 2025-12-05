@@ -5,6 +5,7 @@ import textwrap
 
 from flask import Blueprint, Response, current_app, jsonify, request, send_file
 
+from smoosense.handlers.auth import requires_auth
 from smoosense.utils.s3_fs import S3FileSystem
 
 PWD = os.path.dirname(os.path.abspath(__file__))
@@ -51,26 +52,31 @@ def serve_static_html(filepath: str) -> Response:
 
 
 @pages_bp.get("/")
-def get_index() -> Response:
+@requires_auth
+def home() -> Response:
     return serve_static_html("index")
 
 
 @pages_bp.get("/FolderBrowser")
+@requires_auth
 def get_folder_browser() -> Response:
     return serve_static_html("FolderBrowser")
 
 
 @pages_bp.get("/Table")
+@requires_auth
 def get_tabular_slice_dice() -> Response:
     return serve_static_html("Table")
 
 
 @pages_bp.get("/DB")
+@requires_auth
 def get_db() -> Response:
     return serve_static_html("DB")
 
 
 @pages_bp.get("/MiniTable")
+@requires_auth
 def get_mini_table() -> Response:
     return serve_static_html("MiniTable")
 

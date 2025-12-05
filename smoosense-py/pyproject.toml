@@ -24,6 +24,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
+    "authlib>=1.0",
     "boto3>=1.39.11",
     "click>=8.1.8",
     "duckdb>=1.2.1",
@@ -149,5 +150,5 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*", "torch.*", "PIL.*", "transformers.*", "tqdm.*", "umap.*"]
+module = ["authlib.*", "boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*", "torch.*", "PIL.*", "transformers.*", "tqdm.*", "umap.*"]
 ignore_missing_imports = true
