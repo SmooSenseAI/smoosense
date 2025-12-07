@@ -12,13 +12,14 @@ export interface BubblePlotDataPoint {
   x: number
   y: number
   count: number
+  color_value: number | null
 }
 
 export interface BubblePlotGroup {
   name: string
   x: number[]
   y: number[]
-  customdata: Array<{ condExpr: string; count: number }>
+  customdata: Array<{ condExpr: string; count: number; colorValue: number | null }>
 }
 
 export type BubblePlotState = BaseAsyncDataState<BubblePlotGroup[]>
@@ -27,6 +28,7 @@ interface FetchBubblePlotParams {
   bubblePlotXColumn: string
   bubblePlotYColumn: string
   bubblePlotBreakdownColumn: string | null // Optional - BubblePlot can work without breakdown column
+  bubblePlotColorColumn: string // Optional - column to compute AVG for coloring (empty string = not set)
   tablePath: string
   queryEngine: string
   filterCondition: string | null
@@ -52,6 +54,7 @@ const fetchBubblePlotFunction = async (
     bubblePlotXColumn,
     bubblePlotYColumn,
     bubblePlotBreakdownColumn,
+    bubblePlotColorColumn,
     tablePath,
     queryEngine,
     filterCondition,
@@ -66,13 +69,21 @@ const fetchBubblePlotFunction = async (
   // Use lance_table when queryEngine is lance, otherwise use tablePath
   const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
 
-  // Build query
+  // Build query with optional color column
+  const colorColumnSelect = !bubblePlotColorColumn
+    ? 'NULL AS color_col'
+    : `${sanitizeName(bubblePlotColorColumn)} AS color_col`
+  const colorColumnAgg = !bubblePlotColorColumn
+    ? 'NULL AS color_value'
+    : 'AVG(color_col) AS color_value'
+
   const query = `
     WITH filtered AS (
       SELECT
         ${sanitizeName(bubblePlotXColumn)} AS x,
         ${sanitizeName(bubblePlotYColumn)} AS y,
-        ${isNil(bubblePlotBreakdownColumn) ? 'NULL' : sanitizeName(bubblePlotBreakdownColumn)} AS breakdown
+        ${isNil(bubblePlotBreakdownColumn) ? 'NULL' : sanitizeName(bubblePlotBreakdownColumn)} AS breakdown,
+        ${colorColumnSelect}
       FROM ${tableRef}
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
@@ -86,7 +97,8 @@ const fetchBubblePlotFunction = async (
       -- Compute the "bubble" center as the average x and y within that bin
       AVG(x) AS x,
       AVG(y) AS y,
-      COUNT(*) AS count
+      COUNT(*) AS count,
+      ${colorColumnAgg}
     FROM binned
     GROUP BY 1, 2, 3
     ORDER BY 1, 2, 3
@@ -109,7 +121,7 @@ const fetchBubblePlotFunction = async (
         const xCol = sanitizeName(bubblePlotXColumn)
         const yCol = sanitizeName(bubblePlotYColumn)
         const breakdownCol = sanitizeName(bubblePlotBreakdownColumn)
-        
+
         const condExpr = [
           `${xCol} >= ${xMin}`,
           `${xCol} < ${xMax}`,
@@ -117,8 +129,8 @@ const fetchBubblePlotFunction = async (
           `${yCol} < ${yMax}`,
           ...(isNil(bubblePlotBreakdownColumn) ? [] : [`${breakdownCol} = '${breakdown}'`])
         ].join(' AND ')
-        
-        return { condExpr, count: item.count }
+
+        return { condExpr, count: item.count, colorValue: item.color_value }
       })
       return { name: breakdown || 'All', x, y, customdata }
     })

@@ -22,6 +22,7 @@ export function useBubblePlot(): UseBubblePlotResult {
   const bubblePlotXColumn = useAppSelector((state) => state.ui.bubblePlotXColumn)
   const bubblePlotYColumn = useAppSelector((state) => state.ui.bubblePlotYColumn)
   const bubblePlotBreakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
+  const bubblePlotColorColumn = useAppSelector((state) => state.ui.bubblePlotColorColumn)
   const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
   
   // Get stats for X and Y columns to determine bins
@@ -47,13 +48,14 @@ export function useBubblePlot(): UseBubblePlotResult {
       bubblePlotXColumn,
       bubblePlotYColumn,
       bubblePlotBreakdownColumn,
+      bubblePlotColorColumn,
       tablePath,
       queryEngine,
       filterCondition,
       xBin,
       yBin
     }
-  }, [tablePath, queryEngine, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, filterCondition, xStatsData, yStatsData])
+  }, [tablePath, queryEngine, bubblePlotXColumn, bubblePlotYColumn, bubblePlotBreakdownColumn, bubblePlotColorColumn, filterCondition, xStatsData, yStatsData])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.bubblePlot,

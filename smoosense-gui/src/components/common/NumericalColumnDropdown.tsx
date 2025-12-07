@@ -6,7 +6,7 @@ import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { useIsCategoricalBulk } from '@/lib/hooks/useIsCategorical'
 import { useRenderType } from '@/lib/hooks/useRenderType'
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
-import { setHistogramColumn, setBubblePlotXColumn, setBubblePlotYColumn } from '@/lib/features/ui/uiSlice'
+import { setHistogramColumn, setBubblePlotXColumn, setBubblePlotYColumn, setBubblePlotColorColumn } from '@/lib/features/ui/uiSlice'
 import {
   Select,
   SelectContent,
@@ -25,12 +25,14 @@ type UIState = {
   histogramColumn: string
   bubblePlotXColumn: string
   bubblePlotYColumn: string
+  bubblePlotColorColumn: string
 }
 
 const actionMap = {
   histogramColumn: setHistogramColumn,
   bubblePlotXColumn: setBubblePlotXColumn,
   bubblePlotYColumn: setBubblePlotYColumn,
+  bubblePlotColorColumn: setBubblePlotColorColumn,
 } as const
 
 export default function NumericalColumnDropdown({
@@ -58,7 +60,7 @@ export default function NumericalColumnDropdown({
   const handleValueChange = (value: string) => {
     const action = actionMap[settingKey]
     if (action) {
-      // Convert "-" back to empty string (numerical columns don't accept null)
+      // Convert "-" back to empty string
       dispatch(action(value === "-" ? "" : value))
     }
   }

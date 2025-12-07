@@ -1,7 +1,6 @@
 'use client'
 
 import NumericalColumnDropdown from '@/components/common/NumericalColumnDropdown'
-import CategoricalColumnDropdown from '@/components/common/CategoricalColumnDropdown'
 import { Button } from '@/components/ui/button'
 import { ArrowRightLeft } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
@@ -44,13 +43,6 @@ export default function BubblePlotControls() {
           <NumericalColumnDropdown
             settingKey="bubblePlotYColumn"
             label="Y Column"
-          />
-        </div>
-
-        <div className="flex-1">
-          <CategoricalColumnDropdown
-            settingKey="bubblePlotBreakdownColumn"
-            label="Breakdown Column"
           />
         </div>
 
