@@ -51,7 +51,7 @@ describe('FilterDebugSection', () => {
     
     expect(getByText('SQL Condition:')).toBeInTheDocument()
     expect(queryByText('Filter Data:')).not.toBeInTheDocument()
-    expect(getByText('test_column IN (\'true\',\'false\')')).toBeInTheDocument()
+    expect(getByText('"test_column" IN (\'true\',\'false\')')).toBeInTheDocument()
   })
 
   it('should show error message for invalid filter data', () => {

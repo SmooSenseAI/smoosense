@@ -34,9 +34,8 @@ export const sanitizeName = (name: unknown): string => {
     const trimmed = name.trim()
     if (trimmed === '') {
       throw new Error('Empty name')
-    } else if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmed)) {
-      return trimmed
     } else if (!trimmed.includes('.')) {
+      // Always wrap column name with double quotes since column name main contain space and conflict with SQL keywords
       return `"${trimmed}"`
     } else {
       return trimmed.split('.').map(sanitizeName).join('.')

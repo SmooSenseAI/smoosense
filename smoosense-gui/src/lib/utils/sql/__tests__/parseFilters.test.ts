@@ -34,13 +34,13 @@ describe('parseFilterItem | invalid input', () => {
 
 describe('parseFilterItem | TEXT filter', () => {
   it('should return a filter expression for non-empty contains', () => {
-    const baseExpr = `CAST(columnName AS VARCHAR) LIKE '%value%'`
-    
+    const baseExpr = `CAST("columnName" AS VARCHAR) LIKE '%value%'`
+
     const testCases = [
       { nullFilter: 'N/A' as const, expected: baseExpr },
-      { nullFilter: 'Include' as const, expected: `${baseExpr} OR columnName IS NULL` },
+      { nullFilter: 'Include' as const, expected: `${baseExpr} OR "columnName" IS NULL` },
       { nullFilter: 'Exclude' as const, expected: baseExpr },
-      { nullFilter: 'Only Null' as const, expected: `columnName IS NULL` }
+      { nullFilter: 'Only Null' as const, expected: `"columnName" IS NULL` }
     ]
 
     testCases.forEach(({ nullFilter, expected }) => {
@@ -56,8 +56,8 @@ describe('parseFilterItem | TEXT filter', () => {
     const testCases = [
       { nullFilter: 'N/A' as const, expected: null },
       { nullFilter: 'Include' as const, expected: null },
-      { nullFilter: 'Exclude' as const, expected: `columnName IS NOT NULL` },
-      { nullFilter: 'Only Null' as const, expected: `columnName IS NULL` }
+      { nullFilter: 'Exclude' as const, expected: `"columnName" IS NOT NULL` },
+      { nullFilter: 'Only Null' as const, expected: `"columnName" IS NULL` }
     ]
 
     testCases.forEach(({ nullFilter, expected }) => {
@@ -82,34 +82,34 @@ describe('parseFilterItem | TEXT filter', () => {
       filterType: FilterType.TEXT,
       contains: "O'Brien",
       null: 'Exclude'
-    })).toBe("CAST(columnName AS VARCHAR) LIKE '%O''Brien%'")
+    })).toBe("CAST(\"columnName\" AS VARCHAR) LIKE '%O''Brien%'")
 
     // Test multiple single quotes
     expect(parseFilterItem('columnName', {
       filterType: FilterType.TEXT,
       contains: "it's a test's value",
       null: 'N/A'
-    })).toBe("CAST(columnName AS VARCHAR) LIKE '%it''s a test''s value%'")
+    })).toBe("CAST(\"columnName\" AS VARCHAR) LIKE '%it''s a test''s value%'")
 
     // Test with Include null filter
     expect(parseFilterItem('columnName', {
       filterType: FilterType.TEXT,
       contains: "O'Brien",
       null: 'Include'
-    })).toBe("CAST(columnName AS VARCHAR) LIKE '%O''Brien%' OR columnName IS NULL")
+    })).toBe("CAST(\"columnName\" AS VARCHAR) LIKE '%O''Brien%' OR \"columnName\" IS NULL")
   })
 })
 
 describe('parseFilterItem | ENUM filter', () => {
   it('should return a filter expression for non-empty string values in including', () => {
     const including = ['value1', 'value2']
-    const baseExpr = `columnName IN ('value1','value2')`
-    
+    const baseExpr = `"columnName" IN ('value1','value2')`
+
     const testCases = [
       { nullFilter: 'N/A' as const, expected: baseExpr },
-      { nullFilter: 'Include' as const, expected: `${baseExpr} OR columnName IS NULL` },
+      { nullFilter: 'Include' as const, expected: `${baseExpr} OR "columnName" IS NULL` },
       { nullFilter: 'Exclude' as const, expected: baseExpr },
-      { nullFilter: 'Only Null' as const, expected: `columnName IS NULL` }
+      { nullFilter: 'Only Null' as const, expected: `"columnName" IS NULL` }
     ]
 
     testCases.forEach(({ nullFilter, expected }) => {
@@ -123,13 +123,13 @@ describe('parseFilterItem | ENUM filter', () => {
 
   it('should return a filter expression for non-empty number values in including', () => {
     const including = ['18', '42'] // Note: including is string[] in our type definition
-    const baseExpr = `columnName IN ('18','42')`
-    
+    const baseExpr = `"columnName" IN ('18','42')`
+
     const testCases = [
       { nullFilter: 'N/A' as const, expected: baseExpr },
-      { nullFilter: 'Include' as const, expected: `${baseExpr} OR columnName IS NULL` },
+      { nullFilter: 'Include' as const, expected: `${baseExpr} OR "columnName" IS NULL` },
       { nullFilter: 'Exclude' as const, expected: baseExpr },
-      { nullFilter: 'Only Null' as const, expected: `columnName IS NULL` }
+      { nullFilter: 'Only Null' as const, expected: `"columnName" IS NULL` }
     ]
 
     testCases.forEach(({ nullFilter, expected }) => {
@@ -145,8 +145,8 @@ describe('parseFilterItem | ENUM filter', () => {
     const testCases = [
       { nullFilter: 'N/A' as const, expected: null },
       { nullFilter: 'Include' as const, expected: null },
-      { nullFilter: 'Exclude' as const, expected: `columnName IS NOT NULL` },
-      { nullFilter: 'Only Null' as const, expected: `columnName IS NULL` }
+      { nullFilter: 'Exclude' as const, expected: `"columnName" IS NOT NULL` },
+      { nullFilter: 'Only Null' as const, expected: `"columnName" IS NULL` }
     ]
 
     testCases.forEach(({ nullFilter, expected }) => {
@@ -167,31 +167,31 @@ describe('parseFilterItem | ENUM filter', () => {
 describe('parseFilterItem | RANGE filter', () => {
   it('should throw error for invalid range', () => {
     expect(() => {
-      parseFilterItem('columnName', { 
-        filterType: FilterType.RANGE, 
-        range: [18] as never, 
-        null: 'N/A' 
+      parseFilterItem('columnName', {
+        filterType: FilterType.RANGE,
+        range: [18] as never,
+        null: 'N/A'
       })
     }).toThrow('Invalid range: 18')
 
     expect(() => {
-      parseFilterItem('columnName', { 
-        filterType: FilterType.RANGE, 
-        range: ['18'] as never, 
-        null: 'N/A' 
+      parseFilterItem('columnName', {
+        filterType: FilterType.RANGE,
+        range: ['18'] as never,
+        null: 'N/A'
       })
     }).toThrow('Invalid range: 18')
   })
 
   it('should return a filter expression for valid range', () => {
     const range = [18, 42]
-    const baseExpr = `columnName BETWEEN 18 AND 42`
-    
+    const baseExpr = `"columnName" BETWEEN 18 AND 42`
+
     const testCases = [
       { nullFilter: 'N/A' as const, expected: baseExpr },
-      { nullFilter: 'Include' as const, expected: `${baseExpr} OR columnName IS NULL` },
+      { nullFilter: 'Include' as const, expected: `${baseExpr} OR "columnName" IS NULL` },
       { nullFilter: 'Exclude' as const, expected: baseExpr },
-      { nullFilter: 'Only Null' as const, expected: `columnName IS NULL` }
+      { nullFilter: 'Only Null' as const, expected: `"columnName" IS NULL` }
     ]
 
     testCases.forEach(({ nullFilter, expected }) => {
@@ -207,8 +207,8 @@ describe('parseFilterItem | RANGE filter', () => {
     const testCases = [
       { nullFilter: 'N/A' as const, expected: null },
       { nullFilter: 'Include' as const, expected: null },
-      { nullFilter: 'Exclude' as const, expected: `columnName IS NOT NULL` },
-      { nullFilter: 'Only Null' as const, expected: `columnName IS NULL` }
+      { nullFilter: 'Exclude' as const, expected: `"columnName" IS NOT NULL` },
+      { nullFilter: 'Only Null' as const, expected: `"columnName" IS NULL` }
     ]
 
     testCases.forEach(({ nullFilter, expected }) => {
@@ -244,7 +244,7 @@ describe('parseFilterItem | column name sanitization', () => {
       filterType: FilterType.RANGE,
       range: [1, 10],
       null: 'Exclude'
-    })).toBe('table.column BETWEEN 1 AND 10')
+    })).toBe('"table"."column" BETWEEN 1 AND 10')
   })
 })
 
@@ -270,8 +270,8 @@ describe('toSqlCondition', () => {
         null: 'Exclude' as const
       }
     }
-    
-    expect(toSqlCondition(filters)).toBe("(CAST(name AS VARCHAR) LIKE '%john%')")
+
+    expect(toSqlCondition(filters)).toBe("(CAST(\"name\" AS VARCHAR) LIKE '%john%')")
   })
 
   it('should combine multiple filters with AND', () => {
@@ -292,9 +292,9 @@ describe('toSqlCondition', () => {
         null: 'Include' as const
       }
     }
-    
+
     const result = toSqlCondition(filters)
-    expect(result).toBe("(CAST(name AS VARCHAR) LIKE '%john%') AND (age BETWEEN 18 AND 65) AND (status IN ('active','pending') OR status IS NULL)")
+    expect(result).toBe("(CAST(\"name\" AS VARCHAR) LIKE '%john%') AND (\"age\" BETWEEN 18 AND 65) AND (\"status\" IN ('active','pending') OR \"status\" IS NULL)")
   })
 
   it('should skip null filters', () => {
@@ -311,8 +311,8 @@ describe('toSqlCondition', () => {
         null: 'Exclude' as const
       }
     }
-    
-    expect(toSqlCondition(filters)).toBe("(CAST(name AS VARCHAR) LIKE '%john%') AND (status IN ('active'))")
+
+    expect(toSqlCondition(filters)).toBe("(CAST(\"name\" AS VARCHAR) LIKE '%john%') AND (\"status\" IN ('active'))")
   })
 
   it('should skip filters that return null from parseFilterItem', () => {
@@ -328,8 +328,8 @@ describe('toSqlCondition', () => {
         null: 'Exclude' as const
       }
     }
-    
-    expect(toSqlCondition(filters)).toBe('(age BETWEEN 18 AND 65)')
+
+    expect(toSqlCondition(filters)).toBe('("age" BETWEEN 18 AND 65)')
   })
 
   it('should handle filters with only null values', () => {
@@ -376,10 +376,10 @@ describe('toSqlCondition', () => {
         null: 'Exclude' as const
       }
     }
-    
+
     const result = toSqlCondition(filters)
-    expect(result).toBe("(CAST(validFilter AS VARCHAR) LIKE '%test%') AND (anotherValidFilter IN ('active'))")
-    
+    expect(result).toBe("(CAST(\"validFilter\" AS VARCHAR) LIKE '%test%') AND (\"anotherValidFilter\" IN ('active'))")
+
     // Verify error was logged
     expect(console.error).toHaveBeenCalledWith(
       'Error parsing filter for column invalidFilter:',
@@ -400,8 +400,8 @@ describe('toSqlCondition', () => {
         null: 'Exclude' as const
       }
     }
-    
-    expect(toSqlCondition(filters)).toBe('(CAST("column name" AS VARCHAR) LIKE \'%test%\') AND (table.column BETWEEN 1 AND 10)')
+
+    expect(toSqlCondition(filters)).toBe('(CAST("column name" AS VARCHAR) LIKE \'%test%\') AND ("table"."column" BETWEEN 1 AND 10)')
   })
 
   it('should preserve order of filters in the result', () => {
@@ -422,8 +422,8 @@ describe('toSqlCondition', () => {
         null: 'Exclude' as const
       }
     }
-    
+
     const result = toSqlCondition(filters)
-    expect(result).toBe("(CAST(zColumn AS VARCHAR) LIKE '%z%') AND (CAST(aColumn AS VARCHAR) LIKE '%a%') AND (CAST(mColumn AS VARCHAR) LIKE '%m%')")
+    expect(result).toBe("(CAST(\"zColumn\" AS VARCHAR) LIKE '%z%') AND (CAST(\"aColumn\" AS VARCHAR) LIKE '%a%') AND (CAST(\"mColumn\" AS VARCHAR) LIKE '%m%')")
   })
 })
