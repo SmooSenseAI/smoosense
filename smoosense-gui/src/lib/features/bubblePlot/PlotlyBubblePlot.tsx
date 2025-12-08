@@ -34,6 +34,7 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
   const yColumn = useAppSelector((state) => state.ui.bubblePlotYColumn)
   const breakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
   const maxMarkerSize = useAppSelector((state) => state.ui.bubblePlotMaxMarkerSize)
+  const minMarkerSize = useAppSelector((state) => state.ui.bubblePlotMinMarkerSize)
   const opacity = useAppSelector((state) => state.ui.bubblePlotOpacity)
   const markerSizeContrastRatio = useAppSelector((state) => state.ui.bubblePlotMarkerSizeContrastRatio)
   const colorColumn = useAppSelector((state) => state.ui.bubblePlotColorColumn)
@@ -63,7 +64,7 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
           // Shifted logistic function: markerSize = 2 * maxMarkerSize * (1 / (1 + exp(-markerSizeContrastRatio * count)) - 0.5)
           const k = Math.exp(-markerSizeContrastRatio)
           const logisticValue = 1 / (1 + Math.exp(-k * c.count))
-          return Math.max(5, 2 * maxMarkerSize * (logisticValue - 0.5))
+          return Math.max(minMarkerSize, 2 * maxMarkerSize * (logisticValue - 0.5))
         })
 
         // Build marker config
@@ -71,30 +72,21 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
         const marker: any = {
           size: markerSizes,
           opacity: opacity,
+          line: {
+            width: 0.5,
+            color: colors.foreground
+          }
         }
 
         // Add color mapping if color column is selected
         if (hasColorValues) {
-          const colorValues = item.customdata.map(c => c.colorValue ?? 0)
-          marker.color = colorValues
+          marker.color = item.customdata.map(c => c.colorValue ?? 0)
           marker.colorscale = colorScale
           marker.showscale = true
           marker.colorbar = {
             title: colorColumn,
             thickness: 15,
             len: 0.5
-          }
-          // Use same color for border (no separate border color)
-          marker.line = {
-            width: 1,
-            color: colorValues,
-            colorscale: colorScale
-          }
-        } else {
-          // Default border color when no color column
-          marker.line = {
-            width: 1,
-            color: colors.foreground
           }
         }
 
@@ -123,9 +115,10 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
       setPlotlyError((error as Error).message)
       return []
     }
-  }, [data, xColumn, yColumn, breakdownColumn, colorColumn, colorScale, opacity, maxMarkerSize, markerSizeContrastRatio, colors.foreground])
+  }, [data, xColumn, yColumn, breakdownColumn, colorColumn, colorScale, opacity, maxMarkerSize, minMarkerSize, markerSizeContrastRatio, colors.foreground])
 
   const baseLayout = usePlotlyLayout({
+    title: colorColumn ? `Color: ${colorColumn}` : undefined,
     xTitle: `X: ${xColumn}`,
     yTitle: `Y: ${yColumn}`,
     showLegend: breakdownColumn !== null

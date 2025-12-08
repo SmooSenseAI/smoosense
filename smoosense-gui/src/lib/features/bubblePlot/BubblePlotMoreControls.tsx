@@ -7,7 +7,7 @@ import CategoricalColumnDropdown from '@/components/common/CategoricalColumnDrop
 import NumericalColumnDropdown from '@/components/common/NumericalColumnDropdown'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import { setBubblePlotMaxMarkerSize, setBubblePlotOpacity, setBubblePlotMarkerSizeContrastRatio, setBubblePlotColorScale } from '@/lib/features/ui/uiSlice'
+import { setBubblePlotMaxMarkerSize, setBubblePlotMinMarkerSize, setBubblePlotOpacity, setBubblePlotMarkerSizeContrastRatio, setBubblePlotColorScale } from '@/lib/features/ui/uiSlice'
 
 // Plotly color scales with their CSS gradient representations
 const COLOR_SCALES: Record<string, string> = {
@@ -30,6 +30,7 @@ function ColorScaleBar({ scale }: { scale: string }) {
 function BubblePlotMoreControlsContent() {
   const dispatch = useAppDispatch()
   const bubblePlotMaxMarkerSize = useAppSelector((state) => state.ui.bubblePlotMaxMarkerSize)
+  const bubblePlotMinMarkerSize = useAppSelector((state) => state.ui.bubblePlotMinMarkerSize)
   const bubblePlotOpacity = useAppSelector((state) => state.ui.bubblePlotOpacity)
   const bubblePlotMarkerSizeContrastRatio = useAppSelector((state) => state.ui.bubblePlotMarkerSizeContrastRatio)
   const bubblePlotColorScale = useAppSelector((state) => state.ui.bubblePlotColorScale)
@@ -69,6 +70,20 @@ function BubblePlotMoreControlsContent() {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium mb-2 block">
+          Min Marker Size: {bubblePlotMinMarkerSize}
+        </label>
+        <Slider
+          value={[bubblePlotMinMarkerSize]}
+          onValueChange={(value) => dispatch(setBubblePlotMinMarkerSize(value[0]))}
+          max={15}
+          min={2}
+          step={1}
+          className="w-full"
+        />
       </div>
 
       <div>

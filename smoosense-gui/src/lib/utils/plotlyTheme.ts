@@ -72,11 +72,13 @@ export const usePlotlyAxis = ({
 /**
  * Hook to configure common Plotly layout with theming
  */
-export const usePlotlyLayout = ({ 
-  xTitle = '', 
+export const usePlotlyLayout = ({
+  title,
+  xTitle = '',
   yTitle = '',
   showLegend = true
-}: { 
+}: {
+  title?: string
   xTitle?: string
   yTitle?: string
   showLegend?: boolean
@@ -91,7 +93,7 @@ export const usePlotlyLayout = ({
 
   return useMemo(() => ({
     title: {
-      text: '',
+      text: title || '',
       font: {
         color: colors.foreground,
         family: 'system-ui, -apple-system, sans-serif'
@@ -108,7 +110,7 @@ export const usePlotlyLayout = ({
     margin: {
       l: Math.round(fontSize * 4.3),
       r: Math.round(fontSize * 2.1),
-      t: Math.round(fontSize * 2.1),
+      t: title ? Math.round(fontSize * 2.5) : Math.round(fontSize * 2.1),
       b: Math.round(fontSize * 4.3)
     },
     dragmode: 'pan' as const,
@@ -123,7 +125,7 @@ export const usePlotlyLayout = ({
       }
     },
     hovermode: 'closest' as const
-  }), [colors, xAxis, yAxis, showLegend, fontSize])
+  }), [colors, xAxis, yAxis, showLegend, fontSize, title])
 }
 
 

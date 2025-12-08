@@ -60,6 +60,7 @@ export function createDefaultTestState(): RootState {
       bubblePlotYColumn: '',
       bubblePlotBreakdownColumn: null,
       bubblePlotMaxMarkerSize: 20,
+      bubblePlotMinMarkerSize: 7,
       bubblePlotOpacity: 0.7,
       bubblePlotMarkerSizeContrastRatio: 0.5,
       bubblePlotColorColumn: '',

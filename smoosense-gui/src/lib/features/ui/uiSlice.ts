@@ -36,6 +36,7 @@ interface UiState {
   bubblePlotYColumn: string
   bubblePlotBreakdownColumn: string | null
   bubblePlotMaxMarkerSize: number
+  bubblePlotMinMarkerSize: number
   bubblePlotOpacity: number
   bubblePlotMarkerSizeContrastRatio: number
   bubblePlotColorColumn: string
@@ -83,6 +84,7 @@ const initialState: UiState = {
   bubblePlotYColumn: '',
   bubblePlotBreakdownColumn: null,
   bubblePlotMaxMarkerSize: 20,
+  bubblePlotMinMarkerSize: 7,
   bubblePlotOpacity: 0.7,
   bubblePlotMarkerSizeContrastRatio: 4.2,
   bubblePlotColorColumn: '',
@@ -209,6 +211,9 @@ export const uiSlice = createSlice({
     setBubblePlotMaxMarkerSize: (state, action: PayloadAction<number>) => {
       state.bubblePlotMaxMarkerSize = Math.max(5, Math.min(50, action.payload))
     },
+    setBubblePlotMinMarkerSize: (state, action: PayloadAction<number>) => {
+      state.bubblePlotMinMarkerSize = Math.max(2, Math.min(15, action.payload))
+    },
     setBubblePlotOpacity: (state, action: PayloadAction<number>) => {
       state.bubblePlotOpacity = Math.max(0.1, Math.min(1, action.payload))
     },
@@ -312,6 +317,7 @@ export const {
   setBubblePlotYColumn,
   setBubblePlotBreakdownColumn,
   setBubblePlotMaxMarkerSize,
+  setBubblePlotMinMarkerSize,
   setBubblePlotOpacity,
   setBubblePlotMarkerSizeContrastRatio,
   setBubblePlotColorColumn,
