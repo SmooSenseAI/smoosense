@@ -7,6 +7,7 @@ import { useIsCategoricalBulk } from '@/lib/hooks/useIsCategorical'
 import { useRenderType } from '@/lib/hooks/useRenderType'
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
 import { setHistogramColumn, setBubblePlotXColumn, setBubblePlotYColumn, setBubblePlotColorColumn } from '@/lib/features/ui/uiSlice'
+import { HeaderStatsCellRendererImpl } from '@/lib/utils/cellRenderers/HeaderStatsCellRenderer'
 import {
   Select,
   SelectContent,
@@ -19,6 +20,7 @@ interface NumericalColumnDropdownProps {
   settingKey: keyof UIState
   label: string
   shouldInitialize?: boolean
+  showStats?: boolean
 }
 
 type UIState = {
@@ -38,7 +40,8 @@ const actionMap = {
 export default function NumericalColumnDropdown({
   settingKey,
   label,
-  shouldInitialize = true
+  shouldInitialize = true,
+  showStats = false
 }: NumericalColumnDropdownProps) {
   const dispatch = useAppDispatch()
   const { isCategoricalColumns } = useIsCategoricalBulk()
@@ -94,6 +97,11 @@ export default function NumericalColumnDropdown({
       <label className="text-sm font-medium text-foreground truncate">
         {label}
       </label>
+      {showStats && currentValue && (
+        <div className="h-10 w-16">
+          <HeaderStatsCellRendererImpl columnName={currentValue} side="bottom" showNullPie={false} />
+        </div>
+      )}
       <div className='flex-1'>
         <Select
           value={currentValue === "" ? "-" : currentValue}

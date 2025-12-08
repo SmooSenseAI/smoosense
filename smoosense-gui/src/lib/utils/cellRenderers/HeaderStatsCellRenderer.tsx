@@ -18,12 +18,14 @@ interface HeaderStatsCellRendererImplProps {
   columnName: string
   side?: 'top' | 'right' | 'bottom' | 'left'
   showColumnName?: boolean
+  showNullPie?: boolean
 }
 
-const HeaderStatsCellRendererImpl = memo(function HeaderStatsCellRendererImpl({ 
+const HeaderStatsCellRendererImpl = memo(function HeaderStatsCellRendererImpl({
   columnName,
   side = 'right',
-  showColumnName = false
+  showColumnName = false,
+  showNullPie = true
 }: HeaderStatsCellRendererImplProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
@@ -68,12 +70,12 @@ const HeaderStatsCellRendererImpl = memo(function HeaderStatsCellRendererImpl({
       {hasStatsData && statsData ? (
         <div className="w-full h-full p-1 flex items-center gap-1">
           {/* NullPie with fixed width */}
-          {'cnt_null' in statsData && 'cnt_not_null' in statsData && (
-            <div 
+          {showNullPie && 'cnt_null' in statsData && 'cnt_not_null' in statsData && (
+            <div
               className="flex-shrink-0 cursor-pointer"
               onClick={handleOpenPopover}
             >
-              <NullPie 
+              <NullPie
                 cntNull={statsData.cnt_null}
                 cntNotNull={statsData.cnt_not_null}
               />
@@ -115,9 +117,9 @@ const HeaderStatsCellRendererImpl = memo(function HeaderStatsCellRendererImpl({
       ) : (
         // Empty state when no chart data - show NullPie if available, otherwise loading/empty state
         <div className="w-full h-full p-1 flex items-center justify-center">
-          {hasStatsData && statsData && 'cnt_null' in statsData && 'cnt_not_null' in statsData ? (
+          {showNullPie && hasStatsData && statsData && 'cnt_null' in statsData && 'cnt_not_null' in statsData ? (
             // Show only NullPie when no main chart data
-            <NullPie 
+            <NullPie
               cntNull={statsData.cnt_null}
               cntNotNull={statsData.cnt_not_null}
             />

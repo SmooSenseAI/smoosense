@@ -17,7 +17,7 @@ export default function HeatMapControls() {
   }
 
   return (
-    <div className="flex-shrink-0 p-4 border-b bg-background space-y-4">
+    <div className="flex-shrink-0 p-2 border-b bg-background space-y-4">
       <div className="flex gap-4 items-center">
         <div className="flex-1">
           <CategoricalColumnDropdown

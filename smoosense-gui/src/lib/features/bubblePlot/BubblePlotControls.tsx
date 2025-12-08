@@ -18,12 +18,13 @@ export default function BubblePlotControls() {
   }
 
   return (
-    <div className="flex-shrink-0 p-4 border-b bg-background">
+    <div className="flex-shrink-0 p-2 border-b bg-background">
       <div className="flex gap-4 items-center">
         <div className="flex-1">
           <NumericalColumnDropdown
             settingKey="bubblePlotXColumn"
-            label="X Column"
+            label="X"
+            showStats={true}
           />
         </div>
 
@@ -42,7 +43,8 @@ export default function BubblePlotControls() {
         <div className="flex-1">
           <NumericalColumnDropdown
             settingKey="bubblePlotYColumn"
-            label="Y Column"
+            label="Y"
+            showStats={true}
           />
         </div>
 
