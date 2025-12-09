@@ -123,6 +123,66 @@ def get_file() -> Response:
         return file_response
 
 
+@fs_bp.get("/typeahead")
+@requires_auth_api
+@handle_api_errors
+def typeahead() -> Response:
+    """
+    Get typeahead suggestions for local file paths.
+    Returns directories that match the given prefix.
+    """
+    path = require_arg("path")
+
+    # Expand ~ to home directory
+    if path.startswith("~"):
+        expanded_path = os.path.expanduser(path)
+    else:
+        expanded_path = path
+
+    # Get the directory and prefix for matching
+    if os.path.isdir(expanded_path):
+        # Path is a directory, list its contents
+        dir_path = expanded_path
+        prefix = ""
+    else:
+        # Path is partial, get parent dir and filename prefix
+        dir_path = os.path.dirname(expanded_path) or "/"
+        prefix = os.path.basename(expanded_path).lower()
+
+    if not os.path.isdir(dir_path):
+        return jsonify([])
+
+    suggestions = []
+    try:
+        for entry in os.scandir(dir_path):
+            # Only suggest directories
+            if not entry.is_dir():
+                continue
+            # Skip hidden directories
+            if entry.name.startswith("."):
+                continue
+            # Match prefix (case-insensitive)
+            if prefix and not entry.name.lower().startswith(prefix):
+                continue
+
+            # Build the suggestion path
+            if path.startswith("~"):
+                # Keep ~ prefix in suggestion
+                home = os.path.expanduser("~")
+                suggestion = "~" + os.path.join(dir_path, entry.name)[len(home) :]
+            else:
+                suggestion = os.path.join(dir_path, entry.name)
+
+            suggestions.append(suggestion)
+
+            if len(suggestions) >= 10:
+                break
+    except PermissionError:
+        pass
+
+    return jsonify(suggestions)
+
+
 @fs_bp.post("/upload")
 @requires_auth_api
 @handle_api_errors

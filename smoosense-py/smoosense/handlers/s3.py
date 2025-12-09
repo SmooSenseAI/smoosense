@@ -45,3 +45,106 @@ def batch_proxy() -> Response:
     s3_fs = S3FileSystem(s3_client)
     signed = [s3_fs.sign_get_url(url) for url in urls]
     return jsonify(signed)
+
+
+@s3_bp.get("/s3-typeahead")
+@requires_auth_api
+@handle_api_errors
+def s3_typeahead() -> Response:
+    """
+    Get typeahead suggestions for S3 paths.
+    Returns prefixes (directories) that match the given path.
+    """
+    from urllib.parse import urlparse
+
+    path: str = request.args.get("path", "") or ""
+
+    # Must start with s3:// or be a partial prefix of s3:// (including empty string)
+    if path and not path.startswith("s3://") and not "s3://".startswith(path):
+        return jsonify([])
+
+    s3_client = current_app.config["S3_CLIENT"]
+
+    # If path is partial prefix of s3://, list all buckets
+    if not path.startswith("s3://"):
+        try:
+            response = s3_client.list_buckets()
+            bucket_suggestions = [f"s3://{b['Name']}/" for b in response.get("Buckets", [])]
+            return jsonify(bucket_suggestions[:10])
+        except Exception as e:
+            logger.warning(f"Failed to list buckets: {e}")
+            return jsonify([])
+
+    # Parse the S3 URL
+    parsed = urlparse(path)
+    bucket: str = parsed.netloc
+    key: str = str(parsed.path).lstrip("/")
+
+    # If no bucket specified (e.g., s3://), list all buckets
+    if not bucket:
+        try:
+            response = s3_client.list_buckets()
+            bucket_suggestions = [f"s3://{b['Name']}/" for b in response.get("Buckets", [])]
+            return jsonify(bucket_suggestions[:10])
+        except Exception as e:
+            logger.warning(f"Failed to list buckets: {e}")
+            return jsonify([])
+
+    # If no key specified and path doesn't end with /, match buckets by partial bucket name
+    # If path ends with / (e.g., s3://bucket/), we should list bucket contents
+    if not key and not path.endswith("/"):
+        try:
+            response = s3_client.list_buckets()
+            bucket_lower = bucket.lower()
+            bucket_suggestions = [
+                f"s3://{b['Name']}/"
+                for b in response.get("Buckets", [])
+                if not bucket or b["Name"].lower().startswith(bucket_lower)
+            ]
+            return jsonify(bucket_suggestions[:10])
+        except Exception as e:
+            logger.warning(f"Failed to list buckets: {e}")
+            return jsonify([])
+
+    # Get the directory prefix and search prefix
+    dir_prefix: str
+    search_prefix: str
+    if key.endswith("/") or not key:
+        # Path ends with / or is just bucket, list contents
+        dir_prefix = key
+        search_prefix = ""
+    else:
+        # Path is partial, get parent dir and filename prefix
+        parts = key.rsplit("/", 1)
+        if len(parts) == 2:
+            dir_prefix = parts[0] + "/"
+            search_prefix = parts[1].lower()
+        else:
+            dir_prefix = ""
+            search_prefix = parts[0].lower()
+
+    suggestions: list[str] = []
+    try:
+        paginator = s3_client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix=dir_prefix, Delimiter="/"):
+            # Add common prefixes (directories)
+            for prefix_entry in page.get("CommonPrefixes", []):
+                prefix_path: str = prefix_entry["Prefix"]
+                name = prefix_path[len(dir_prefix) :].rstrip("/")
+
+                # Match search prefix (case-insensitive)
+                if search_prefix and not name.lower().startswith(search_prefix):
+                    continue
+
+                suggestion = f"s3://{bucket}/{prefix_path}"
+                suggestions.append(suggestion)
+
+                if len(suggestions) >= 10:
+                    break
+
+            if len(suggestions) >= 10:
+                break
+    except Exception as e:
+        logger.warning(f"Failed to list S3 prefixes: {e}")
+
+    return jsonify(suggestions)
