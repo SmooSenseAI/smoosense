@@ -297,6 +297,67 @@ export function createMarkdownComponents(headerMap?: Map<string, string>) {
         return <Tabs content={code} />
       }
 
+      if (language === 'codelink') {
+        // Parse codelink format: key-value pairs separated by blank lines
+        // Each block can have: anchor, path, line
+        const baseUrl = 'https://github.com/SmooSenseAI/smoosense/blob/main'
+        const blocks = code.trim().split(/\n\s*\n/).filter((block: string) => block.trim())
+
+        const links = blocks.map((block: string) => {
+          const lines = block.trim().split('\n')
+          const props: Record<string, string> = {}
+
+          for (const line of lines) {
+            const match = line.match(/^(\w+):\s*(.+)$/)
+            if (match) {
+              props[match[1]] = match[2].trim()
+            } else if (line.trim() && !props.path) {
+              // Fallback: treat as simple path (backwards compatibility)
+              props.path = line.trim()
+            }
+          }
+
+          return props
+        })
+
+        return (
+          <Box mb={4}>
+            {links.map((props: Record<string, string>, index: number) => {
+              const path = props.path || ''
+              const fileName = path.split('/').pop() || path
+              const anchor = props.anchor
+              const line = props.line
+
+              let githubUrl = `${baseUrl}/${path}`
+              if (line) {
+                githubUrl += `#L${line}`
+              }
+
+              const displayText = anchor ? `${anchor} @ ${fileName}` : fileName
+
+              return (
+                <Box key={index} mb={1}>
+                  <Link
+                    href={githubUrl}
+                    target="_blank"
+                    color="primary.300"
+                    fontFamily="mono"
+                    fontSize="sm"
+                    _hover={{ textDecoration: 'underline' }}
+                    display="inline-flex"
+                    alignItems="center"
+                    gap={1}
+                  >
+                    <Text as="span" fontSize="xs">🔗</Text>
+                    {displayText}
+                  </Link>
+                </Box>
+              )
+            })}
+          </Box>
+        )
+      }
+
       return <CodeBlock language={language}>{code}</CodeBlock>
     },
     code: ({ className, children }: any) => {

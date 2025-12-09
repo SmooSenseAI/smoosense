@@ -53,6 +53,10 @@ export const docsConfig: DocSection[] = [
         label: 'Authentication',
         slug: 'authentication',
       },
+      {
+        label: 'RenderType',
+        slug: 'render-type',
+      },
     ],
   },
 ]

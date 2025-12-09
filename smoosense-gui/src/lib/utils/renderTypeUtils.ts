@@ -34,7 +34,7 @@ export function isVisualType(renderType: RenderType): boolean {
 
 // Helper functions for string analysis
 function inferUrlType(str: string): RenderType {
-  // Check for iframe+ prefix first
+  // Check for iframe+http(s):// prefix first
   if (str.startsWith('iframe+http://') || str.startsWith('iframe+https://')) {
     return RenderType.IFrame
   }
@@ -64,11 +64,6 @@ function inferUrlType(str: string): RenderType {
   // Check for video streaming platforms
   if (/youtube\.com|youtu\.be|vimeo\.com/.test(str)) {
     return RenderType.VideoUrl
-  }
-
-  // Check for iframe-suitable URLs (e.g., embedded content)
-  if (/embed|iframe/.test(str)) {
-    return RenderType.IFrame
   }
 
   // Default to hyperlink for other URLs
