@@ -1,9 +1,7 @@
 """CLI script to ingest images, compute embeddings, and save to Lance."""
 
-import glob
 import os
 from pathlib import Path
-from typing import Optional
 
 import click
 import pyarrow as pa
@@ -20,6 +18,16 @@ from transformers import (
 from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
+
+
+def _get_device() -> str:
+    """Auto-detect the best available device."""
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
 
 
 def load_clip_model(device: str) -> tuple[CLIPVisionModel, CLIPImageProcessor]:
@@ -71,60 +79,39 @@ def compute_dinov2_embedding(
 
 
 def process_images(
-    pattern: str,
+    files: tuple[str, ...],
     output_path: str,
-    use_clip: bool = True,
-    use_dinov2: bool = True,
-    device: Optional[str] = None,
 ) -> None:
     """
-    Process images matching a glob pattern, compute embeddings, and save to Lance.
+    Process image files, compute embeddings, and save to Lance.
 
     Args:
-        pattern: Glob pattern to match image files (e.g., "images/*.jpg")
+        files: Tuple of image file paths
         output_path: Path to output Lance database directory
-        use_clip: Whether to compute CLIP embeddings
-        use_dinov2: Whether to compute DINOv2 embeddings
-        device: Device to use for inference (cuda, mps, or cpu)
     """
     import lancedb
 
-    # Find all matching files
-    image_paths = sorted(glob.glob(pattern, recursive=True))
-
-    if not image_paths:
-        logger.warning(f"No images found matching pattern: {pattern}")
+    if not files:
+        logger.warning("No image files provided")
         return
 
-    logger.info(f"Found {len(image_paths)} images matching pattern: {pattern}")
+    logger.info(f"Processing {len(files)} images")
 
     # Determine device
-    if device is None:
-        if torch.cuda.is_available():
-            device = "cuda"
-        elif torch.backends.mps.is_available():
-            device = "mps"
-        else:
-            device = "cpu"
-
+    device = _get_device()
     logger.info(f"Using device: {device}")
 
-    # Load models
-    clip_model, clip_processor = None, None
-    dinov2_model, dinov2_processor = None, None
+    # Load models (always use both CLIP and DINOv2)
+    logger.info("Loading CLIP model...")
+    clip_model, clip_processor = load_clip_model(device)
 
-    if use_clip:
-        logger.info("Loading CLIP model...")
-        clip_model, clip_processor = load_clip_model(device)
-
-    if use_dinov2:
-        logger.info("Loading DINOv2 model...")
-        dinov2_model, dinov2_processor = load_dinov2_model(device)
+    logger.info("Loading DINOv2 model...")
+    dinov2_model, dinov2_processor = load_dinov2_model(device)
 
     # Process images
     records: list[dict] = []
 
-    for image_path in tqdm(image_paths, desc="Processing images"):
+    for image_path in tqdm(files, desc="Processing images"):
         try:
             # Load image
             image = Image.open(image_path).convert("RGB")
@@ -151,16 +138,14 @@ def process_images(
             }
 
             # Compute CLIP embedding
-            if use_clip and clip_model is not None and clip_processor is not None:
-                clip_embedding = compute_clip_embedding(image, clip_model, clip_processor, device)
-                record["clip_embedding"] = clip_embedding
+            clip_embedding = compute_clip_embedding(image, clip_model, clip_processor, device)
+            record["clip_embedding"] = clip_embedding
 
             # Compute DINOv2 embedding
-            if use_dinov2 and dinov2_model is not None and dinov2_processor is not None:
-                dinov2_embedding = compute_dinov2_embedding(
-                    image, dinov2_model, dinov2_processor, device
-                )
-                record["dinov2_embedding"] = dinov2_embedding
+            dinov2_embedding = compute_dinov2_embedding(
+                image, dinov2_model, dinov2_processor, device
+            )
+            record["dinov2_embedding"] = dinov2_embedding
 
             records.append(record)
 
@@ -175,6 +160,10 @@ def process_images(
     # Convert to PyArrow table
     logger.info(f"Saving {len(records)} records to {output_path}")
 
+    # Detect embedding dimensions from first record
+    clip_dim = len(records[0]["clip_embedding"])
+    dinov2_dim = len(records[0]["dinov2_embedding"])
+
     # Build schema with fixed-size list for embeddings (required for Lance vector index)
     fields = [
         pa.field("filename", pa.string()),
@@ -185,21 +174,9 @@ def process_images(
         pa.field("bytes_size", pa.int64()),
         pa.field("width", pa.int32()),
         pa.field("height", pa.int32()),
+        pa.field("clip_embedding", pa.list_(pa.float32(), clip_dim)),
+        pa.field("dinov2_embedding", pa.list_(pa.float32(), dinov2_dim)),
     ]
-
-    embedding_columns: list[str] = []
-
-    # Detect embedding dimensions from first record
-    clip_dim = len(records[0]["clip_embedding"]) if use_clip else 0
-    dinov2_dim = len(records[0]["dinov2_embedding"]) if use_dinov2 else 0
-
-    if use_clip:
-        fields.append(pa.field("clip_embedding", pa.list_(pa.float32(), clip_dim)))
-        embedding_columns.append("clip_embedding")
-
-    if use_dinov2:
-        fields.append(pa.field("dinov2_embedding", pa.list_(pa.float32(), dinov2_dim)))
-        embedding_columns.append("dinov2_embedding")
 
     schema = pa.schema(fields)
 
@@ -213,23 +190,15 @@ def process_images(
         pa.array([r["bytes_size"] for r in records], type=pa.int64()),
         pa.array([r["width"] for r in records], type=pa.int32()),
         pa.array([r["height"] for r in records], type=pa.int32()),
+        pa.array(
+            [r["clip_embedding"] for r in records],
+            type=pa.list_(pa.float32(), clip_dim),
+        ),
+        pa.array(
+            [r["dinov2_embedding"] for r in records],
+            type=pa.list_(pa.float32(), dinov2_dim),
+        ),
     ]
-
-    if use_clip:
-        arrays.append(
-            pa.array(
-                [r["clip_embedding"] for r in records],
-                type=pa.list_(pa.float32(), clip_dim),
-            )
-        )
-
-    if use_dinov2:
-        arrays.append(
-            pa.array(
-                [r["dinov2_embedding"] for r in records],
-                type=pa.list_(pa.float32(), dinov2_dim),
-            )
-        )
 
     table = pa.Table.from_arrays(arrays, schema=schema)
 
@@ -259,6 +228,7 @@ def process_images(
     logger.info(f"Created Lance table '{table_name}' at {db_path}")
 
     # Create vector indices for embedding columns
+    embedding_columns = ["clip_embedding", "dinov2_embedding"]
     for col in embedding_columns:
         logger.info(f"Creating IVF-PQ index on '{col}'...")
         lance_table.create_index(
@@ -271,54 +241,32 @@ def process_images(
 
 
 @click.command()
-@click.argument("pattern", type=str)
+@click.argument("files", nargs=-1, required=True, type=click.Path(exists=True))
 @click.option(
     "-o",
-    "--output",
+    "--output-path",
     type=str,
     default="images.lance",
     help="Output Lance table path (e.g., ./mydb/images.lance)",
 )
-@click.option(
-    "--clip/--no-clip",
-    default=True,
-    help="Compute CLIP embeddings",
-)
-@click.option(
-    "--dinov2/--no-dinov2",
-    default=True,
-    help="Compute DINOv2 embeddings",
-)
-@click.option(
-    "--device",
-    type=click.Choice(["cuda", "mps", "cpu"]),
-    default=None,
-    help="Device to use for inference (default: auto-detect)",
-)
 def main(
-    pattern: str,
-    output: str,
-    clip: bool,
-    dinov2: bool,
-    device: Optional[str],
+    files: tuple[str, ...],
+    output_path: str,
 ) -> None:
     """
-    Ingest images, compute embeddings, and save to Lance.
+    Ingest images, compute embeddings (CLIP and DINOv2), and save to Lance.
 
-    PATTERN: Glob pattern to match image files (e.g., "images/**/*.jpg")
+    FILES: One or more image files to process.
 
     Examples:
 
-        python -m smoosense.images.ingest "photos/*.jpg" -o ./mydb/photos.lance
+        python -m smoosense.images.ingest photo1.jpg photo2.jpg -o ./mydb/photos.lance
 
-        python -m smoosense.images.ingest "data/**/*.png" --no-dinov2 -o ./mydb/clip_only.lance
+        python -m smoosense.images.ingest *.jpg *.png --output-path ./mydb/images.lance
     """
     process_images(
-        pattern=pattern,
-        output_path=output,
-        use_clip=clip,
-        use_dinov2=dinov2,
-        device=device,
+        files=files,
+        output_path=output_path,
     )
 
 
