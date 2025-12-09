@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import boto3
 from pydantic import validate_call
 
+from smoosense.exceptions import AccessDeniedException
 from smoosense.utils.models import FSItem
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,8 @@ class S3FileSystem:
 
     @validate_call()
     def list_one_level(self, key: str, limit: int = 100) -> list[FSItem]:
+        from botocore.exceptions import ClientError
+
         # Parse the S3 URL to get bucket and prefix
         parsed = urlparse(key)
         bucket = parsed.netloc
@@ -28,35 +31,43 @@ class S3FileSystem:
         paginator = self.s3_client.get_paginator("list_objects_v2")
         items = []
 
-        for page in paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter="/"):
-            # Add common prefixes (directories)
-            for prefix_entry in page.get("CommonPrefixes", []):
-                items.append(
-                    FSItem(
-                        name=os.path.basename(prefix_entry["Prefix"].rstrip("/")),
-                        size=0,
-                        lastModified=0,
-                        isDir=True,
+        try:
+            for page in paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter="/"):
+                # Add common prefixes (directories)
+                for prefix_entry in page.get("CommonPrefixes", []):
+                    items.append(
+                        FSItem(
+                            name=os.path.basename(prefix_entry["Prefix"].rstrip("/")),
+                            size=0,
+                            lastModified=0,
+                            isDir=True,
+                        )
                     )
-                )
 
-            # Add objects (files)
-            for obj in page.get("Contents", []):
-                # Skip the directory marker itself
-                if obj["Key"] == prefix:
-                    continue
-                items.append(
-                    FSItem(
-                        name=os.path.basename(obj["Key"]),
-                        size=obj["Size"],
-                        lastModified=int(obj["LastModified"].timestamp() * 1000),
-                        isDir=False,
+                # Add objects (files)
+                for obj in page.get("Contents", []):
+                    # Skip the directory marker itself
+                    if obj["Key"] == prefix:
+                        continue
+                    items.append(
+                        FSItem(
+                            name=os.path.basename(obj["Key"]),
+                            size=obj["Size"],
+                            lastModified=int(obj["LastModified"].timestamp() * 1000),
+                            isDir=False,
+                        )
                     )
-                )
 
-            if len(items) >= limit:
-                items = items[:limit]
-                break
+                if len(items) >= limit:
+                    items = items[:limit]
+                    break
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code", "")
+            if error_code == "AccessDenied":
+                raise AccessDeniedException(str(e)) from e
+            if error_code == "NoSuchBucket":
+                raise FileNotFoundError(str(e)) from e
+            raise
 
         return items
 

@@ -57,7 +57,17 @@ export const loadFolderContents = createAsyncThunk(
 
     const response = await fetch(`${API_PREFIX}/ls?${params}`)
     if (!response.ok) {
-      throw new Error(`Failed to load folder contents: ${response.statusText}`)
+      // Try to parse error message from API response
+      try {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `Failed to load folder contents: ${response.statusText}`)
+      } catch (parseError) {
+        // If parsing fails, throw generic error
+        if (parseError instanceof Error && parseError.message !== `Failed to load folder contents: ${response.statusText}`) {
+          throw parseError
+        }
+        throw new Error(`Failed to load folder contents: ${response.statusText}`)
+      }
     }
 
     const items: FSItem[] = await response.json()
