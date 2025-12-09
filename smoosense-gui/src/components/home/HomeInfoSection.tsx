@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { ExternalLink, Play, Download, AlertCircle } from 'lucide-react'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
 import { debounce } from 'lodash'
+import { useAppDispatch } from '@/lib/hooks'
+import { setRootFolder } from '@/lib/features/ui/uiSlice'
 
 type PathType = 's3' | 'local' | 'invalid' | 'empty'
 
@@ -23,6 +25,7 @@ function getPathType(path: string, isLocal: boolean): PathType {
 
 export default function HomeInfoSection() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [folderPath, setFolderPath] = useState('')
   const [isLocal, setIsLocal] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
@@ -88,6 +91,7 @@ export default function HomeInfoSection() {
 
   const handleGoToFolder = () => {
     if (folderPath.trim()) {
+      dispatch(setRootFolder(folderPath.trim()))
       router.push(`/FolderBrowser?rootFolder=${encodeURIComponent(folderPath.trim())}`)
     }
   }
