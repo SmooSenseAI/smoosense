@@ -74,7 +74,11 @@ export interface TypeShortcuts {
  */
 export function computeTypeShortcuts(type: string): TypeShortcuts {
   const upperType = type.toString().toUpperCase().trim()
-  const isArray = upperType.endsWith('[]')
+
+  // Check for array types: TYPE[] (variable-size) or TYPE[n] (fixed-size)
+  // Match patterns like FLOAT[], FLOAT[32], INTEGER[], etc.
+  const arrayMatch = upperType.match(/^(.+)\[(\d*)\]$/)
+  const isArray = arrayMatch !== null
 
   const normalizedType = normalizeType(type)
 
@@ -87,8 +91,8 @@ export function computeTypeShortcuts(type: string): TypeShortcuts {
   const isNumeric = isInteger || isFloat
   const isPrimitive = isNumeric || isBoolean || isString || isDatetime
 
-  // isNumericArray is true if type ends with [] and base type (without []) is numeric
-  const baseType = isArray ? upperType.slice(0, -2) : upperType
+  // isNumericArray is true if type is an array and base type is numeric
+  const baseType = arrayMatch ? arrayMatch[1] : upperType
   const normalizedBaseType = normalizeType(baseType)
   const baseIsInteger = DUCKDB_TYPES.INTEGER.includes(normalizedBaseType)
   const baseIsFloat = DUCKDB_TYPES.FLOAT.includes(normalizedBaseType)

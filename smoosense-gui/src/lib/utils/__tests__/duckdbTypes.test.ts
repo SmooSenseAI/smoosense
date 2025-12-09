@@ -1,15 +1,15 @@
-import { 
-  computeTypeShortcuts, 
-  getTypesInCategory, 
-  isTypeInCategory, 
-  DUCKDB_TYPES 
+import {
+  computeTypeShortcuts,
+  getTypesInCategory,
+  isTypeInCategory,
+  DUCKDB_TYPES
 } from '../duckdbTypes'
 
 describe('computeTypeShortcuts', () => {
   describe('integer types', () => {
     it('should classify integer types correctly', () => {
       const integerTypes = ['TINYINT', 'SMALLINT', 'INTEGER', 'BIGINT', 'HUGEINT', 'UTINYINT', 'USMALLINT', 'UINTEGER', 'UBIGINT']
-      
+
       integerTypes.forEach(type => {
         const result = computeTypeShortcuts(type)
         expect(result).toEqual({
@@ -37,7 +37,7 @@ describe('computeTypeShortcuts', () => {
   describe('float types', () => {
     it('should classify float types correctly', () => {
       const floatTypes = ['FLOAT', 'DOUBLE', 'DECIMAL', 'REAL']
-      
+
       floatTypes.forEach(type => {
         const result = computeTypeShortcuts(type)
         expect(result).toEqual({
@@ -112,7 +112,7 @@ describe('computeTypeShortcuts', () => {
   describe('datetime types', () => {
     it('should classify datetime types correctly', () => {
       const datetimeTypes = ['TIMESTAMP', 'DATE', 'TIME', 'TIMESTAMP_NS']
-      
+
       datetimeTypes.forEach(type => {
         const result = computeTypeShortcuts(type)
         expect(result).toEqual({
@@ -128,6 +128,64 @@ describe('computeTypeShortcuts', () => {
           isArray: false,
         })
       })
+    })
+  })
+
+  describe('array types', () => {
+    it('should detect variable-size array FLOAT[] as array and numeric array', () => {
+      const result = computeTypeShortcuts('FLOAT[]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
+      expect(result.isFloat).toBe(false) // The base type flags should be false for arrays
+      expect(result.isNumeric).toBe(false)
+    })
+
+    it('should detect fixed-size array FLOAT[32] as array and numeric array', () => {
+      const result = computeTypeShortcuts('FLOAT[32]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
+    })
+
+    it('should detect variable-size array INTEGER[] as array and numeric array', () => {
+      const result = computeTypeShortcuts('INTEGER[]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
+    })
+
+    it('should detect fixed-size array INTEGER[10] as array and numeric array', () => {
+      const result = computeTypeShortcuts('INTEGER[10]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
+    })
+
+    it('should detect VARCHAR[] as array but not numeric array', () => {
+      const result = computeTypeShortcuts('VARCHAR[]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(false)
+    })
+
+    it('should detect VARCHAR[100] as array but not numeric array', () => {
+      const result = computeTypeShortcuts('VARCHAR[100]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(false)
+    })
+
+    it('should handle lowercase array types', () => {
+      const result = computeTypeShortcuts('float[32]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
+    })
+
+    it('should detect DOUBLE[] as array and numeric array', () => {
+      const result = computeTypeShortcuts('DOUBLE[]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
+    })
+
+    it('should detect BIGINT[1024] as array and numeric array', () => {
+      const result = computeTypeShortcuts('BIGINT[1024]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
     })
   })
 
@@ -227,7 +285,7 @@ describe('getTypesInCategory', () => {
   it('should return a copy of the array', () => {
     const integerTypes = getTypesInCategory('INTEGER')
     integerTypes.push('NEW_TYPE')
-    
+
     // Original should not be modified
     const integerTypes2 = getTypesInCategory('INTEGER')
     expect(integerTypes2).not.toContain('NEW_TYPE')
