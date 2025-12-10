@@ -6,16 +6,9 @@ import { AgGridReact } from 'ag-grid-react'
 import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community'
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import { useAGGridTheme, useAGGridDefaultColDef, useAGGridOptions, useAppSelector } from '@/lib/hooks'
-import { getApi } from '@/lib/utils/apiUtils'
+import { fetchLanceIndicesByName, type LanceIndexInfo } from '@/lib/api/lance'
 
 ModuleRegistry.registerModules([AllCommunityModule])
-
-export interface IndexInfo {
-  name: string
-  index_type: string
-  columns: string[]
-  num_unindexed_rows: number | null
-}
 
 interface LanceIndicesProps {
   dbPath: string
@@ -23,7 +16,7 @@ interface LanceIndicesProps {
 }
 
 export default function LanceIndices({ dbPath, tableName }: LanceIndicesProps) {
-  const [indices, setIndices] = useState<IndexInfo[] | null>(null)
+  const [indices, setIndices] = useState<LanceIndexInfo[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,12 +27,12 @@ export default function LanceIndices({ dbPath, tableName }: LanceIndicesProps) {
   const rowHeight = useAppSelector((state) => state.ui.rowHeight)
 
   useEffect(() => {
-    getApi({
-      relativeUrl: `lance/list-indices?dbPath=${encodeURIComponent(dbPath)}&tableName=${encodeURIComponent(tableName)}&dbType=lance`,
-      setData: (data) => setIndices(data as IndexInfo[]),
-      setLoading,
-      setError,
-    })
+    setLoading(true)
+    setError(null)
+    fetchLanceIndicesByName(dbPath, tableName)
+      .then(setIndices)
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load indices'))
+      .finally(() => setLoading(false))
   }, [dbPath, tableName])
 
   if (loading) {

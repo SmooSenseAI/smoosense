@@ -29,7 +29,7 @@ export default function GalleryControls({ showRandom = true }: GalleryControlsPr
   }
 
   return (
-    <div className="flex-shrink-0 p-4 border-b bg-background">
+    <div className="flex-shrink-0 p-2 border-b bg-background">
       <div className="flex gap-4 items-center">
         <VisualColumnDropdown />
 

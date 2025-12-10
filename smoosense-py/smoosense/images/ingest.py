@@ -54,12 +54,15 @@ def compute_clip_embedding(
     processor: CLIPImageProcessor,
     device: str,
 ) -> list[float]:
-    """Compute CLIP embedding for an image."""
+    """Compute CLIP embedding for an image (L2-normalized)."""
     inputs = processor(images=image, return_tensors="pt").to(device)
     with torch.no_grad():
         outputs = model(**inputs)
         # Use pooled output (CLS token)
-        embedding: list[float] = outputs.pooler_output[0].cpu().numpy().tolist()
+        emb = outputs.pooler_output[0]
+        # L2 normalize
+        emb = emb / emb.norm()
+        embedding: list[float] = emb.cpu().numpy().tolist()
     return embedding
 
 
@@ -69,12 +72,15 @@ def compute_dinov2_embedding(
     processor: AutoImageProcessor,
     device: str,
 ) -> list[float]:
-    """Compute DINOv2 embedding for an image."""
+    """Compute DINOv2 embedding for an image (L2-normalized)."""
     inputs = processor(images=image, return_tensors="pt").to(device)  # type: ignore[operator]
     with torch.no_grad():
         outputs = model(**inputs)  # type: ignore[operator]
         # Use CLS token from last hidden state
-        embedding: list[float] = outputs.last_hidden_state[:, 0, :][0].cpu().numpy().tolist()
+        emb = outputs.last_hidden_state[:, 0, :][0]
+        # L2 normalize
+        emb = emb / emb.norm()
+        embedding: list[float] = emb.cpu().numpy().tolist()
     return embedding
 
 
@@ -111,28 +117,30 @@ def process_images(
     # Process images
     records: list[dict] = []
 
+    # Get absolute output path for computing relative paths
+    abs_output_path = os.path.abspath(output_path)
+    output_dir = os.path.dirname(abs_output_path)
+
     for image_path in tqdm(files, desc="Processing images"):
         try:
             # Load image
             image = Image.open(image_path).convert("RGB")
 
-            # Read image bytes
-            with open(image_path, "rb") as f:
-                image_bytes = f.read()
+            # Get absolute path of input image
+            abs_image_path = os.path.abspath(image_path)
 
-            # Get relative path from pattern base
-            rel_path = os.path.basename(image_path)
+            # Compute relative path with respect to output directory, prefixed with ./
+            image_rel_path = "./" + os.path.relpath(abs_image_path, output_dir)
+
+            # Get file size
+            bytes_size = os.path.getsize(abs_image_path)
 
             # Get image dimensions
             width, height = image.size
 
-            # Use absolute path for image.path
-            abs_path = os.path.abspath(image_path)
-
             record: dict = {
-                "filename": rel_path,
-                "image": {"bytes": image_bytes, "path": abs_path},
-                "bytes_size": len(image_bytes),
+                "image_path": image_rel_path,
+                "bytes_size": bytes_size,
                 "width": width,
                 "height": height,
             }
@@ -166,11 +174,7 @@ def process_images(
 
     # Build schema with fixed-size list for embeddings (required for Lance vector index)
     fields = [
-        pa.field("filename", pa.string()),
-        pa.field(
-            "image",
-            pa.struct([("bytes", pa.binary()), ("path", pa.string())]),
-        ),
+        pa.field("image_path", pa.string()),
         pa.field("bytes_size", pa.int64()),
         pa.field("width", pa.int32()),
         pa.field("height", pa.int32()),
@@ -182,11 +186,7 @@ def process_images(
 
     # Build arrays
     arrays = [
-        pa.array([r["filename"] for r in records]),
-        pa.array(
-            [r["image"] for r in records],
-            type=pa.struct([("bytes", pa.binary()), ("path", pa.string())]),
-        ),
+        pa.array([r["image_path"] for r in records]),
         pa.array([r["bytes_size"] for r in records], type=pa.int64()),
         pa.array([r["width"] for r in records], type=pa.int32()),
         pa.array([r["height"] for r in records], type=pa.int32()),
@@ -246,7 +246,7 @@ def process_images(
     "-o",
     "--output-path",
     type=str,
-    default="images.lance",
+    default=os.path.join(os.getcwd(), "images.lance"),
     help="Output Lance table path (e.g., ./mydb/images.lance)",
 )
 def main(

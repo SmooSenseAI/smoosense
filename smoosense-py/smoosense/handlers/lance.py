@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from flask import Blueprint, jsonify, request
 from werkzeug.wrappers import Response
@@ -102,3 +103,57 @@ def list_columns() -> Response:
     except Exception as e:
         logger.error(f"Failed to list columns for table {table_name}: {e}")
         raise InvalidInputException(f"Failed to list columns: {e}") from e
+
+
+@lance_bp.post("/lance/vector-search")
+@requires_auth_api
+@handle_api_errors
+def vector_search() -> Response:
+    """
+    Perform vector similarity search on a Lance table.
+
+    Request body:
+        tablePath: Path to the Lance table (e.g., /path/to/db/table.lance)
+        embedding: Query embedding vector (list of floats)
+        vectorColumn: Name of the column containing embeddings
+        selectColumns: List of column names to return in results
+        limit: Maximum number of results (default: 12)
+
+    Returns:
+        List of results with selected columns and similarity score
+    """
+    data: dict[str, Any] = request.get_json() or {}
+
+    table_path = data.get("tablePath")
+    if not table_path:
+        raise InvalidInputException("tablePath is required")
+
+    embedding = data.get("embedding")
+    if not embedding or not isinstance(embedding, list):
+        raise InvalidInputException("embedding must be a non-empty list of floats")
+
+    vector_column = data.get("vectorColumn")
+    if not vector_column:
+        raise InvalidInputException("vectorColumn is required")
+
+    select_columns = data.get("selectColumns")
+    if not select_columns or not isinstance(select_columns, list):
+        raise InvalidInputException("selectColumns must be a non-empty list")
+
+    limit = data.get("limit", 12)
+
+    try:
+        client = LanceTableClient.from_table_path(table_path)
+        results = client.vector_search(
+            embedding=embedding,
+            vector_column=vector_column,
+            select_columns=select_columns,
+            limit=limit,
+        )
+
+        return jsonify(results)
+    except ValueError as e:
+        raise InvalidInputException(str(e)) from e
+    except Exception as e:
+        logger.error(f"Vector search failed on {table_path}: {e}")
+        raise InvalidInputException(f"Vector search failed: {e}") from e

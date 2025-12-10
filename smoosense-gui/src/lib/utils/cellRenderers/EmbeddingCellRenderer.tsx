@@ -4,10 +4,8 @@ import { memo, useState, useEffect } from 'react'
 import _ from 'lodash'
 import { ChevronsLeftRightEllipsis } from 'lucide-react'
 import CellPopover from '@/components/ui/CellPopover'
-import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import { executeQueryAsListOfDict } from '@/lib/api/queries'
-import { buildSimilarEmbeddingsQuery } from '@/lib/utils/sql/similarEmbeddings'
-import { extractSqlFilterFromState } from '@/lib/utils/state/filterUtils'
+import { useAppSelector } from '@/lib/hooks'
+import { lanceVectorSearch, type VectorSearchResult } from '@/lib/api/lance'
 import { useSingleColumnRenderType } from '@/lib/hooks/useRenderType'
 import GalleryItem from '@/components/gallery/GalleryItem'
 import GalleryControls from '@/components/gallery/GalleryControls'
@@ -24,22 +22,19 @@ interface SimilarRowsGalleryProps {
   embDim: number
 }
 
-function SimilarRowsGallery({ embedding, columnName, embDim }: SimilarRowsGalleryProps) {
-  const dispatch = useAppDispatch()
+function SimilarRowsGallery({ embedding, columnName }: SimilarRowsGalleryProps) {
   const tablePath = useAppSelector((state) => state.ui.tablePath)
-  const queryEngine = useAppSelector((state) => state.ui.queryEngine)
-  const filterCondition = useAppSelector((state) => extractSqlFilterFromState(state))
   const visualColumn = useAppSelector((state) => state.ui.columnForGalleryVisual)
   const captionColumn = useAppSelector((state) => state.ui.columnForGalleryCaption)
   const galleryItemWidth = useAppSelector((state) => state.ui.galleryItemWidth)
   const visualRenderType = useSingleColumnRenderType(visualColumn || '')
 
-  const [rows, setRows] = useState<Record<string, unknown>[]>([])
+  const [rows, setRows] = useState<VectorSearchResult[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!tablePath || _.isEmpty(embedding)) {
+    if (!tablePath || _.isEmpty(embedding) || !visualColumn) {
       setLoading(false)
       return
     }
@@ -49,21 +44,19 @@ function SimilarRowsGallery({ embedding, columnName, embDim }: SimilarRowsGaller
       setError(null)
 
       try {
-        const query = buildSimilarEmbeddingsQuery({
-          columnName,
-          embedding,
-          queryEngine,
-          tablePath,
-          filterCondition,
-        })
+        // Build select columns: visual column and optionally caption column
+        const selectColumns = [visualColumn]
+        if (captionColumn && captionColumn !== visualColumn) {
+          selectColumns.push(captionColumn)
+        }
 
-        const result = await executeQueryAsListOfDict(
-          query,
-          'similar_embeddings',
-          dispatch,
-          queryEngine,
-          tablePath
-        )
+        const result = await lanceVectorSearch({
+          tablePath,
+          embedding,
+          vectorColumn: columnName,
+          selectColumns,
+          limit: 12,
+        })
 
         setRows(result)
       } catch (err) {
@@ -74,7 +67,7 @@ function SimilarRowsGallery({ embedding, columnName, embDim }: SimilarRowsGaller
     }
 
     fetchSimilarRows()
-  }, [tablePath, queryEngine, columnName, embedding, embDim, filterCondition, dispatch])
+  }, [tablePath, columnName, embedding, visualColumn, captionColumn])
 
   if (loading) {
     return (
@@ -98,6 +91,9 @@ function SimilarRowsGallery({ embedding, columnName, embDim }: SimilarRowsGaller
   return (
     <div className="flex flex-col h-full">
       <GalleryControls showRandom={false} />
+      <div className="px-2 py-1 text-xs text-muted-foreground">
+        Cosine distance (0 = identical, 1 = orthogonal, 2 = opposite; may have small error due to indexing)
+      </div>
       <div className="flex-1 overflow-auto p-2">
         {_.isEmpty(rows) ? (
           <div className="p-4 text-sm text-muted-foreground">
@@ -113,12 +109,12 @@ function SimilarRowsGallery({ embedding, columnName, embDim }: SimilarRowsGaller
             {rows.map((row, index) => {
               const visualValue = row[visualColumn]
               const captionValue = captionColumn ? row[captionColumn] : null
-              const similarity = row.similarity as number
+              const distance = row._distance as number
 
               return (
                 <div key={index} className="relative">
                   <div className="absolute top-1 left-1 z-10 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {(similarity * 100).toFixed(0)}%
+                    {distance.toFixed(3)}
                   </div>
                   <GalleryItem
                     row={row}

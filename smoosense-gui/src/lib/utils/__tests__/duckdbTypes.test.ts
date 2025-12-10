@@ -2,6 +2,7 @@ import {
   computeTypeShortcuts,
   getTypesInCategory,
   isTypeInCategory,
+  getArrayDimension,
   DUCKDB_TYPES
 } from '../duckdbTypes'
 
@@ -349,5 +350,40 @@ describe('DUCKDB_TYPES constant', () => {
     expect(DUCKDB_TYPES.FLOAT).toHaveLength(4)
     expect(DUCKDB_TYPES.STRING).toHaveLength(5)
     expect(DUCKDB_TYPES.DATETIME).toHaveLength(4)
+  })
+})
+
+describe('getArrayDimension', () => {
+  it('should return dimension for fixed-size FLOAT arrays', () => {
+    expect(getArrayDimension('FLOAT[32]')).toBe(32)
+    expect(getArrayDimension('FLOAT[128]')).toBe(128)
+    expect(getArrayDimension('FLOAT[1024]')).toBe(1024)
+  })
+
+  it('should return dimension for fixed-size INTEGER arrays', () => {
+    expect(getArrayDimension('INTEGER[10]')).toBe(10)
+    expect(getArrayDimension('BIGINT[256]')).toBe(256)
+  })
+
+  it('should return null for variable-size arrays', () => {
+    expect(getArrayDimension('FLOAT[]')).toBe(null)
+    expect(getArrayDimension('INTEGER[]')).toBe(null)
+    expect(getArrayDimension('VARCHAR[]')).toBe(null)
+  })
+
+  it('should return null for non-array types', () => {
+    expect(getArrayDimension('FLOAT')).toBe(null)
+    expect(getArrayDimension('INTEGER')).toBe(null)
+    expect(getArrayDimension('VARCHAR')).toBe(null)
+    expect(getArrayDimension('VARCHAR(255)')).toBe(null)
+  })
+
+  it('should handle lowercase types', () => {
+    expect(getArrayDimension('float[32]')).toBe(32)
+    expect(getArrayDimension('double[128]')).toBe(128)
+  })
+
+  it('should handle empty and null-like inputs', () => {
+    expect(getArrayDimension('')).toBe(null)
   })
 })

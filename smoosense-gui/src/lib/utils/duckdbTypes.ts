@@ -140,6 +140,36 @@ export function isTypeInCategory(type: string, category: keyof typeof DUCKDB_TYP
 }
 
 /**
+ * Extracts the array dimension from a fixed-size array type.
+ * Returns null for variable-size arrays or non-array types.
+ *
+ * @param type - The DuckDB type string (e.g., "FLOAT[32]", "INTEGER[]")
+ * @returns The array dimension as a number, or null if not a fixed-size array
+ *
+ * @example
+ * ```typescript
+ * getArrayDimension('FLOAT[32]')   // Returns 32
+ * getArrayDimension('FLOAT[128]')  // Returns 128
+ * getArrayDimension('FLOAT[]')     // Returns null (variable-size)
+ * getArrayDimension('INTEGER')     // Returns null (not an array)
+ * ```
+ */
+export function getArrayDimension(type: string): number | null {
+  if (!type) return null
+
+  const upperType = type.toString().toUpperCase().trim()
+
+  // Match fixed-size array pattern: TYPE[n] where n is a number
+  const match = upperType.match(/^.+\[(\d+)\]$/)
+
+  if (match && match[1]) {
+    return parseInt(match[1], 10)
+  }
+
+  return null
+}
+
+/**
  * Export the type constants for external use
  */
 export { DUCKDB_TYPES }

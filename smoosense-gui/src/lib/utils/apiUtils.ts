@@ -53,9 +53,9 @@ export async function getApi({
  * Make a POST API request
  * @param url - API endpoint URL
  * @param data - Request body data
- * @returns Promise<any> - API response
+ * @returns Promise<T> - API response
  */
-export async function postApi({ url, data }: { url: string; data: unknown }): Promise<string[]> {
+export async function postApi<T = unknown>({ url, data }: { url: string; data: unknown }): Promise<T> {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -63,11 +63,12 @@ export async function postApi({ url, data }: { url: string; data: unknown }): Pr
     },
     body: JSON.stringify(data),
   })
-  
+
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`)
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || `API request failed: ${response.statusText}`)
   }
-  
+
   return response.json()
 }
 

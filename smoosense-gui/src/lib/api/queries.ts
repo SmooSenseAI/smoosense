@@ -1,10 +1,10 @@
 import _ from 'lodash'
-import { computeTypeShortcuts, type TypeShortcuts } from '@/lib/utils/duckdbTypes'
+import { computeTypeShortcuts, getArrayDimension, type TypeShortcuts } from '@/lib/utils/duckdbTypes'
 import { isStructType, flattenStructFields, isHuggingFaceMediaType } from '@/lib/utils/structParser'
-import { isFloatArrayType, getEmbeddingDimensions } from '@/lib/utils/sql/emb'
 import { addExecution } from '@/lib/features/sqlHistory/sqlHistorySlice'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
 import { getTableStats } from './stats'
+import { getEmbeddingColumns } from './lance'
 import type { AppDispatch } from '@/lib/store'
 
 
@@ -160,18 +160,11 @@ export async function getColumnMetadata(
   // Get stats if available (Lance, Parquet, or row-based tables)
   const stats = await getTableStats(tablePath, dispatch, queryEngine)
 
-  // Find candidate columns for embedding dimension check
-  const embCandidates: string[] = []
-  for (const row of rows) {
-    const columnName = String(row.column_name)
-    const duckdbType = String(row.column_type)
-    if (isFloatArrayType(duckdbType)) {
-      embCandidates.push(columnName)
-    }
-  }
-
-  // Get embedding dimensions for candidate columns
-  const embDims = await getEmbeddingDimensions(tablePath, dispatch, queryEngine, embCandidates)
+  // For Lance tables, get embedding columns from indices
+  // embDim is derived from fixed-size array types (e.g., FLOAT[32])
+  const embeddingColumns = queryEngine === 'lance'
+    ? await getEmbeddingColumns(tablePath)
+    : new Set<string>()
 
   const columns: ColumnMeta[] = []
 
@@ -179,13 +172,19 @@ export async function getColumnMetadata(
     const columnName = String(row.column_name)
     const duckdbType = String(row.column_type)
 
+    // Get embDim from column type if this is an embedding column (Lance only)
+    let embDim: number | null = null
+    if (embeddingColumns.has(columnName)) {
+      embDim = getArrayDimension(duckdbType)
+    }
+
     // Add the original column
     columns.push({
       column_name: columnName,
       duckdbType,
       typeShortcuts: computeTypeShortcuts(duckdbType),
       stats: stats?.[columnName] || null,
-      embDim: embDims[columnName] ?? null
+      embDim
     })
 
     // If it's a struct type (but not HuggingFace media), flatten the fields and add them as separate columns

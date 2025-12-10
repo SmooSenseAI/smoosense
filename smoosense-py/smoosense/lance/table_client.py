@@ -406,3 +406,45 @@ class LanceTableClient:
             logger.error(f"Failed to list columns for table {self.table_name}: {e}")
             # If schema access fails, return empty list
             return []
+
+    @validate_call
+    def vector_search(
+        self,
+        embedding: list[float],
+        vector_column: str,
+        select_columns: list[str],
+        limit: int = 12,
+    ) -> list[dict]:
+        """
+        Perform vector similarity search using Lance's native search.
+
+        Args:
+            embedding: Query embedding vector
+            vector_column: Name of the column containing embeddings
+            select_columns: List of column names to return in results
+            limit: Maximum number of results to return
+
+        Returns:
+            List of dicts with selected columns and _distance field
+        """
+        logger.info(
+            f"Vector search on '{vector_column}' with {len(select_columns)} columns, limit={limit}"
+        )
+
+        try:
+            # Build the search query
+            query = self.table.search(embedding, vector_column_name=vector_column)
+
+            # Select only requested columns plus distance
+            # Lance automatically adds _distance field
+            query = query.select(select_columns)
+            query = query.limit(limit)
+
+            # Execute and convert to list of dicts
+            results = query.to_list()
+
+            logger.info(f"Vector search returned {len(results)} results")
+            return results
+        except Exception as e:
+            logger.error(f"Vector search failed: {e}")
+            raise
