@@ -3,6 +3,7 @@ import { createAsyncDataSlice, type BaseAsyncDataState } from '@/lib/utils/creat
 import { sanitizeName } from '@/lib/utils/sql/helpers'
 import { isNil } from 'lodash'
 import _ from 'lodash'
+import { BUBBLE_SIZE_COLOR_VALUE } from './BubblePlotMoreControls'
 
 // BubblePlot data types
 export interface BubblePlotDataPoint {
@@ -70,12 +71,16 @@ const fetchBubblePlotFunction = async (
   const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
 
   // Build query with optional color column
-  const colorColumnSelect = !bubblePlotColorColumn
+  // Handle special __bubble_size__ value - use COUNT(*) as color value
+  const isBubbleSizeColor = bubblePlotColorColumn === BUBBLE_SIZE_COLOR_VALUE
+  const colorColumnSelect = (!bubblePlotColorColumn || isBubbleSizeColor)
     ? 'NULL AS color_col'
     : `${sanitizeName(bubblePlotColorColumn)} AS color_col`
   const colorColumnAgg = !bubblePlotColorColumn
     ? 'NULL AS color_value'
-    : 'AVG(color_col) AS color_value'
+    : isBubbleSizeColor
+      ? 'COUNT(*) AS color_value'
+      : 'AVG(color_col) AS color_value'
 
   const query = `
     WITH filtered AS (

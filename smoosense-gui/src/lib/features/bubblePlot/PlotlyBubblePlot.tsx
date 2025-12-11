@@ -3,7 +3,8 @@
 import React, { useMemo, useCallback, useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import type { BubblePlotGroup } from './bubblePlotSlice'
+import type { BubblePlotGroup } from '@/lib/features/bubblePlot/bubblePlotSlice'
+import { BUBBLE_SIZE_COLOR_VALUE } from '@/lib/features/bubblePlot/BubblePlotMoreControls'
 import type { PlotData, Layout, Config } from 'plotly.js'
 import { usePlotlyLayout, usePlotlyConfig, usePlotlyColors } from '@/lib/utils/plotlyTheme'
 import { setSamplingCondition } from '@/lib/features/viewing/viewingSlice'
@@ -84,7 +85,7 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
           marker.colorscale = colorScale
           marker.showscale = true
           marker.colorbar = {
-            title: colorColumn,
+            title: colorColumn === BUBBLE_SIZE_COLOR_VALUE ? 'Bubble Size' : colorColumn,
             thickness: 15,
             len: 0.5
           }
@@ -104,7 +105,7 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
             `<b>Y ${yColumn}:</b> ~%{y}<br>` +
             (breakdownColumn ? `<b>${breakdownColumn}:</b> ${item.name}<br>` : '') +
             `<b>Count:</b> %{customdata.count}<br>` +
-            (hasColorValues ? `<b>${colorColumn}:</b> %{customdata.colorValue:.2f}<br>` : '') +
+            (hasColorValues && colorColumn !== BUBBLE_SIZE_COLOR_VALUE ? `<b>${colorColumn}:</b> %{customdata.colorValue:.2f}<br>` : '') +
             '<extra></extra>',
         }
         return trace
@@ -117,10 +118,10 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
     }
   }, [data, xColumn, yColumn, breakdownColumn, colorColumn, colorScale, opacity, maxMarkerSize, minMarkerSize, markerSizeContrastRatio, colors.foreground])
 
+  // Get display name for color column
+  const colorDisplayName = colorColumn === BUBBLE_SIZE_COLOR_VALUE ? 'Bubble Size' : colorColumn
+
   const baseLayout = usePlotlyLayout({
-    title: colorColumn ? `Color: ${colorColumn}` : undefined,
-    xTitle: `X: ${xColumn}`,
-    yTitle: `Y: ${yColumn}`,
     showLegend: breakdownColumn !== null
   })
   
@@ -172,6 +173,18 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
     }
   }, [dispatch])
 
+  // Compute bubble stats for info line
+  const bubbleStats = useMemo(() => {
+    if (!data || data.length === 0) return { total: 0, minSize: 0, maxSize: 0 }
+
+    const allCounts = data.flatMap(group => group.customdata.map(c => c.count))
+    const total = data.reduce((sum, group) => sum + group.customdata.length, 0)
+    const minSize = allCounts.length > 0 ? Math.min(...allCounts) : 0
+    const maxSize = allCounts.length > 0 ? Math.max(...allCounts) : 0
+
+    return { total, minSize, maxSize }
+  }, [data])
+
   // Don't render on server side
   if (!isClient) {
     return (
@@ -194,21 +207,34 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
   }
 
   return (
-    <div className="w-full h-full min-h-[400px]">
-      <Plot
-        data={plotData}
-        layout={layout}
-        config={config}
-        style={{ width: '100%', height: '100%' }}
-        useResizeHandler={true}
-        onClick={handleClick}
-        onSelected={handleSelected}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError={(error: any) => {
-          console.error('Plotly error:', error)
-          setPlotlyError(error.message || 'Unknown plotting error')
-        }}
-      />
+    <div className="w-full h-full min-h-[400px] flex flex-col">
+      <div className="flex-1 min-h-0">
+        <Plot
+          data={plotData}
+          layout={layout}
+          config={config}
+          style={{ width: '100%', height: '100%' }}
+          useResizeHandler={true}
+          onClick={handleClick}
+          onSelected={handleSelected}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onError={(error: any) => {
+            console.error('Plotly error:', error)
+            setPlotlyError(error.message || 'Unknown plotting error')
+          }}
+        />
+      </div>
+      <div className="flex-shrink-0 px-4 py-1 text-sm text-muted-foreground border-t flex">
+        <div>
+          x: {xColumn} | y: {yColumn}
+          {colorColumn && ` | color: ${colorDisplayName}`}
+          {breakdownColumn && ` | breakdown: ${breakdownColumn}`}
+        </div>
+        <div className="flex-1" />
+        <div>
+          {bubbleStats.total} bubbles | size: {bubbleStats.minSize.toLocaleString()} to {bubbleStats.maxSize.toLocaleString()}
+        </div>
+      </div>
     </div>
   )
 })

@@ -16,11 +16,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+export interface ExtraOption {
+  value: string
+  label: string
+}
+
 interface NumericalColumnDropdownProps {
   settingKey: keyof UIState
   label: string
   shouldInitialize?: boolean
   showStats?: boolean
+  extraOptions?: ExtraOption[]
 }
 
 type UIState = {
@@ -41,7 +47,8 @@ export default function NumericalColumnDropdown({
   settingKey,
   label,
   shouldInitialize = true,
-  showStats = false
+  showStats = false,
+  extraOptions = []
 }: NumericalColumnDropdownProps) {
   const dispatch = useAppDispatch()
   const { isCategoricalColumns } = useIsCategoricalBulk()
@@ -68,16 +75,23 @@ export default function NumericalColumnDropdown({
     }
   }
 
-  // Auto-initialize if shouldInitialize is true
+  // Auto-initialize:
+  // - If shouldInitialize is true, initialize to first available column
+  // - If extraOptions is provided, initialize to first extraOption
   useEffect(() => {
-    if (shouldInitialize && availableColumns.length > 0 && !currentValue) {
+    if (!currentValue) {
       const action = actionMap[settingKey]
       if (action) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dispatch((action as any)(availableColumns[0]))
+        if (shouldInitialize && availableColumns.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          dispatch((action as any)(availableColumns[0]))
+        } else if (extraOptions.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          dispatch((action as any)(extraOptions[0].value))
+        }
       }
     }
-  }, [shouldInitialize, availableColumns, currentValue, settingKey, dispatch])
+  }, [shouldInitialize, availableColumns, currentValue, settingKey, dispatch, extraOptions])
 
   const getPlaceholderText = () => {
     if (!isCategoricalColumns || !renderTypes) {
@@ -109,11 +123,20 @@ export default function NumericalColumnDropdown({
           disabled={isDisabled}
         >
           <SelectTrigger>
-            <SelectValue placeholder={placeholderText} />
+            <SelectValue placeholder={placeholderText}>
+              {/* Show label for extra options, otherwise show value */}
+              {extraOptions.find(opt => opt.value === currentValue)?.label ?? (currentValue === "" ? "-" : currentValue)}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {/* Null option */}
             <SelectItem value="-">-</SelectItem>
+            {/* Extra options */}
+            {extraOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
             {availableColumns.map((column) => (
               <SelectItem key={column} value={column}>
                 {column}

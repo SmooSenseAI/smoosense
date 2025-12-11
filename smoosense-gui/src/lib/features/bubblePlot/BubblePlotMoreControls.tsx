@@ -9,6 +9,13 @@ import ColorScaleDropdown from '@/components/settings/ColorScaleDropdown'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setBubblePlotMaxMarkerSize, setBubblePlotMinMarkerSize, setBubblePlotOpacity, setBubblePlotMarkerSizeContrastRatio } from '@/lib/features/ui/uiSlice'
 
+// Special value for coloring by bubble size (count)
+export const BUBBLE_SIZE_COLOR_VALUE = '__bubble_size__'
+
+const BUBBLE_SIZE_EXTRA_OPTIONS = [
+  { value: BUBBLE_SIZE_COLOR_VALUE, label: 'Bubble Size' }
+]
+
 function BubblePlotMoreControlsContent() {
   const dispatch = useAppDispatch()
   const bubblePlotMaxMarkerSize = useAppSelector((state) => state.ui.bubblePlotMaxMarkerSize)
@@ -27,6 +34,7 @@ function BubblePlotMoreControlsContent() {
         settingKey="bubblePlotColorColumn"
         label="Color by"
         shouldInitialize={false}
+        extraOptions={BUBBLE_SIZE_EXTRA_OPTIONS}
       />
 
       <ColorScaleDropdown />

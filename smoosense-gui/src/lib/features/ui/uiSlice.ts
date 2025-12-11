@@ -87,7 +87,7 @@ const initialState: UiState = {
   bubblePlotMinMarkerSize: 7,
   bubblePlotOpacity: 0.7,
   bubblePlotMarkerSizeContrastRatio: 4.2,
-  bubblePlotColorColumn: '',
+  bubblePlotColorColumn: '__bubble_size__',
   bubblePlotColorScale: 'Jet',
   heatmapXColumn: null,
   heatmapYColumn: null,
