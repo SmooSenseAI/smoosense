@@ -56,6 +56,8 @@ export interface TypeShortcuts {
   isNumericArray: boolean
   /** True if the type is an array type (ends with []) */
   isArray: boolean
+  /** Embedding dimension for fixed-size float/double arrays, null otherwise */
+  embDim: number | null
 }
 
 /**
@@ -99,11 +101,18 @@ export function computeTypeShortcuts(type: string): TypeShortcuts {
   const isNumericArray = isArray && (baseIsInteger || baseIsFloat)
 
   // AG Grid type classification
-  const agType: TypeShortcuts['agType'] = 
-    isNumeric ? 'number' : 
-    isBoolean ? 'boolean' : 
-    isDatetime ? 'dateString' : 
+  const agType: TypeShortcuts['agType'] =
+    isNumeric ? 'number' :
+    isBoolean ? 'boolean' :
+    isDatetime ? 'dateString' :
     'text'
+
+  // embDim: dimension of fixed-size float/double arrays (for embeddings)
+  // Only set for fixed-size arrays with float/double base type
+  const arrayDimStr = arrayMatch ? arrayMatch[2] : ''
+  const embDim = (isNumericArray && baseIsFloat && arrayDimStr)
+    ? parseInt(arrayDimStr, 10)
+    : null
 
   return {
     isInteger,
@@ -116,6 +125,7 @@ export function computeTypeShortcuts(type: string): TypeShortcuts {
     isDatetime,
     isNumericArray,
     isArray,
+    embDim,
   }
 }
 

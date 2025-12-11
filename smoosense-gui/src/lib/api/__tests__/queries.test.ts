@@ -54,9 +54,9 @@ describe('getColumnMetadata', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       },
       stats: null,
-      embDim: null
     })
 
     // Test string column
@@ -74,9 +74,9 @@ describe('getColumnMetadata', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       },
       stats: null,
-      embDim: null
     })
 
     // Test decimal column (complex type)
@@ -94,9 +94,9 @@ describe('getColumnMetadata', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       },
       stats: null,
-      embDim: null
     })
 
     // Test boolean column
@@ -114,9 +114,9 @@ describe('getColumnMetadata', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       },
       stats: null,
-      embDim: null
     })
 
     // Test datetime column
@@ -134,9 +134,9 @@ describe('getColumnMetadata', () => {
         isDatetime: true,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       },
       stats: null,
-      embDim: null
     })
   })
 
@@ -224,20 +224,20 @@ describe('getColumnMetadata', () => {
       duckdbType: 'BIGINT',
       typeShortcuts: expect.objectContaining({
         isInteger: true,
-        isNumeric: true
+        isNumeric: true,
+        embDim: null
       }),
       stats: null,
-      embDim: null
     })
 
     expect(result[3]).toEqual({
       column_name: 'timestamp_parts.day_name',
       duckdbType: 'VARCHAR',
       typeShortcuts: expect.objectContaining({
-        isString: true
+        isString: true,
+        embDim: null
       }),
       stats: null,
-      embDim: null
     })
 
     expect(result[4]).toEqual({
@@ -245,10 +245,10 @@ describe('getColumnMetadata', () => {
       duckdbType: 'BIGINT',
       typeShortcuts: expect.objectContaining({
         isInteger: true,
-        isNumeric: true
+        isNumeric: true,
+        embDim: null
       }),
       stats: null,
-      embDim: null
     })
   })
 
@@ -331,7 +331,6 @@ describe('getColumnMetadata', () => {
           singleValue: false,
           allNull: false
         },
-        embDim: null
       })
 
       expect(result[1]).toEqual({
@@ -347,7 +346,6 @@ describe('getColumnMetadata', () => {
           singleValue: false,
           allNull: false
         },
-        embDim: null
       })
 
       // Verify that both metadata and stats queries were called

@@ -19,7 +19,8 @@ jest.mock('../useColumnMeta', () => ({
         agType: 'text',
         isDatetime: false,
         isNumericArray: false,
-        isArray: false
+        isArray: false,
+        embDim: null
       },
       stats: null
     },
@@ -115,10 +116,10 @@ describe('useCardinality', () => {
           agType: 'text',
           isDatetime: false,
           isNumericArray: false,
-          isArray: false
+          isArray: false,
+          embDim: null
         },
-        stats: null,
-        embDim: null
+        stats: null
       },
       loading: false,
       error: null,

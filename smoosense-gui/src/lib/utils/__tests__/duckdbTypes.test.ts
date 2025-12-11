@@ -24,6 +24,7 @@ describe('computeTypeShortcuts', () => {
           isDatetime: false,
           isNumericArray: false,
           isArray: false,
+          embDim: null,
         })
       })
     })
@@ -52,6 +53,7 @@ describe('computeTypeShortcuts', () => {
           isDatetime: false,
           isNumericArray: false,
           isArray: false,
+          embDim: null,
         })
       })
     })
@@ -81,6 +83,7 @@ describe('computeTypeShortcuts', () => {
           isDatetime: false,
           isNumericArray: false,
           isArray: false,
+          embDim: null,
         })
       })
     })
@@ -106,6 +109,7 @@ describe('computeTypeShortcuts', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       })
     })
   })
@@ -127,36 +131,41 @@ describe('computeTypeShortcuts', () => {
           isDatetime: true,
           isNumericArray: false,
           isArray: false,
+          embDim: null,
         })
       })
     })
   })
 
   describe('array types', () => {
-    it('should detect variable-size array FLOAT[] as array and numeric array', () => {
+    it('should detect variable-size array FLOAT[] as array and numeric array with null embDim', () => {
       const result = computeTypeShortcuts('FLOAT[]')
       expect(result.isArray).toBe(true)
       expect(result.isNumericArray).toBe(true)
       expect(result.isFloat).toBe(false) // The base type flags should be false for arrays
       expect(result.isNumeric).toBe(false)
+      expect(result.embDim).toBe(null) // Variable-size array has no embDim
     })
 
-    it('should detect fixed-size array FLOAT[32] as array and numeric array', () => {
+    it('should detect fixed-size array FLOAT[32] as array and numeric array with embDim', () => {
       const result = computeTypeShortcuts('FLOAT[32]')
       expect(result.isArray).toBe(true)
       expect(result.isNumericArray).toBe(true)
+      expect(result.embDim).toBe(32) // Fixed-size float array has embDim
     })
 
-    it('should detect variable-size array INTEGER[] as array and numeric array', () => {
+    it('should detect variable-size array INTEGER[] as array and numeric array with null embDim', () => {
       const result = computeTypeShortcuts('INTEGER[]')
       expect(result.isArray).toBe(true)
       expect(result.isNumericArray).toBe(true)
+      expect(result.embDim).toBe(null) // Integer arrays don't have embDim (only float/double)
     })
 
-    it('should detect fixed-size array INTEGER[10] as array and numeric array', () => {
+    it('should detect fixed-size array INTEGER[10] as array and numeric array with null embDim', () => {
       const result = computeTypeShortcuts('INTEGER[10]')
       expect(result.isArray).toBe(true)
       expect(result.isNumericArray).toBe(true)
+      expect(result.embDim).toBe(null) // Only float/double arrays have embDim
     })
 
     it('should detect VARCHAR[] as array but not numeric array', () => {
@@ -171,22 +180,32 @@ describe('computeTypeShortcuts', () => {
       expect(result.isNumericArray).toBe(false)
     })
 
-    it('should handle lowercase array types', () => {
+    it('should handle lowercase array types with embDim', () => {
       const result = computeTypeShortcuts('float[32]')
       expect(result.isArray).toBe(true)
       expect(result.isNumericArray).toBe(true)
+      expect(result.embDim).toBe(32)
     })
 
-    it('should detect DOUBLE[] as array and numeric array', () => {
+    it('should detect DOUBLE[] as array and numeric array with null embDim', () => {
       const result = computeTypeShortcuts('DOUBLE[]')
       expect(result.isArray).toBe(true)
       expect(result.isNumericArray).toBe(true)
+      expect(result.embDim).toBe(null)
     })
 
-    it('should detect BIGINT[1024] as array and numeric array', () => {
+    it('should detect DOUBLE[128] as array and numeric array with embDim', () => {
+      const result = computeTypeShortcuts('DOUBLE[128]')
+      expect(result.isArray).toBe(true)
+      expect(result.isNumericArray).toBe(true)
+      expect(result.embDim).toBe(128)
+    })
+
+    it('should detect BIGINT[1024] as array and numeric array with null embDim', () => {
       const result = computeTypeShortcuts('BIGINT[1024]')
       expect(result.isArray).toBe(true)
       expect(result.isNumericArray).toBe(true)
+      expect(result.embDim).toBe(null) // Only float/double arrays have embDim
     })
   })
 
@@ -204,6 +223,7 @@ describe('computeTypeShortcuts', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       })
     })
   })
@@ -222,6 +242,7 @@ describe('computeTypeShortcuts', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       })
     })
 
@@ -238,6 +259,7 @@ describe('computeTypeShortcuts', () => {
         isDatetime: false,
         isNumericArray: false,
         isArray: false,
+        embDim: null,
       })
     })
   })

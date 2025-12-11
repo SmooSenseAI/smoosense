@@ -48,7 +48,8 @@ describe('ColumnMetadataDebugger', () => {
         agType: 'boolean',
         isDatetime: false,
         isNumericArray: false,
-        isArray: false
+        isArray: false,
+        embDim: null
       },
       stats: {
         min: null,
@@ -59,7 +60,6 @@ describe('ColumnMetadataDebugger', () => {
         singleValue: false,
         allNull: false
       },
-      embDim: null
     }
   ]
 

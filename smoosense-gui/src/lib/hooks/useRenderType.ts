@@ -25,8 +25,8 @@ function inferColumnRenderType(columnMeta: ColumnMeta): RenderType {
     return RenderType.HuggingFaceMedia
   }
 
-  // Check if column is an embedding (has embDim set)
-  if (columnMeta.embDim !== null) {
+  // Check if column is an embedding (has embDim set in typeShortcuts)
+  if (!isNil(columnMeta.typeShortcuts?.embDim)) {
     return RenderType.Embedding
   }
 
