@@ -48,45 +48,46 @@ def load_dinov2_model(device: str) -> tuple[AutoModel, AutoImageProcessor]:
     return model, processor
 
 
-def compute_clip_embedding(
-    image: Image.Image,
+def compute_clip_embeddings_batch(
+    images: list[Image.Image],
     model: CLIPVisionModel,
     processor: CLIPImageProcessor,
     device: str,
-) -> list[float]:
-    """Compute CLIP embedding for an image (L2-normalized)."""
-    inputs = processor(images=image, return_tensors="pt").to(device)
+) -> list[list[float]]:
+    """Compute CLIP embeddings for a batch of images (L2-normalized)."""
+    inputs = processor(images=images, return_tensors="pt").to(device)
     with torch.no_grad():
         outputs = model(**inputs)
         # Use pooled output (CLS token)
-        emb = outputs.pooler_output[0]
+        embs = outputs.pooler_output
         # L2 normalize
-        emb = emb / emb.norm()
-        embedding: list[float] = emb.cpu().numpy().tolist()
-    return embedding
+        embs = embs / embs.norm(dim=1, keepdim=True)
+        embeddings: list[list[float]] = embs.cpu().numpy().tolist()
+    return embeddings
 
 
-def compute_dinov2_embedding(
-    image: Image.Image,
+def compute_dinov2_embeddings_batch(
+    images: list[Image.Image],
     model: AutoModel,
     processor: AutoImageProcessor,
     device: str,
-) -> list[float]:
-    """Compute DINOv2 embedding for an image (L2-normalized)."""
-    inputs = processor(images=image, return_tensors="pt").to(device)  # type: ignore[operator]
+) -> list[list[float]]:
+    """Compute DINOv2 embeddings for a batch of images (L2-normalized)."""
+    inputs = processor(images=images, return_tensors="pt").to(device)  # type: ignore[operator]
     with torch.no_grad():
         outputs = model(**inputs)  # type: ignore[operator]
         # Use CLS token from last hidden state
-        emb = outputs.last_hidden_state[:, 0, :][0]
+        embs = outputs.last_hidden_state[:, 0, :]
         # L2 normalize
-        emb = emb / emb.norm()
-        embedding: list[float] = emb.cpu().numpy().tolist()
-    return embedding
+        embs = embs / embs.norm(dim=1, keepdim=True)
+        embeddings: list[list[float]] = embs.cpu().numpy().tolist()
+    return embeddings
 
 
 def process_images(
     files: tuple[str, ...],
     output_path: str,
+    batch_size: int = 32,
 ) -> None:
     """
     Process image files, compute embeddings, and save to Lance.
@@ -94,6 +95,7 @@ def process_images(
     Args:
         files: Tuple of image file paths
         output_path: Path to output Lance database directory
+        batch_size: Number of images to process in each batch
     """
     import lancedb
 
@@ -101,7 +103,7 @@ def process_images(
         logger.warning("No image files provided")
         return
 
-    logger.info(f"Processing {len(files)} images")
+    logger.info(f"Processing {len(files)} images with batch_size={batch_size}")
 
     # Determine device
     device = _get_device()
@@ -121,44 +123,68 @@ def process_images(
     abs_output_path = os.path.abspath(output_path)
     output_dir = os.path.dirname(abs_output_path)
 
-    for image_path in tqdm(files, desc="Processing images"):
+    # Process in batches
+    for batch_start in tqdm(range(0, len(files), batch_size), desc="Processing batches"):
+        batch_files = files[batch_start : batch_start + batch_size]
+
+        # Load images and collect metadata
+        batch_images: list[Image.Image] = []
+        batch_metadata: list[dict] = []
+
+        for image_path in batch_files:
+            try:
+                # Load image
+                image = Image.open(image_path).convert("RGB")
+
+                # Get absolute path of input image
+                abs_image_path = os.path.abspath(image_path)
+
+                # Compute relative path with respect to output directory, prefixed with ./
+                image_rel_path = "./" + os.path.relpath(abs_image_path, output_dir)
+
+                # Get file size
+                bytes_size = os.path.getsize(abs_image_path)
+
+                # Get image dimensions
+                width, height = image.size
+
+                batch_images.append(image)
+                batch_metadata.append(
+                    {
+                        "image_path": image_rel_path,
+                        "bytes_size": bytes_size,
+                        "width": width,
+                        "height": height,
+                    }
+                )
+
+            except Exception as e:
+                logger.error(f"Error loading {image_path}: {e}")
+                continue
+
+        if not batch_images:
+            continue
+
+        # Compute embeddings for batch
         try:
-            # Load image
-            image = Image.open(image_path).convert("RGB")
-
-            # Get absolute path of input image
-            abs_image_path = os.path.abspath(image_path)
-
-            # Compute relative path with respect to output directory, prefixed with ./
-            image_rel_path = "./" + os.path.relpath(abs_image_path, output_dir)
-
-            # Get file size
-            bytes_size = os.path.getsize(abs_image_path)
-
-            # Get image dimensions
-            width, height = image.size
-
-            record: dict = {
-                "image_path": image_rel_path,
-                "bytes_size": bytes_size,
-                "width": width,
-                "height": height,
-            }
-
-            # Compute CLIP embedding
-            clip_embedding = compute_clip_embedding(image, clip_model, clip_processor, device)
-            record["clip_embedding"] = clip_embedding
-
-            # Compute DINOv2 embedding
-            dinov2_embedding = compute_dinov2_embedding(
-                image, dinov2_model, dinov2_processor, device
+            clip_embeddings = compute_clip_embeddings_batch(
+                batch_images, clip_model, clip_processor, device
             )
-            record["dinov2_embedding"] = dinov2_embedding
+            dinov2_embeddings = compute_dinov2_embeddings_batch(
+                batch_images, dinov2_model, dinov2_processor, device
+            )
 
-            records.append(record)
+            # Combine metadata with embeddings
+            for i, metadata in enumerate(batch_metadata):
+                record = {
+                    **metadata,
+                    "clip_embedding": clip_embeddings[i],
+                    "dinov2_embedding": dinov2_embeddings[i],
+                }
+                records.append(record)
 
         except Exception as e:
-            logger.error(f"Error processing {image_path}: {e}")
+            logger.error(f"Error computing embeddings for batch: {e}")
             continue
 
     if not records:
@@ -227,15 +253,21 @@ def process_images(
 
     logger.info(f"Created Lance table '{table_name}' at {db_path}")
 
-    # Create vector indices for embedding columns
-    embedding_columns = ["clip_embedding", "dinov2_embedding"]
-    for col in embedding_columns:
-        logger.info(f"Creating IVF-PQ index on '{col}'...")
-        lance_table.create_index(
-            metric="cosine",
-            vector_column_name=col,
+    # Create vector indices for embedding columns (only if enough rows for IVF-PQ)
+    if len(records) >= 256:
+        embedding_columns = ["clip_embedding", "dinov2_embedding"]
+        for col in embedding_columns:
+            logger.info(f"Creating IVF-PQ index on '{col}'...")
+            lance_table.create_index(
+                metric="cosine",
+                vector_column_name=col,
+            )
+            logger.info(f"Successfully created index on '{col}'")
+    else:
+        logger.info(
+            f"Skipping index creation - only {len(records)} rows (need 256+ for IVF-PQ). "
+            "Brute-force search will be used."
         )
-        logger.info(f"Successfully created index on '{col}'")
 
     logger.info(f"Successfully saved to {output_path}")
 
@@ -249,9 +281,17 @@ def process_images(
     default=os.path.join(os.getcwd(), "images.lance"),
     help="Output Lance table path (e.g., ./mydb/images.lance)",
 )
+@click.option(
+    "-b",
+    "--batch-size",
+    type=int,
+    default=32,
+    help="Number of images to process in each batch (default: 32)",
+)
 def main(
     files: tuple[str, ...],
     output_path: str,
+    batch_size: int,
 ) -> None:
     """
     Ingest images, compute embeddings (CLIP and DINOv2), and save to Lance.
@@ -267,6 +307,7 @@ def main(
     process_images(
         files=files,
         output_path=output_path,
+        batch_size=batch_size,
     )
 
 

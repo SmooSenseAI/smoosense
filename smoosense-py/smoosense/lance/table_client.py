@@ -441,7 +441,7 @@ class LanceTableClient:
             query = query.limit(limit)
 
             # Execute and convert to list of dicts
-            results = query.to_list()
+            results: list[dict] = query.to_list()
 
             logger.info(f"Vector search returned {len(results)} results")
             return results
