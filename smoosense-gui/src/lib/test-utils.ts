@@ -65,6 +65,8 @@ export function createDefaultTestState(): RootState {
       bubblePlotMarkerSizeContrastRatio: 0.5,
       bubblePlotColorColumn: '',
       bubblePlotColorScale: 'Jet',
+      bubblePlotLogScaleX: false,
+      bubblePlotLogScaleY: false,
       heatmapXColumn: null,
       heatmapYColumn: null,
       boxPlotBreakdownColumn: null,

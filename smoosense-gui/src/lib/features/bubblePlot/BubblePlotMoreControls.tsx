@@ -6,8 +6,11 @@ import IconPopover from '@/components/common/IconPopover'
 import CategoricalColumnDropdown from '@/components/common/CategoricalColumnDropdown'
 import NumericalColumnDropdown from '@/components/common/NumericalColumnDropdown'
 import ColorScaleDropdown from '@/components/settings/ColorScaleDropdown'
+import UISettingToggle from '@/components/ui/UISettingToggle'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import { setBubblePlotMaxMarkerSize, setBubblePlotMinMarkerSize, setBubblePlotOpacity, setBubblePlotMarkerSizeContrastRatio } from '@/lib/features/ui/uiSlice'
+import { setBubblePlotMaxMarkerSize, setBubblePlotMinMarkerSize, setBubblePlotOpacity, setBubblePlotMarkerSizeContrastRatio, setBubblePlotBreakdownColumn, setBubblePlotColorColumn } from '@/lib/features/ui/uiSlice'
+import { useCallback } from 'react'
+import { toast } from 'sonner'
 
 // Special value for coloring by bubble size (count)
 export const BUBBLE_SIZE_COLOR_VALUE = '__bubble_size__'
@@ -22,12 +25,31 @@ function BubblePlotMoreControlsContent() {
   const bubblePlotMinMarkerSize = useAppSelector((state) => state.ui.bubblePlotMinMarkerSize)
   const bubblePlotOpacity = useAppSelector((state) => state.ui.bubblePlotOpacity)
   const bubblePlotMarkerSizeContrastRatio = useAppSelector((state) => state.ui.bubblePlotMarkerSizeContrastRatio)
+  const currentColorColumn = useAppSelector((state) => state.ui.bubblePlotColorColumn)
+  const currentBreakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
+
+  // When breakdown is set to non-null, clear color by (if it was set)
+  const handleBreakdownChange = useCallback((newValue: string | null) => {
+    if (newValue !== null && currentColorColumn !== '') {
+      dispatch(setBubblePlotColorColumn(''))
+      toast.info('"Color by" cleared because "breakdown" was set')
+    }
+  }, [dispatch, currentColorColumn])
+
+  // When color by is set to non-null, clear breakdown (if it was set)
+  const handleColorByChange = useCallback((newValue: string) => {
+    if (newValue !== '' && currentBreakdownColumn !== null) {
+      dispatch(setBubblePlotBreakdownColumn(null))
+      toast.info('"Breakdown" cleared because "color by" was set')
+    }
+  }, [dispatch, currentBreakdownColumn])
 
   return (
     <div className="space-y-4 w-full max-w-sm">
       <CategoricalColumnDropdown
         settingKey="bubblePlotBreakdownColumn"
         label="Breakdown"
+        postChange={handleBreakdownChange}
       />
 
       <NumericalColumnDropdown
@@ -35,9 +57,13 @@ function BubblePlotMoreControlsContent() {
         label="Color by"
         shouldInitialize={false}
         extraOptions={BUBBLE_SIZE_EXTRA_OPTIONS}
+        postChange={handleColorByChange}
       />
 
       <ColorScaleDropdown />
+
+      <UISettingToggle settingKey="bubblePlotLogScaleX" label="Use log-scale for X-axis" />
+      <UISettingToggle settingKey="bubblePlotLogScaleY" label="Use log-scale for Y-axis"/>
 
       <div>
         <label className="text-sm font-medium mb-2 block">

@@ -17,6 +17,7 @@ interface CategoricalColumnDropdownProps {
   settingKey: keyof UIState
   label: string
   shouldInitialize?: boolean
+  postChange?: (newValue: string | null) => void
 }
 
 type UIState = {
@@ -35,10 +36,11 @@ const actionMap = {
   boxPlotBreakdownColumn: setBoxPlotBreakdownColumn,
 } as const
 
-export default function CategoricalColumnDropdown({ 
-  settingKey, 
+export default function CategoricalColumnDropdown({
+  settingKey,
   label,
-  shouldInitialize = false
+  shouldInitialize = false,
+  postChange
 }: CategoricalColumnDropdownProps) {
   const dispatch = useAppDispatch()
   const { isCategoricalColumns } = useIsCategoricalBulk()
@@ -57,7 +59,9 @@ export default function CategoricalColumnDropdown({
     const action = actionMap[settingKey]
     if (action) {
       // Convert "-" back to null
-      dispatch(action(value === "-" ? null : value))
+      const newValue = value === "-" ? null : value
+      dispatch(action(newValue))
+      postChange?.(newValue)
     }
   }
 

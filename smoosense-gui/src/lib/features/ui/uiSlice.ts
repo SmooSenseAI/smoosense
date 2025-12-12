@@ -41,6 +41,8 @@ interface UiState {
   bubblePlotMarkerSizeContrastRatio: number
   bubblePlotColorColumn: string
   bubblePlotColorScale: string
+  bubblePlotLogScaleX: boolean
+  bubblePlotLogScaleY: boolean
   heatmapXColumn: string | null
   heatmapYColumn: string | null
   boxPlotBreakdownColumn: string | null
@@ -89,6 +91,8 @@ const initialState: UiState = {
   bubblePlotMarkerSizeContrastRatio: 4.2,
   bubblePlotColorColumn: '__bubble_size__',
   bubblePlotColorScale: 'Jet',
+  bubblePlotLogScaleX: false,
+  bubblePlotLogScaleY: false,
   heatmapXColumn: null,
   heatmapYColumn: null,
   boxPlotBreakdownColumn: null,
@@ -226,6 +230,12 @@ export const uiSlice = createSlice({
     setBubblePlotColorScale: (state, action: PayloadAction<string>) => {
       state.bubblePlotColorScale = action.payload
     },
+    setBubblePlotLogScaleX: (state, action: PayloadAction<boolean>) => {
+      state.bubblePlotLogScaleX = action.payload
+    },
+    setBubblePlotLogScaleY: (state, action: PayloadAction<boolean>) => {
+      state.bubblePlotLogScaleY = action.payload
+    },
     setHeatmapXColumn: (state, action: PayloadAction<string | null>) => {
       state.heatmapXColumn = action.payload
     },
@@ -322,6 +332,8 @@ export const {
   setBubblePlotMarkerSizeContrastRatio,
   setBubblePlotColorColumn,
   setBubblePlotColorScale,
+  setBubblePlotLogScaleX,
+  setBubblePlotLogScaleY,
   setHeatmapXColumn,
   setHeatmapYColumn,
   setBoxPlotBreakdownColumn,

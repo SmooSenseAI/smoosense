@@ -27,6 +27,7 @@ interface NumericalColumnDropdownProps {
   shouldInitialize?: boolean
   showStats?: boolean
   extraOptions?: ExtraOption[]
+  postChange?: (newValue: string) => void
 }
 
 type UIState = {
@@ -48,7 +49,8 @@ export default function NumericalColumnDropdown({
   label,
   shouldInitialize = true,
   showStats = false,
-  extraOptions = []
+  extraOptions = [],
+  postChange
 }: NumericalColumnDropdownProps) {
   const dispatch = useAppDispatch()
   const { isCategoricalColumns } = useIsCategoricalBulk()
@@ -71,27 +73,25 @@ export default function NumericalColumnDropdown({
     const action = actionMap[settingKey]
     if (action) {
       // Convert "-" back to empty string
-      dispatch(action(value === "-" ? "" : value))
+      const newValue = value === "-" ? "" : value
+      dispatch(action(newValue))
+      postChange?.(newValue)
     }
   }
 
-  // Auto-initialize:
-  // - If shouldInitialize is true, initialize to first available column
-  // - If extraOptions is provided, initialize to first extraOption
+  // Auto-initialize only if shouldInitialize is true
+  // Only runs once when columns become available and currentValue is empty
   useEffect(() => {
-    if (!currentValue) {
+    if (!shouldInitialize) return
+    if (!currentValue && availableColumns.length > 0) {
       const action = actionMap[settingKey]
       if (action) {
-        if (shouldInitialize && availableColumns.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          dispatch((action as any)(availableColumns[0]))
-        } else if (extraOptions.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          dispatch((action as any)(extraOptions[0].value))
-        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        dispatch((action as any)(availableColumns[0]))
       }
     }
-  }, [shouldInitialize, availableColumns, currentValue, settingKey, dispatch, extraOptions])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldInitialize, availableColumns.length > 0])
 
   const getPlaceholderText = () => {
     if (!isCategoricalColumns || !renderTypes) {

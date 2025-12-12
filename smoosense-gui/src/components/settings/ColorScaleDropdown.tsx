@@ -15,6 +15,7 @@ const COLOR_SCALES: Record<string, string> = {
   'Hot': 'linear-gradient(to right, #000000, #e60000, #ffd200, #ffffff)',
   'Reds': 'linear-gradient(to right, #fff5f0, #fee0d2, #fcbba1, #fc9272, #fb6a4a, #ef3b2c, #cb181d, #a50f15, #67000d)',
   'Picnic': 'linear-gradient(to right, #0000ff, #3399ff, #66ccff, #99ccff, #ccccff, #ffffff, #ffcccc, #ff9999, #ff6666, #ff3333, #ff0000)',
+  'Rainbow': 'linear-gradient(to right, #96005a, #0000c8, #0019ff, #0098ff, #2cff96, #97ff00, #ffea00, #ff6f00, #ff0000)',
 }
 
 function ColorScaleBar({ scale }: { scale: string }) {

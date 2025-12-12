@@ -40,6 +40,8 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
   const markerSizeContrastRatio = useAppSelector((state) => state.ui.bubblePlotMarkerSizeContrastRatio)
   const colorColumn = useAppSelector((state) => state.ui.bubblePlotColorColumn)
   const colorScale = useAppSelector((state) => state.ui.bubblePlotColorScale)
+  const logScaleX = useAppSelector((state) => state.ui.bubblePlotLogScaleX)
+  const logScaleY = useAppSelector((state) => state.ui.bubblePlotLogScaleY)
 
   // Get theme colors for marker styling
   const colors = usePlotlyColors()
@@ -128,8 +130,16 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
   const layout = useMemo((): Partial<Layout> => ({
     ...baseLayout,
     selectdirection: 'any',
-    dragmode: 'lasso'
-  }), [baseLayout])
+    dragmode: 'lasso',
+    xaxis: {
+      ...baseLayout.xaxis,
+      type: logScaleX ? 'log' : 'linear'
+    },
+    yaxis: {
+      ...baseLayout.yaxis,
+      type: logScaleY ? 'log' : 'linear'
+    }
+  }), [baseLayout, logScaleX, logScaleY])
 
   const baseConfig = usePlotlyConfig()
   
@@ -226,7 +236,7 @@ const PlotlyBubblePlot = React.memo(function PlotlyBubblePlot({ data }: PlotlyBu
       </div>
       <div className="flex-shrink-0 px-4 py-1 text-sm text-muted-foreground border-t flex">
         <div>
-          x: {xColumn} | y: {yColumn}
+          x: {xColumn}{logScaleX && ' (log)'} | y: {yColumn}{logScaleY && ' (log)'}
           {colorColumn && ` | color: ${colorDisplayName}`}
           {breakdownColumn && ` | breakdown: ${breakdownColumn}`}
         </div>
