@@ -1,7 +1,7 @@
 import { Button } from '@chakra-ui/react'
 import { Link } from '@saas-ui/react'
 import { NextSeoProps } from 'next-seo'
-import { FaGithub, FaTwitter, FaLinkedin } from 'react-icons/fa'
+import { FaGithub, FaTwitter, FaLinkedin, FaCalendarAlt } from 'react-icons/fa'
 import { FiCheck } from 'react-icons/fi'
 import { Logo } from './logo'
 
@@ -80,6 +80,10 @@ const siteConfig = {
       {
         href: 'mailto:contact@smoosense.ai',
         label: 'Contact',
+      },
+      {
+        href: 'https://calendar.app.google/7ryR8DPtzYzfw1Pw7',
+        label: <FaCalendarAlt size="14" />,
       },
       {
         href: 'https://www.linkedin.com/company/smoosense-ai',
