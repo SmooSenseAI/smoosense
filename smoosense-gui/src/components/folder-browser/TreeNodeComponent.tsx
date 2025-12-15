@@ -90,9 +90,18 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
   const handleOpenInNewTab = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
+
+    // For .lance folders, open in Table view
+    if (nodeData.name.endsWith('.lance')) {
+      const url = `./Table?tablePath=${encodeURIComponent(nodeData.path)}`
+      window.open(url, '_blank')
+      return
+    }
+
+    // For other folders, open in FolderBrowser
     const url = `./FolderBrowser?rootFolder=${encodeURIComponent(nodeData.path)}`
     window.open(url, '_blank')
-  }, [nodeData.path])
+  }, [nodeData.path, nodeData.name])
 
   const handleRefresh = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()

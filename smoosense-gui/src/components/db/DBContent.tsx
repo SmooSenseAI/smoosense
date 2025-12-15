@@ -5,7 +5,7 @@ import { ResizablePanels } from '@/components/ui/resizable-panels'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Database, Loader2, Table } from 'lucide-react'
 import { pathJoin } from '@/lib/utils/pathUtils'
-import TablePreview from './TablePreview'
+import LanceTablePreview from './LanceTablePreview'
 
 export interface TableInfo {
   name: string
@@ -151,7 +151,7 @@ export default function DBContent({ dbPath }: { dbPath: string }) {
         className="h-full"
       >
         <TablesList tables={tables} selectedTable={selectedTable} onTableClick={handleTableClick} onTableDoubleClick={handleTableDoubleClick} />
-        <TablePreview dbPath={dbPath} tableName={selectedTable} tableInfo={selectedTableInfo} />
+        <LanceTablePreview dbPath={dbPath} tableName={selectedTable} tableInfo={selectedTableInfo} />
       </ResizablePanels>
     </div>
   )

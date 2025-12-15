@@ -3,7 +3,7 @@
 import { FileText, Download, ExternalLink, FolderOpen } from 'lucide-react'
 import { useAppSelector } from '@/lib/hooks'
 import { getFileType, FileType } from '@/lib/utils/fileTypes'
-import { pathBasename } from '@/lib/utils/pathUtils'
+import { pathBasename, pathDirname } from '@/lib/utils/pathUtils'
 import { type TreeNode } from '@/lib/features/folderTree/folderTreeSlice'
 import { getFileUrl } from '@/lib/utils/apiUtils'
 import CopyToClipboard from '@/components/ui/CopyToClipboard'
@@ -17,6 +17,7 @@ import JsonPreviewer from './previewers/JsonPreviewer'
 import YamlPreviewer from './previewers/YamlPreviewer'
 import ColumnarTablePreviewer from './previewers/ColumnarTablePreviewer'
 import RowTablePreviewer from './previewers/RowTablePreviewer'
+import LanceTablePreview from '@/components/db/LanceTablePreview'
 import AlbumPreviewer from './previewers/AlbumPreviewer'
 
 // Dynamic imports to avoid SSR issues
@@ -43,6 +44,11 @@ function findNodeById(node: TreeNode | null, targetId: string): TreeNode | null 
   }
 
   return null
+}
+
+// Helper function to check if a folder is a Lance table
+function isLanceFolder(folder: TreeNode): boolean {
+  return folder.isDir && folder.name.endsWith('.lance')
 }
 
 // Helper function to check if a folder likely contains media files
@@ -102,8 +108,9 @@ export default function FSItemPreview() {
     }
   }
 
-  // Check if the file type supports table view
-  const isTableType = fileType === FileType.ColumnarTable || fileType === FileType.RowTable
+  // Check if the file type supports table view (including .lance folders)
+  const isLanceTable = viewingItem ? isLanceFolder(viewingItem) : false
+  const isTableType = fileType === FileType.ColumnarTable || fileType === FileType.RowTable || isLanceTable
   
   const renderContent = () => {
     if (!viewingItem) {
@@ -119,6 +126,13 @@ export default function FSItemPreview() {
           </div>
         </div>
       )
+    }
+
+    // Handle .lance directories (Lance tables)
+    if (isLanceFolder(viewingItem)) {
+      const dbPath = pathDirname(viewingItem.path)
+      const tableName = viewingItem.name.replace(/\.lance$/, '')
+      return <LanceTablePreview dbPath={dbPath} tableName={tableName} tableInfo={null} />
     }
 
     // Handle directories that contain media files
