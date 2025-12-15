@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import _ from 'lodash'
 import { useAppSelector } from '@/lib/hooks'
 import { useSingleColumnRenderType } from '@/lib/hooks/useRenderType'
+import { BUBBLE_SIZE_COLOR_VALUE } from '@/lib/features/bubblePlot/BubblePlotMoreControls'
 import Umap2DControls from './Umap2DControls'
 import Umap2DScatterPlot from './Umap2DScatterPlot'
 import TextPlaceHolder from '@/components/common/TextPlaceHolder'
@@ -14,6 +15,9 @@ export interface UmapResult {
   columnValues: Record<string, unknown[]>
   count: number
   runtime: number
+  sampled: boolean
+  totalRows: number
+  maxRows: number
   params: {
     nNeighbors: number
     minDist: number
@@ -37,7 +41,9 @@ export default function Umap2D({ onResultChange, onSelectionChange }: Umap2DProp
   const visualColumn = useAppSelector((state) => state.ui.columnForGalleryVisual)
   const captionColumn = useAppSelector((state) => state.ui.columnForGalleryCaption)
   const breakdownColumn = useAppSelector((state) => state.ui.bubblePlotBreakdownColumn)
-  const colorColumn = useAppSelector((state) => state.ui.bubblePlotColorColumn)
+  const rawColorColumn = useAppSelector((state) => state.ui.bubblePlotColorColumn)
+  // Filter out __bubble_size__ which is only valid for bubble plots
+  const colorColumn = rawColorColumn === BUBBLE_SIZE_COLOR_VALUE ? '' : rawColorColumn
   const nNeighbors = useAppSelector((state) => state.ui.umapNNeighbors)
   const minDist = useAppSelector((state) => state.ui.umapMinDist)
   const visualRenderType = useSingleColumnRenderType(visualColumn || '')
@@ -85,6 +91,9 @@ export default function Umap2D({ onResultChange, onSelectionChange }: Umap2DProp
         columnValues: data.columnValues || {},
         count: data.count,
         runtime: data.runtime,
+        sampled: data.sampled || false,
+        totalRows: data.totalRows || data.count,
+        maxRows: data.maxRows || 10000,
         params: data.params,
       }
       setResult(newResult)
@@ -175,8 +184,15 @@ export default function Umap2D({ onResultChange, onSelectionChange }: Umap2DProp
               visualRenderType={visualRenderType}
               onSelectionChange={handleSelectionChange}
             />
-            <div className="flex-shrink-0 px-4 py-2 text-xs text-muted-foreground border-t">
-              {result.count} points | n_neighbors={result.params?.nNeighbors ?? nNeighbors} | min_dist={result.params?.minDist ?? minDist} | {result.runtime.toFixed(2)}s
+            <div className="flex-shrink-0 px-4 py-2 text-xs text-muted-foreground border-t flex justify-between">
+              <span>
+                {result.count} points | n_neighbors={result.params?.nNeighbors ?? nNeighbors} | min_dist={result.params?.minDist ?? minDist}{result.runtime != null && ` | ${result.runtime.toFixed(2)}s`}
+              </span>
+              {result.sampled && (
+                <span className="text-amber-600 dark:text-amber-400">
+                  Sampled {result.count.toLocaleString()} of {result.totalRows.toLocaleString()} rows
+                </span>
+              )}
             </div>
           </div>
         ) : (

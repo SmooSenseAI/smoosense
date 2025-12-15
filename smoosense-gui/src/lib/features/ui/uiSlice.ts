@@ -89,7 +89,7 @@ const initialState: UiState = {
   bubblePlotMinMarkerSize: 7,
   bubblePlotOpacity: 0.7,
   bubblePlotMarkerSizeContrastRatio: 4.2,
-  bubblePlotColorColumn: '__bubble_size__',
+  bubblePlotColorColumn: '',
   bubblePlotColorScale: 'Jet',
   bubblePlotLogScaleX: false,
   bubblePlotLogScaleY: false,

@@ -100,6 +100,7 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 sense = "smoosense.cli:main"
 sense-ingest-images = "smoosense.images.ingest:main"
+parquet-to-lance = "smoosense.lance.parquet_to_lance:main"
 
 # Ruff configuration
 [tool.ruff]

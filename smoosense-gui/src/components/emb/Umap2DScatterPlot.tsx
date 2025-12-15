@@ -68,6 +68,8 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
     setSelectedIndices([])
   }, [x, y])
 
+  const hasColorValues = colorValues && colorValues.length > 0
+
   const plotData = useMemo((): Partial<PlotData>[] => {
     if (!x || !y || x.length === 0) {
       return []
@@ -89,11 +91,11 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
       const traces: Partial<PlotData>[] = []
       const groupNames = Array.from(groups.keys()).sort()
 
-      groupNames.forEach((groupName) => {
+      groupNames.forEach((groupName, groupIndex) => {
         const indices = groups.get(groupName)!
         const groupX = indices.map(i => x[i])
         const groupY = indices.map(i => y[i])
-        const groupColorValues = colorValues ? indices.map(i => colorValues[i]) : undefined
+        const groupColorValues = hasColorValues ? indices.map(i => colorValues[i]) : undefined
         const customdata = indices.map(i => ({ index: i }))
 
         // Determine marker color
@@ -112,7 +114,12 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
             size: markerSize,
             opacity: opacity,
             color: markerColor,
-            colorscale: colorValues ? colorScale : undefined,
+            colorscale: hasColorValues ? colorScale : undefined,
+            showscale: hasColorValues && groupIndex === 0, // Only show colorbar on first trace
+            colorbar: hasColorValues ? {
+              thickness: 15,
+              len: 0.5
+            } : undefined,
             line: {
               width: 0.5,
               color: colors.foreground
@@ -130,7 +137,7 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
     // Single trace (no breakdown)
     // Determine marker color based on colorValues or selection
     let markerColor: string[] | number[]
-    if (colorValues && colorValues.length > 0) {
+    if (hasColorValues) {
       markerColor = colorValues
     } else {
       markerColor = x.map((_, i) =>
@@ -150,7 +157,12 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
         size: markerSize,
         opacity: opacity,
         color: markerColor,
-        colorscale: colorValues ? colorScale : undefined,
+        colorscale: hasColorValues ? colorScale : undefined,
+        showscale: hasColorValues,
+        colorbar: hasColorValues ? {
+          thickness: 15,
+          len: 0.5
+        } : undefined,
         line: {
           width: 0.5,
           color: colors.foreground
@@ -160,7 +172,7 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
       customdata: customdata as any,
       hoverinfo: 'none', // Disable default hover
     }]
-  }, [x, y, selectedIndices, colors.primary, colors.foreground, markerSize, opacity, colorScale, breakdownValues, colorValues])
+  }, [x, y, selectedIndices, colors.primary, colors.foreground, markerSize, opacity, colorScale, breakdownValues, colorValues, hasColorValues])
 
   const hasBreakdown = breakdownValues && breakdownValues.length > 0
 
@@ -172,6 +184,7 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
     ...baseLayout,
     dragmode: 'lasso',
     hovermode: 'closest',
+    showlegend: hasBreakdown,
     margin: {
       l: 0,
       r: 0,

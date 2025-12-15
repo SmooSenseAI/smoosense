@@ -13,6 +13,8 @@ from smoosense.utils.serialization import serialize
 logger = logging.getLogger(__name__)
 umap_bp = Blueprint("umap", __name__)
 
+# Maximum number of rows to compute UMAP on (random sample if exceeded)
+UMAP_MAX_ROWS = 1_000
 
 @umap_bp.post("/umap")
 @requires_auth_api
@@ -86,19 +88,34 @@ def compute_umap() -> Response:
     if len(embeddings) < 2:
         raise ValueError("Not enough embeddings to compute UMAP (need at least 2)")
 
+    # Random sample if exceeds max rows
+    sampled = False
+    total_rows = len(embeddings)
+    if total_rows > UMAP_MAX_ROWS:
+        logger.info(f"Random sampling UMAP input from {total_rows} to {UMAP_MAX_ROWS} rows")
+        rng = np.random.default_rng(seed=42)
+        indices = rng.choice(total_rows, size=UMAP_MAX_ROWS, replace=False)
+        indices.sort()  # Keep relative order for consistency
+        embeddings = [embeddings[i] for i in indices]
+        for col in extra_values:
+            extra_values[col] = [extra_values[col][i] for i in indices]
+        sampled = True
+
     # Convert to numpy array
     embeddings_array = np.array(embeddings, dtype=np.float32)
 
     # Adjust n_neighbors if larger than dataset
     actual_n_neighbors = min(n_neighbors, len(embeddings) - 1)
 
-    # Compute UMAP
+    # Compute UMAP with performance optimizations
     reducer = umap.UMAP(
         n_neighbors=actual_n_neighbors,
         min_dist=min_dist,
         n_components=2,
         metric="cosine",
         random_state=42,
+        low_memory=False,  # Trade memory for speed
+        n_jobs=-1,  # Use all CPU cores
     )
     projection = reducer.fit_transform(embeddings_array)
 
@@ -113,6 +130,9 @@ def compute_umap() -> Response:
             "y": y_coords,
             "columnValues": {col: serialize(vals) for col, vals in extra_values.items()},
             "count": len(x_coords),
+            "sampled": sampled,
+            "totalRows": total_rows,
+            "maxRows": UMAP_MAX_ROWS,
             "runtime": default_timer() - time_start,
             "params": {
                 "nNeighbors": actual_n_neighbors,

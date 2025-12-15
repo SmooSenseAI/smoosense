@@ -92,7 +92,7 @@ function SimilarRowsGallery({ embedding, columnName }: SimilarRowsGalleryProps) 
     <div className="flex flex-col h-full">
       <GalleryControls showRandom={false} />
       <div className="px-2 py-1 text-xs text-muted-foreground">
-        Cosine distance (0 = identical, 1 = orthogonal, 2 = opposite; may have small error due to indexing)
+        Cosine distance (0 = identical, 1 = orthogonal, 2 = opposite; may have small error due to vector indexing)
       </div>
       <div className="flex-1 overflow-auto p-2">
         {_.isEmpty(rows) ? (
@@ -114,7 +114,7 @@ function SimilarRowsGallery({ embedding, columnName }: SimilarRowsGalleryProps) 
               return (
                 <div key={index} className="relative">
                   <div className="absolute top-1 left-1 z-10 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {distance.toFixed(3)}
+                    distance: {distance.toFixed(3)}
                   </div>
                   <GalleryItem
                     row={row}
