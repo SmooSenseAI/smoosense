@@ -2,7 +2,6 @@ import logging
 from timeit import default_timer
 
 import numpy as np
-import umap
 from flask import Blueprint, Response, current_app, jsonify, request
 
 from smoosense.handlers.auth import requires_auth_api
@@ -15,6 +14,7 @@ umap_bp = Blueprint("umap", __name__)
 
 # Maximum number of rows to compute UMAP on (random sample if exceeded)
 UMAP_MAX_ROWS = 1_000
+
 
 @umap_bp.post("/umap")
 @requires_auth_api
@@ -106,6 +106,9 @@ def compute_umap() -> Response:
 
     # Adjust n_neighbors if larger than dataset
     actual_n_neighbors = min(n_neighbors, len(embeddings) - 1)
+
+    # Lazily import umap since it is only available in some cases
+    import umap
 
     # Compute UMAP with performance optimizations
     reducer = umap.UMAP(

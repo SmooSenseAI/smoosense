@@ -73,9 +73,9 @@ def compute_dinov2_embeddings_batch(
     device: str,
 ) -> list[list[float]]:
     """Compute DINOv2 embeddings for a batch of images (L2-normalized)."""
-    inputs = processor(images=images, return_tensors="pt").to(device)  # type: ignore[operator]
+    inputs = processor(images=images, return_tensors="pt").to(device)
     with torch.no_grad():
-        outputs = model(**inputs)  # type: ignore[operator]
+        outputs = model(**inputs)
         # Use CLS token from last hidden state
         embs = outputs.last_hidden_state[:, 0, :]
         # L2 normalize

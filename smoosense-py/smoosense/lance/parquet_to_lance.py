@@ -72,7 +72,7 @@ def is_float_or_double_list(col_type: pa.DataType) -> bool:
     if not pa.types.is_list(col_type):
         return False
     element_type = col_type.value_type
-    return pa.types.is_floating(element_type)
+    return bool(pa.types.is_floating(element_type))
 
 
 def get_embedding_columns(schema: pa.Schema, min_dim: int = 10) -> list[str]:

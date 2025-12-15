@@ -29,16 +29,12 @@ dependencies = [
     "click>=8.1.8",
     "duckdb>=1.2.1",
     "flask>=3.1.0",
-    "hdbscan>=0.8.40",
     "lancedb>=0.25.2",
     "pyarrow>=20.0.0",
     "pydantic>=2.11.7",
     "pytz>=2025.2",
     "requests>=2.32.3",
     "rich>=14.0.0",
-    "tqdm>=4.67.1",
-    "transformers>=4.57.3",
-    "umap-learn>=0.5.9.post2",
 ]
 
 [project.urls]
@@ -62,6 +58,12 @@ daft = [
 images = [
     "torch>=2.0.0",
     "pillow>=10.0.0",
+]
+emb = [
+    "hdbscan>=0.8.40",
+    "tqdm>=4.67.1",
+    "transformers>=4.57.3",
+    "umap-learn>=0.5.9.post2",
 ]
 
 [dependency-groups]

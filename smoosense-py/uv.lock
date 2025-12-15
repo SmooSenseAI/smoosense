@@ -3319,16 +3319,12 @@ dependencies = [
     { name = "click", version = "8.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "duckdb" },
     { name = "flask" },
-    { name = "hdbscan" },
     { name = "lancedb" },
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "pytz" },
     { name = "requests" },
     { name = "rich" },
-    { name = "tqdm" },
-    { name = "transformers" },
-    { name = "umap-learn" },
 ]
 
 [package.optional-dependencies]
@@ -3339,6 +3335,12 @@ daft = [
     { name = "ipython", version = "9.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
     { name = "pyarrow" },
+]
+emb = [
+    { name = "hdbscan" },
+    { name = "tqdm" },
+    { name = "transformers" },
+    { name = "umap-learn" },
 ]
 images = [
     { name = "pillow", version = "11.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -3383,7 +3385,7 @@ requires-dist = [
     { name = "daft", marker = "extra == 'daft'", specifier = ">=0.3.0" },
     { name = "duckdb", specifier = ">=1.2.1" },
     { name = "flask", specifier = ">=3.1.0" },
-    { name = "hdbscan", specifier = ">=0.8.40" },
+    { name = "hdbscan", marker = "extra == 'emb'", specifier = ">=0.8.40" },
     { name = "ipython", marker = "extra == 'jupyter'", specifier = ">=8.0.0" },
     { name = "lancedb", specifier = ">=0.25.2" },
     { name = "pandas", marker = "extra == 'jupyter'", specifier = ">=2.3.0" },
@@ -3396,11 +3398,11 @@ requires-dist = [
     { name = "rich", specifier = ">=14.0.0" },
     { name = "smoosense", extras = ["jupyter"], marker = "extra == 'daft'" },
     { name = "torch", marker = "extra == 'images'", specifier = ">=2.0.0" },
-    { name = "tqdm", specifier = ">=4.67.1" },
-    { name = "transformers", specifier = ">=4.57.3" },
-    { name = "umap-learn", specifier = ">=0.5.9.post2" },
+    { name = "tqdm", marker = "extra == 'emb'", specifier = ">=4.67.1" },
+    { name = "transformers", marker = "extra == 'emb'", specifier = ">=4.57.3" },
+    { name = "umap-learn", marker = "extra == 'emb'", specifier = ">=0.5.9.post2" },
 ]
-provides-extras = ["jupyter", "daft", "images"]
+provides-extras = ["jupyter", "daft", "images", "emb"]
 
 [package.metadata.requires-dev]
 dev = [
