@@ -2,86 +2,26 @@
 
 import os
 from pathlib import Path
+from typing import Optional
 
 import click
 import pyarrow as pa
-import torch
 from PIL import Image
 from tqdm import tqdm
-from transformers import (
-    AutoImageProcessor,
-    AutoModel,
-    CLIPImageProcessor,
-    CLIPVisionModel,
-)
 
+from smoosense.emb.models import (
+    CLIP_COLUMN_NAME,
+    DINOV2_COLUMN_NAME,
+    compute_clip_embeddings_batch,
+    compute_dinov2_embeddings_batch,
+    get_device,
+    load_clip_model,
+    load_dinov2_model,
+)
+from smoosense.emb.path_grouping import compute_path_groups
 from smoosense.my_logging import getLogger
 
 logger = getLogger(__name__)
-
-
-def _get_device() -> str:
-    """Auto-detect the best available device."""
-    if torch.cuda.is_available():
-        return "cuda"
-    elif torch.backends.mps.is_available():
-        return "mps"
-    else:
-        return "cpu"
-
-
-def load_clip_model(device: str) -> tuple[CLIPVisionModel, CLIPImageProcessor]:
-    """Load CLIP vision model and processor."""
-    model_name = "openai/clip-vit-base-patch32"
-    processor = CLIPImageProcessor.from_pretrained(model_name)
-    model = CLIPVisionModel.from_pretrained(model_name).to(device)
-    model.eval()
-    return model, processor
-
-
-def load_dinov2_model(device: str) -> tuple[AutoModel, AutoImageProcessor]:
-    """Load DINOv2 model and processor."""
-    model_name = "facebook/dinov2-base"
-    processor = AutoImageProcessor.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name).to(device)
-    model.eval()
-    return model, processor
-
-
-def compute_clip_embeddings_batch(
-    images: list[Image.Image],
-    model: CLIPVisionModel,
-    processor: CLIPImageProcessor,
-    device: str,
-) -> list[list[float]]:
-    """Compute CLIP embeddings for a batch of images (L2-normalized)."""
-    inputs = processor(images=images, return_tensors="pt").to(device)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        # Use pooled output (CLS token)
-        embs = outputs.pooler_output
-        # L2 normalize
-        embs = embs / embs.norm(dim=1, keepdim=True)
-        embeddings: list[list[float]] = embs.cpu().numpy().tolist()
-    return embeddings
-
-
-def compute_dinov2_embeddings_batch(
-    images: list[Image.Image],
-    model: AutoModel,
-    processor: AutoImageProcessor,
-    device: str,
-) -> list[list[float]]:
-    """Compute DINOv2 embeddings for a batch of images (L2-normalized)."""
-    inputs = processor(images=images, return_tensors="pt").to(device)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        # Use CLS token from last hidden state
-        embs = outputs.last_hidden_state[:, 0, :]
-        # L2 normalize
-        embs = embs / embs.norm(dim=1, keepdim=True)
-        embeddings: list[list[float]] = embs.cpu().numpy().tolist()
-    return embeddings
 
 
 def process_images(
@@ -95,7 +35,7 @@ def process_images(
     Args:
         files: Tuple of image file paths
         output_path: Path to output Lance database directory
-        batch_size: Number of images to process in each batch
+        batch_size: Number of emb to process in each batch
     """
     import lancedb
 
@@ -103,10 +43,10 @@ def process_images(
         logger.warning("No image files provided")
         return
 
-    logger.info(f"Processing {len(files)} images with batch_size={batch_size}")
+    logger.info(f"Processing {len(files)} emb with batch_size={batch_size}")
 
     # Determine device
-    device = _get_device()
+    device = get_device()
     logger.info(f"Using device: {device}")
 
     # Load models (always use both CLIP and DINOv2)
@@ -116,8 +56,9 @@ def process_images(
     logger.info("Loading DINOv2 model...")
     dinov2_model, dinov2_processor = load_dinov2_model(device)
 
-    # Process images
+    # Process emb
     records: list[dict] = []
+    processed_file_paths: list[str] = []  # Track original paths for group computation
 
     # Get absolute output path for computing relative paths
     abs_output_path = os.path.abspath(output_path)
@@ -127,9 +68,10 @@ def process_images(
     for batch_start in tqdm(range(0, len(files), batch_size), desc="Processing batches"):
         batch_files = files[batch_start : batch_start + batch_size]
 
-        # Load images and collect metadata
+        # Load emb and collect metadata
         batch_images: list[Image.Image] = []
         batch_metadata: list[dict] = []
+        batch_original_paths: list[str] = []
 
         for image_path in batch_files:
             try:
@@ -149,6 +91,7 @@ def process_images(
                 width, height = image.size
 
                 batch_images.append(image)
+                batch_original_paths.append(abs_image_path)
                 batch_metadata.append(
                     {
                         "image_path": image_rel_path,
@@ -178,25 +121,30 @@ def process_images(
             for i, metadata in enumerate(batch_metadata):
                 record = {
                     **metadata,
-                    "clip_embedding": clip_embeddings[i],
-                    "dinov2_embedding": dinov2_embeddings[i],
+                    CLIP_COLUMN_NAME: clip_embeddings[i],
+                    DINOV2_COLUMN_NAME: dinov2_embeddings[i],
                 }
                 records.append(record)
+                processed_file_paths.append(batch_original_paths[i])
 
         except Exception as e:
             logger.error(f"Error computing embeddings for batch: {e}")
             continue
 
     if not records:
-        logger.warning("No images were successfully processed")
+        logger.warning("No emb were successfully processed")
         return
+
+    # Compute groups based on folder structure
+    groups: Optional[list[str]] = compute_path_groups(processed_file_paths)
+    has_groups = groups is not None
 
     # Convert to PyArrow table
     logger.info(f"Saving {len(records)} records to {output_path}")
 
     # Detect embedding dimensions from first record
-    clip_dim = len(records[0]["clip_embedding"])
-    dinov2_dim = len(records[0]["dinov2_embedding"])
+    clip_dim = len(records[0][CLIP_COLUMN_NAME])
+    dinov2_dim = len(records[0][DINOV2_COLUMN_NAME])
 
     # Build schema with fixed-size list for embeddings (required for Lance vector index)
     fields = [
@@ -204,9 +152,13 @@ def process_images(
         pa.field("bytes_size", pa.int64()),
         pa.field("width", pa.int32()),
         pa.field("height", pa.int32()),
-        pa.field("clip_embedding", pa.list_(pa.float32(), clip_dim)),
-        pa.field("dinov2_embedding", pa.list_(pa.float32(), dinov2_dim)),
+        pa.field(CLIP_COLUMN_NAME, pa.list_(pa.float32(), clip_dim)),
+        pa.field(DINOV2_COLUMN_NAME, pa.list_(pa.float32(), dinov2_dim)),
     ]
+
+    # Add folder_group field only if there are different groups
+    if has_groups:
+        fields.insert(1, pa.field("folder_group", pa.string()))
 
     schema = pa.schema(fields)
 
@@ -217,14 +169,18 @@ def process_images(
         pa.array([r["width"] for r in records], type=pa.int32()),
         pa.array([r["height"] for r in records], type=pa.int32()),
         pa.array(
-            [r["clip_embedding"] for r in records],
+            [r[CLIP_COLUMN_NAME] for r in records],
             type=pa.list_(pa.float32(), clip_dim),
         ),
         pa.array(
-            [r["dinov2_embedding"] for r in records],
+            [r[DINOV2_COLUMN_NAME] for r in records],
             type=pa.list_(pa.float32(), dinov2_dim),
         ),
     ]
+
+    # Insert folder_group array if needed
+    if has_groups:
+        arrays.insert(1, pa.array(groups))
 
     table = pa.Table.from_arrays(arrays, schema=schema)
 
@@ -239,9 +195,9 @@ def process_images(
         db_path = os.path.dirname(output_path)
         table_name = os.path.basename(output_path).replace(".lance", "")
     else:
-        # If no .lance extension, use output_path as db path and "images" as table name
+        # If no .lance extension, use output_path as db path and "emb" as table name
         db_path = output_path
-        table_name = "images"
+        table_name = "emb"
 
     # Ensure database directory exists
     if db_path:
@@ -255,7 +211,7 @@ def process_images(
 
     # Create vector indices for embedding columns (only if enough rows for IVF-PQ)
     if len(records) >= 256:
-        embedding_columns = ["clip_embedding", "dinov2_embedding"]
+        embedding_columns = [CLIP_COLUMN_NAME, DINOV2_COLUMN_NAME]
         for col in embedding_columns:
             logger.info(f"Creating IVF-PQ index on '{col}'...")
             lance_table.create_index(
@@ -278,36 +234,27 @@ def process_images(
     "-o",
     "--output-path",
     type=str,
-    default=os.path.join(os.getcwd(), "images.lance"),
-    help="Output Lance table path (e.g., ./mydb/images.lance)",
-)
-@click.option(
-    "-b",
-    "--batch-size",
-    type=int,
-    default=32,
-    help="Number of images to process in each batch (default: 32)",
+    default=os.path.join(os.getcwd(), "images_table.lance"),
+    help="Output Lance table path (e.g., ./mydb/images_table.lance)",
 )
 def main(
     files: tuple[str, ...],
     output_path: str,
-    batch_size: int,
 ) -> None:
     """
-    Ingest images, compute embeddings (CLIP and DINOv2), and save to Lance.
+    Ingest emb, compute embeddings (CLIP and DINOv2), and save to Lance.
 
     FILES: One or more image files to process.
 
     Examples:
 
-        python -m smoosense.images.ingest photo1.jpg photo2.jpg -o ./mydb/photos.lance
+        python -m smoosense.emb.ingest photo1.jpg photo2.jpg -o ./mydb/photos.lance
 
-        python -m smoosense.images.ingest *.jpg *.png --output-path ./mydb/images.lance
+        python -m smoosense.emb.ingest *.jpg *.png --output-path ./mydb/emb.lance
     """
     process_images(
         files=files,
         output_path=output_path,
-        batch_size=batch_size,
     )
 
 

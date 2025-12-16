@@ -12,6 +12,15 @@ from smoosense.utils.serialization import serialize
 logger = logging.getLogger(__name__)
 umap_bp = Blueprint("umap", __name__)
 
+# Check if umap-learn is installed
+try:
+    import umap
+
+    UMAP_AVAILABLE = True
+except ImportError:
+    UMAP_AVAILABLE = False
+    umap = None
+
 # Maximum number of rows to compute UMAP on (random sample if exceeded)
 UMAP_MAX_ROWS = 1_000
 
@@ -21,6 +30,14 @@ UMAP_MAX_ROWS = 1_000
 @handle_api_errors
 def compute_umap() -> Response:
     """Compute UMAP 2D projection for embedding column."""
+    if not UMAP_AVAILABLE:
+        return jsonify(
+            {
+                "status": "error",
+                "error": "UMAP is not installed. Install with: pip install 'smoosense[emb]'",
+            }
+        )
+
     time_start = default_timer()
 
     if not request.json:
@@ -43,47 +60,64 @@ def compute_umap() -> Response:
     min_dist = max(0.0, min(1.0, float(min_dist)))
 
     # Build select columns: embedding + extra columns (deduplicated)
+    # Filter out empty/whitespace-only column names
     select_cols = [emb_column]
     for col in extra_columns:
-        if col and col not in select_cols:
-            select_cols.append(col)
-    select_clause = ", ".join(select_cols)
+        col_stripped = col.strip() if col else ""
+        if col_stripped and col_stripped not in select_cols:
+            select_cols.append(col_stripped)
+
+    # Quote column names to handle special characters and reserved words
+    quoted_cols = [f'"{col}"' for col in select_cols]
+    select_clause = ", ".join(quoted_cols)
 
     # Extract embeddings and additional columns from table
     embeddings: list[list[float]] = []
-    extra_values: dict[str, list] = {col: [] for col in extra_columns if col}
+    # Use stripped column names for extra_values (excluding embedding column)
+    extra_col_names = [col for col in select_cols if col != emb_column]
+    extra_values: dict[str, list] = {col: [] for col in extra_col_names}
 
-    if query_engine == "lance":
-        query = f"SELECT {select_clause} FROM lance_table"
-        lance_client = LanceTableClient.from_table_path(table_path)
-        column_names, rows = lance_client.run_duckdb_sql(query)
+    try:
+        if query_engine == "lance":
+            query = f"SELECT {select_clause} FROM lance_table"
+            lance_client = LanceTableClient.from_table_path(table_path)
+            column_names, rows = lance_client.run_duckdb_sql(query)
 
-        # Find column indices
-        emb_idx = column_names.index(emb_column)
-        extra_indices = {col: column_names.index(col) for col in extra_columns if col}
+            # Find column indices
+            emb_idx = column_names.index(emb_column)
+            extra_indices = {col: column_names.index(col) for col in extra_col_names}
 
-        for row in rows:
-            if row[emb_idx] is not None:
-                embeddings.append(row[emb_idx])
-                for col, idx in extra_indices.items():
-                    extra_values[col].append(row[idx])
-    else:
-        query = f"SELECT {select_clause} FROM '{table_path}'"
-        connection_maker = current_app.config["DUCKDB_CONNECTION_MAKER"]
-        con = connection_maker()
-        result = con.execute(query)
-        column_names = [desc[0] for desc in result.description] if result.description else []
-        rows = result.fetchall()
+            for row in rows:
+                if row[emb_idx] is not None:
+                    embeddings.append(row[emb_idx])
+                    for col, idx in extra_indices.items():
+                        extra_values[col].append(row[idx])
+        else:
+            query = f"SELECT {select_clause} FROM '{table_path}'"
+            connection_maker = current_app.config["DUCKDB_CONNECTION_MAKER"]
+            con = connection_maker()
+            result = con.execute(query)
+            column_names = [desc[0] for desc in result.description] if result.description else []
+            rows = result.fetchall()
 
-        # Find column indices
-        emb_idx = column_names.index(emb_column)
-        extra_indices = {col: column_names.index(col) for col in extra_columns if col}
+            # Find column indices
+            emb_idx = column_names.index(emb_column)
+            extra_indices = {col: column_names.index(col) for col in extra_col_names}
 
-        for row in rows:
-            if row[emb_idx] is not None:
-                embeddings.append(row[emb_idx])
-                for col, idx in extra_indices.items():
-                    extra_values[col].append(row[idx])
+            for row in rows:
+                if row[emb_idx] is not None:
+                    embeddings.append(row[emb_idx])
+                    for col, idx in extra_indices.items():
+                        extra_values[col].append(row[idx])
+    except Exception as e:
+        error_msg = str(e)
+        logger.error(f"SQL error in UMAP query: {error_msg}")
+        return jsonify(
+            {
+                "status": "error",
+                "error": f"Query error: {error_msg}",
+            }
+        )
 
     if len(embeddings) < 2:
         raise ValueError("Not enough embeddings to compute UMAP (need at least 2)")
@@ -106,9 +140,6 @@ def compute_umap() -> Response:
 
     # Adjust n_neighbors if larger than dataset
     actual_n_neighbors = min(n_neighbors, len(embeddings) - 1)
-
-    # Lazily import umap since it is only available in some cases
-    import umap
 
     # Compute UMAP with performance optimizations
     reducer = umap.UMAP(

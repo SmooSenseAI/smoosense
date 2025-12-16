@@ -1,4 +1,4 @@
-.PHONY: env clean install-hooks build unit-test integration-test screenshot test dev publish
+.PHONY: env env-optional clean install-hooks build unit-test integration-test screenshot test dev publish
 
 
 clean:
@@ -8,7 +8,10 @@ clean:
 env:
 	(rm -rf .venv)
 	uv venv --seed && uv sync --all-groups
-	uv run playwright install 
+	uv run playwright install
+
+env-optional:
+	uv pip install -e ".[daft,emb]"
 
 unit-test:
 	uv run python -m unittest discover tests/

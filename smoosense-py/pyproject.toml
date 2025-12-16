@@ -55,12 +55,12 @@ daft = [
     "smoosense[jupyter]",
     "daft>=0.3.0",
 ]
-images = [
+
+emb = [
     "torch>=2.0.0",
     "pillow>=10.0.0",
-]
-emb = [
     "hdbscan>=0.8.40",
+    "opencv-python-headless>=4.8.0",
     "tqdm>=4.67.1",
     "transformers>=4.57.3",
     "umap-learn>=0.5.9.post2",
@@ -101,7 +101,8 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 sense = "smoosense.cli:main"
-sense-ingest-images = "smoosense.images.ingest:main"
+sense-images = "smoosense.emb.sense_images:main"
+sense-videos = "smoosense.emb.sense_videos:main"
 parquet-to-lance = "smoosense.lance.parquet_to_lance:main"
 
 # Ruff configuration
@@ -153,5 +154,5 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["authlib.*", "boto3.*", "botocore.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*", "torch.*", "PIL.*", "transformers.*", "tqdm.*", "umap.*"]
+module = ["authlib.*", "boto3.*", "botocore.*", "cv2.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*", "torch.*", "PIL.*", "transformers.*", "tqdm.*", "umap.*"]
 ignore_missing_imports = true

@@ -41,7 +41,7 @@ const VideoCellRenderer = memo(function VideoCellRenderer({
   )
 
   const popoverContent = (
-    <div className="relative">
+    <div className="relative max-h-full h-full">
       <VideoPlayer
         src={resolvedUrl}
         className=""

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import type { PlotData, Layout, Config } from 'plotly.js'
 import { usePlotlyLayout, usePlotlyConfig, usePlotlyColors } from '@/lib/utils/plotlyTheme'
 import { useAppSelector } from '@/lib/hooks'
-import GalleryItem from '@/components/gallery/GalleryItem'
+import HoverItem from '@/components/emb/HoverItem'
 import { RenderType } from '@/lib/utils/agGridCellRenderers'
 
 const Plot = dynamic(() => import('react-plotly.js'), {
@@ -312,19 +312,18 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
         }}
       />
 
-      {/* Custom hover tooltip with GalleryItem */}
+      {/* Custom hover tooltip with HoverItem */}
       {hoverInfo && hasVisualData && (
         <div
           style={getTooltipStyle()}
           className="pointer-events-none bg-background border rounded-lg shadow-lg overflow-hidden"
         >
-          <GalleryItem
+          <HoverItem
             row={{}}
             index={hoverInfo.index}
             visualValue={visualValues[hoverInfo.index]}
             captionValue={captionValues?.[hoverInfo.index] ?? null}
             renderType={visualRenderType}
-            onClick={null}
           />
         </div>
       )}
