@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import _ from 'lodash'
 import { useAppSelector } from '@/lib/hooks'
 import { useSingleColumnRenderType } from '@/lib/hooks/useRenderType'
+import { extractSqlFilterFromState } from '@/lib/utils/state/filterUtils'
 import { BUBBLE_SIZE_COLOR_VALUE } from '@/lib/features/bubblePlot/BubblePlotMoreControls'
 import Umap2DControls from './Umap2DControls'
 import Umap2DScatterPlot from './Umap2DScatterPlot'
@@ -46,6 +47,7 @@ export default function Umap2D({ onResultChange, onSelectionChange }: Umap2DProp
   const colorColumn = rawColorColumn === BUBBLE_SIZE_COLOR_VALUE ? '' : rawColorColumn
   const nNeighbors = useAppSelector((state) => state.ui.umapNNeighbors)
   const minDist = useAppSelector((state) => state.ui.umapMinDist)
+  const sqlCondition = useAppSelector((state) => extractSqlFilterFromState(state))
   const visualRenderType = useSingleColumnRenderType(visualColumn || '')
 
   const [result, setResult] = useState<UmapResult | null>(null)
@@ -58,7 +60,8 @@ export default function Umap2D({ onResultChange, onSelectionChange }: Umap2DProp
     extraColumns: string[],
     nNeighbors: number,
     minDist: number,
-    queryEngine: string
+    queryEngine: string,
+    sqlCondition: string | null
   ) => {
     setLoading(true)
     setError(null)
@@ -76,6 +79,7 @@ export default function Umap2D({ onResultChange, onSelectionChange }: Umap2DProp
           nNeighbors,
           minDist,
           queryEngine,
+          sqlCondition,
         }),
       })
 
@@ -128,13 +132,13 @@ export default function Umap2D({ onResultChange, onSelectionChange }: Umap2DProp
       return
     }
 
-    debouncedComputeUmap(tablePath, embColumn, extraColumns, nNeighbors, minDist, queryEngine)
+    debouncedComputeUmap(tablePath, embColumn, extraColumns, nNeighbors, minDist, queryEngine, sqlCondition)
 
     // Cleanup debounce on unmount
     return () => {
       debouncedComputeUmap.cancel()
     }
-  }, [tablePath, embColumn, extraColumns, nNeighbors, minDist, queryEngine, debouncedComputeUmap])
+  }, [tablePath, embColumn, extraColumns, nNeighbors, minDist, queryEngine, sqlCondition, debouncedComputeUmap])
 
   const handleSelectionChange = useCallback((indices: number[], type: 'click' | 'lasso') => {
     if (indices.length === 0) {

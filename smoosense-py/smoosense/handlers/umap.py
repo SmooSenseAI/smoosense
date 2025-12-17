@@ -49,6 +49,7 @@ def compute_umap() -> Response:
     n_neighbors = request.json.get("nNeighbors", 15)
     min_dist = request.json.get("minDist", 0.1)
     query_engine = request.json.get("queryEngine", "duckdb")
+    sql_condition = request.json.get("sqlCondition")
 
     if not table_path:
         raise ValueError("tablePath is required")
@@ -71,6 +72,9 @@ def compute_umap() -> Response:
     quoted_cols = [f'"{col}"' for col in select_cols]
     select_clause = ", ".join(quoted_cols)
 
+    # Build WHERE clause if sql_condition is provided
+    where_clause = f" WHERE {sql_condition}" if sql_condition else ""
+
     # Extract embeddings and additional columns from table
     embeddings: list[list[float]] = []
     # Use stripped column names for extra_values (excluding embedding column)
@@ -79,7 +83,7 @@ def compute_umap() -> Response:
 
     try:
         if query_engine == "lance":
-            query = f"SELECT {select_clause} FROM lance_table"
+            query = f"SELECT {select_clause} FROM lance_table {where_clause}"
             lance_client = LanceTableClient.from_table_path(table_path)
             column_names, rows = lance_client.run_duckdb_sql(query)
 
@@ -93,7 +97,7 @@ def compute_umap() -> Response:
                     for col, idx in extra_indices.items():
                         extra_values[col].append(row[idx])
         else:
-            query = f"SELECT {select_clause} FROM '{table_path}'"
+            query = f"SELECT {select_clause} FROM '{table_path}' {where_clause}"
             connection_maker = current_app.config["DUCKDB_CONNECTION_MAKER"]
             con = connection_maker()
             result = con.execute(query)
