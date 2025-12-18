@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setActiveEmbTab } from '@/lib/features/ui/uiSlice'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,21 +10,10 @@ import Umap2D, { type UmapResult, type UmapSelection } from '@/components/emb/Um
 import GalleryItem from '@/components/gallery/GalleryItem'
 import GalleryControls from '@/components/gallery/GalleryControls'
 import { useSingleColumnRenderType } from '@/lib/hooks/useRenderType'
-import TextPlaceHolder from '@/components/common/TextPlaceHolder'
 
 const embTabs = ['Retrieve', 'UMAP', 'Cluster'] as const
 
-function useIsLocal(): boolean {
-  const [isLocal, setIsLocal] = useState(false)
-  useEffect(() => {
-    const url = window.location.href
-    setIsLocal(url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1'))
-  }, [])
-  return isLocal
-}
-
 export default function EmbeddingTabContent() {
-  const isLocal = useIsLocal()
   const dispatch = useAppDispatch()
   const activeEmbTab = useAppSelector((state) => state.ui.activeEmbTab)
   const visualColumn = useAppSelector((state) => state.ui.columnForGalleryVisual)
@@ -59,14 +48,6 @@ export default function EmbeddingTabContent() {
       captionValue: captionValues?.[idx],
     }))
   }, [umapResult, umapSelection, visualColumn, captionColumn])
-
-  if (!isLocal) {
-    return (
-      <TextPlaceHolder>
-        For better performance, please download data to your laptop and run SmooSense locally
-      </TextPlaceHolder>
-    )
-  }
 
   return (
     <ResizablePanels
@@ -110,7 +91,7 @@ export default function EmbeddingTabContent() {
             <div className="h-full flex items-center justify-center text-muted-foreground text-center">
               <div>
                 <p className="text-lg font-medium">Retrieve</p>
-                <p className="text-sm">Similarity search placeholder</p>
+                <p className="text-sm">Coming soon</p>
               </div>
             </div>
           ) : activeEmbTab === 'UMAP' ? (
@@ -122,7 +103,7 @@ export default function EmbeddingTabContent() {
             <div className="h-full flex items-center justify-center text-muted-foreground text-center">
               <div>
                 <p className="text-lg font-medium">Cluster</p>
-                <p className="text-sm">Clustering visualization placeholder</p>
+                <p className="text-sm">Coming soon</p>
               </div>
             </div>
           ) : null}

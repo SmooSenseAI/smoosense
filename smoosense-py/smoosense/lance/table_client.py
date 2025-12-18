@@ -19,19 +19,24 @@ class LanceTableClient:
         Initialize the Lance table client.
 
         Args:
-            root_folder: Path to the Lance database directory
+            root_folder: Path to the Lance database directory (local path or S3 URI)
             table_name: Name of the table
         """
         import lancedb  # Import lancedb lazily since it may be slow at the 1st time
 
-        if root_folder.startswith("~"):
-            root_folder = os.path.expanduser(root_folder)
+        # Check if it's an S3 path
+        is_s3_path = root_folder.startswith("s3://")
 
-        if not os.path.exists(root_folder):
-            raise ValueError(f"Directory does not exist: {root_folder}")
+        if not is_s3_path:
+            # Local path handling
+            if root_folder.startswith("~"):
+                root_folder = os.path.expanduser(root_folder)
 
-        if not os.path.isdir(root_folder):
-            raise ValueError(f"Path is not a directory: {root_folder}")
+            if not os.path.exists(root_folder):
+                raise ValueError(f"Directory does not exist: {root_folder}")
+
+            if not os.path.isdir(root_folder):
+                raise ValueError(f"Path is not a directory: {root_folder}")
 
         self.root_folder = root_folder
         self.table_name = table_name
@@ -46,7 +51,8 @@ class LanceTableClient:
         Create a LanceTableClient from a table path.
 
         Args:
-            table_path: Path to the Lance table (e.g., /path/to/db/table_name.lance)
+            table_path: Path to the Lance table (e.g., /path/to/db/table_name.lance
+                        or s3://bucket/path/table_name.lance)
 
         Returns:
             LanceTableClient instance
@@ -54,21 +60,33 @@ class LanceTableClient:
         Raises:
             ValueError: If the table path is invalid or doesn't end with .lance
         """
-        # Expand ~ if present
-        if table_path.startswith("~"):
-            table_path = os.path.expanduser(table_path)
+        # Check if it's an S3 path
+        is_s3_path = table_path.startswith("s3://")
 
-        # Validate path exists
-        if not os.path.exists(table_path):
-            raise ValueError(f"Table path does not exist: {table_path}")
+        if not is_s3_path:
+            # Local path handling
+            # Expand ~ if present
+            if table_path.startswith("~"):
+                table_path = os.path.expanduser(table_path)
+
+            # Validate path exists
+            if not os.path.exists(table_path):
+                raise ValueError(f"Table path does not exist: {table_path}")
 
         # Validate path ends with .lance
         if not table_path.endswith(".lance"):
             raise ValueError(f"Table path must end with .lance: {table_path}")
 
         # Extract root folder and table name
-        root_folder = os.path.dirname(table_path)
-        table_name = os.path.basename(table_path).replace(".lance", "")
+        # Works for both local paths and S3 URIs
+        if is_s3_path:
+            # For S3: s3://bucket/path/table.lance -> s3://bucket/path and table
+            last_slash = table_path.rfind("/")
+            root_folder = table_path[:last_slash]
+            table_name = table_path[last_slash + 1 :].replace(".lance", "")
+        else:
+            root_folder = os.path.dirname(table_path)
+            table_name = os.path.basename(table_path).replace(".lance", "")
 
         return LanceTableClient(root_folder, table_name)
 
@@ -175,7 +193,11 @@ class LanceTableClient:
         Raises:
             ValueError: If no compatible columns found
         """
-        table_path = os.path.join(self.root_folder, f"{self.table_name}.lance")
+        # Construct table path - handle both local and S3 paths
+        if self.root_folder.startswith("s3://"):
+            table_path = f"{self.root_folder}/{self.table_name}.lance"
+        else:
+            table_path = os.path.join(self.root_folder, f"{self.table_name}.lance")
         filtered_arrow_table, _ = self._load_and_filter_arrow_table(table_path)
         return filtered_arrow_table
 

@@ -30,7 +30,11 @@ function TableUrlParamsProviderInner({ children }: { children: React.ReactNode }
     }
 
     // Handle tablePath specifically
-    const urlTablePath = searchParams.get('tablePath')
+    let urlTablePath = searchParams.get('tablePath')
+    // Remove trailing slash if present
+    if (urlTablePath?.endsWith('/')) {
+      urlTablePath = urlTablePath.slice(0, -1)
+    }
     if (urlTablePath !== currentTablePath) {
       dispatch(uiSliceActions.setTablePath(urlTablePath))
 

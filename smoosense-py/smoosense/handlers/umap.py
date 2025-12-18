@@ -151,7 +151,6 @@ def compute_umap() -> Response:
         min_dist=min_dist,
         n_components=2,
         metric="cosine",
-        random_state=42,
         low_memory=False,  # Trade memory for speed
         n_jobs=-1,  # Use all CPU cores
     )

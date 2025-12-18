@@ -16,18 +16,23 @@ class LanceDBClient:
         Initialize the Lance database client.
 
         Args:
-            root_folder: Path to the Lance database directory
+            root_folder: Path to the Lance database directory (local path or S3 URI)
         """
         import lancedb  # Import lancedb lazily since it may be slow at the 1st time
 
-        if root_folder.startswith("~"):
-            root_folder = os.path.expanduser(root_folder)
+        # Check if it's an S3 path
+        is_s3_path = root_folder.startswith("s3://")
 
-        if not os.path.exists(root_folder):
-            raise ValueError(f"Directory does not exist: {root_folder}")
+        if not is_s3_path:
+            # Local path handling
+            if root_folder.startswith("~"):
+                root_folder = os.path.expanduser(root_folder)
 
-        if not os.path.isdir(root_folder):
-            raise ValueError(f"Path is not a directory: {root_folder}")
+            if not os.path.exists(root_folder):
+                raise ValueError(f"Directory does not exist: {root_folder}")
+
+            if not os.path.isdir(root_folder):
+                raise ValueError(f"Path is not a directory: {root_folder}")
 
         self.root_folder = root_folder
         self.db = lancedb.connect(root_folder)
