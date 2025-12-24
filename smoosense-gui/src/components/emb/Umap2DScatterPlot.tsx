@@ -225,9 +225,29 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
       const index = point.customdata?.index ?? point.pointIndex ?? point.pointNumber
 
       // Get screen position from event
-      const bbox = event.event?.target?.getBoundingClientRect?.()
-      const screenX = event.event?.clientX ?? (bbox?.left ?? 0) + (bbox?.width ?? 0) / 2
-      const screenY = event.event?.clientY ?? (bbox?.top ?? 0) + (bbox?.height ?? 0) / 2
+      // For scattergl, event.event may be undefined, so we use xaxis/yaxis pixel coords
+      let screenX: number
+      let screenY: number
+
+      if (event.event?.clientX !== undefined) {
+        screenX = event.event.clientX
+        screenY = event.event.clientY
+      } else if (containerRef.current) {
+        // Fallback: calculate from plot coordinates using axis pixel positions
+        const containerRect = containerRef.current.getBoundingClientRect()
+        // point.xaxis and point.yaxis contain the axis info with pixel conversion
+        const xPixel = point.xaxis?.l2p?.(point.x) ?? 0
+        const yPixel = point.yaxis?.l2p?.(point.y) ?? 0
+        const plotLeft = point.xaxis?._offset ?? 0
+        const plotTop = point.yaxis?._offset ?? 0
+        screenX = containerRect.left + plotLeft + xPixel
+        screenY = containerRect.top + plotTop + yPixel
+      } else {
+        // Last resort fallback
+        const bbox = event.event?.target?.getBoundingClientRect?.()
+        screenX = (bbox?.left ?? 0) + (bbox?.width ?? 0) / 2
+        screenY = (bbox?.top ?? 0) + (bbox?.height ?? 0) / 2
+      }
 
       setHoverInfo({
         index,
@@ -330,5 +350,6 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
     </div>
   )
 })
+
 
 export default Umap2DScatterPlot
