@@ -32,6 +32,16 @@ const EXAMPLES: ExampleCard[] = [
     tags: ['audio']
   },
   {
+    title: 'Audio Embedding UMAP',
+    href: '/example/emb-audio',
+    tags: ['audio', 'embedding', 'umap']
+  },
+  {
+    title: 'Image Embedding UMAP',
+    href: '/example/emb-images',
+    tags: ['image', 'embedding', 'umap']
+  },
+  {
     title: '3D Objects',
     tags: ['3d'],
     comingSoon: true
