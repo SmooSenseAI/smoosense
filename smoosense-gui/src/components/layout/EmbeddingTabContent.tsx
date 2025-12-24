@@ -119,7 +119,7 @@ export default function EmbeddingTabContent() {
               {selectedItems.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-muted-foreground text-center">
-                    <p className="text-sm">Click or lasso select points</p>
+                    <p className="text-sm">Lasso select points</p>
                     <p className="text-xs mt-1">to view them here</p>
                   </div>
                 </div>

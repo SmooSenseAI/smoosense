@@ -162,7 +162,7 @@ export default function ExampleEmbImages() {
             <h3 className="font-medium">Selected Images</h3>
             <p className="text-xs text-muted-foreground mt-1">
               {selectedItems.length === 0
-                ? 'Click or lasso select points to view images'
+                ? 'Lasso select points to view images'
                 : `${selectedItems.length} item${selectedItems.length !== 1 ? 's' : ''} selected`}
             </p>
           </div>
@@ -171,7 +171,7 @@ export default function ExampleEmbImages() {
             {selectedItems.length === 0 ? (
               <div className="h-full flex items-center justify-center">
                 <div className="text-muted-foreground text-center">
-                  <p className="text-sm">Click or lasso select points</p>
+                  <p className="text-sm">Lasso select points</p>
                   <p className="text-xs mt-1">to view images here</p>
                 </div>
               </div>

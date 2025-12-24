@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import AudioPlayer from 'react-h5-audio-player'
 import 'react-h5-audio-player/lib/styles.css'
 import WaveForm from '@/components/audio/WaveForm'
@@ -34,6 +34,15 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false, alt }: Ric
     }
   }
 
+  // Try to play when audio data is loaded and autoPlay is enabled
+  useEffect(() => {
+    if (autoPlay && audioData && audioRef.current?.audio?.current) {
+      audioRef.current.audio.current.play().catch(() => {
+        // Ignore autoplay errors - browser may block until user interaction
+      })
+    }
+  }, [autoPlay, audioData])
+
   // Show error message if loading failed
   if (error) {
     return (
@@ -66,7 +75,7 @@ export default function RichAudioPlayer({ audioUrl, autoPlay = false, alt }: Ric
         ref={audioRef}
         src={audioUrl}
         autoPlay={autoPlay}
-        autoPlayAfterSrcChange={false}
+        autoPlayAfterSrcChange={autoPlay}
         showJumpControls={false}
         customAdditionalControls={[]}
         layout="horizontal-reverse"

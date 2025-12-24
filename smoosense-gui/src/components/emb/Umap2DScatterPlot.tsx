@@ -351,5 +351,4 @@ const Umap2DScatterPlot = React.memo(function Umap2DScatterPlot({
   )
 })
 
-
 export default Umap2DScatterPlot

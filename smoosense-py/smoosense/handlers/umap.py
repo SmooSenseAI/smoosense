@@ -34,7 +34,7 @@ def compute_umap() -> Response:
         return jsonify(
             {
                 "status": "error",
-                "error": "UMAP is not installed. Install with: pip install 'smoosense[emb]'",
+                "error": 'UMAP is not installed. Install with: pip install "smoosense[emb]" or uv tool install -U "smoosense[emb]"',
             }
         )
 
