@@ -309,10 +309,17 @@ def main(
 
         sense-videos *.mp4 *.mov --output-path ./mydb/videos.lance
     """
+    from smoosense.cli.server import run_app
+
     process_videos(
         files=files,
         output_path=output_path,
     )
+
+    # Open the table in SmooSense
+    abs_output_path = os.path.abspath(output_path)
+    page_path = f"/Table?tablePath={abs_output_path}"
+    run_app(page_path=page_path, port=None)
 
 
 if __name__ == "__main__":

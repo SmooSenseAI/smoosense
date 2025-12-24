@@ -252,10 +252,17 @@ def main(
 
         python -m smoosense.emb.ingest *.jpg *.png --output-path ./mydb/emb.lance
     """
+    from smoosense.cli.server import run_app
+
     process_images(
         files=files,
         output_path=output_path,
     )
+
+    # Open the table in SmooSense
+    abs_output_path = os.path.abspath(output_path)
+    page_path = f"/Table?tablePath={abs_output_path}"
+    run_app(page_path=page_path, port=None)
 
 
 if __name__ == "__main__":
