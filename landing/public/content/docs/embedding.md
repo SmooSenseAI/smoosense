@@ -51,9 +51,7 @@ Usage: parquet-to-lance [OPTIONS] PARQUET_PATH LANCE_PATH
 SmooSense integrated vector search with [Lance index](https://docs.lancedb.com/indexing/vector-index).
 When a vector index is found, you can run vector search with a single click.
 
-![](/images/emb/emb-search.jpg)
-
-Try yourself: [link](https://demo.smoosense.ai/Table?tablePath=s3%3A%2F%2Fsmoosense-demo%2Fembedding%2Fphotos%2Fimages_table.lance)
+[![](/images/emb/emb-search.jpg)](https://demo.smoosense.ai/Table?tablePath=s3%3A%2F%2Fsmoosense-demo%2Fembedding%2Fphotos%2Fimages_table.lance)
 
 ## Interactive UMAP visualization
 [UMAP](https://umap-learn.readthedocs.io/) (Uniform Manifold Approximation and Projection) reduces high-dimensional embeddings
