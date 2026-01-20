@@ -479,5 +479,30 @@ export function createMarkdownComponents(headerMap?: Map<string, string>) {
         {children}
       </Box>
     ),
+    blockquote: ({ children }: any) => (
+      <Box
+        as="blockquote"
+        borderLeftWidth="4px"
+        borderLeftColor="primary.400"
+        pl={4}
+        py={2}
+        my={4}
+        bg="whiteAlpha.50"
+        borderRadius="md"
+        color="gray.300"
+        fontStyle="italic"
+      >
+        {children}
+      </Box>
+    ),
+    em: ({ children }: any) => (
+      <Box
+        as="em"
+        color="orange.300"
+        fontStyle="italic"
+      >
+        {children}
+      </Box>
+    ),
   }
 }
