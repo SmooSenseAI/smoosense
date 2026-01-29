@@ -165,13 +165,10 @@ const HeaderStatsCellRendererImpl = memo(function HeaderStatsCellRendererImpl({
         </div>
       )}
       
-      {statsData && (
-        <ColumnFilterCard
-          columnName={columnName}
-          onClose={handleClosePopover}
-        />
-      )}
-      
+      <ColumnFilterCard
+        columnName={columnName}
+        onClose={handleClosePopover}
+      />
 
     </div>
   )

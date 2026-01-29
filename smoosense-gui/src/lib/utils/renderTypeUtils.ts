@@ -4,19 +4,21 @@ import { getFileType, FileType } from './fileTypes'
 import { isUrl, isAllUrlType } from './urlUtils'
 
 /**
- * Check if a render type is a media type (image, video, pdf, or image mask)
+ * Check if a render type is a media type (image, video, pdf, image mask, or media lists)
  */
 export function isMediaType(renderType: RenderType): boolean {
   return [
     RenderType.ImageUrl,
     RenderType.VideoUrl,
     RenderType.PdfUrl,
-    RenderType.ImageMask
+    RenderType.ImageMask,
+    RenderType.ImageList,
+    RenderType.VideoList
   ].includes(renderType)
 }
 
 /**
- * Check if a render type supports visual content (media + iframe + bbox + audio + json + huggingface media)
+ * Check if a render type supports visual content (media + iframe + bbox + audio + json + huggingface media + media lists)
  */
 export function isVisualType(renderType: RenderType): boolean {
   return [
@@ -28,7 +30,10 @@ export function isVisualType(renderType: RenderType): boolean {
     RenderType.Bbox,
     RenderType.AudioUrl,
     RenderType.Json,
-    RenderType.HuggingFaceMedia
+    RenderType.HuggingFaceMedia,
+    RenderType.ImageList,
+    RenderType.VideoList,
+    RenderType.AudioList
   ].includes(renderType)
 }
 
