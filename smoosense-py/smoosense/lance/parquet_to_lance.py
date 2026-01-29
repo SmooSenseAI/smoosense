@@ -75,6 +75,23 @@ def is_float_or_double_list(col_type: pa.DataType) -> bool:
     return bool(pa.types.is_floating(element_type))
 
 
+def convert_timestamps_to_utc(table: pa.Table) -> pa.Table:
+    """
+    Convert timezone-aware timestamp columns to UTC.
+    Lance doesn't support non-UTC timezone-aware timestamps.
+    """
+    for i, field in enumerate(table.schema):
+        if pa.types.is_timestamp(field.type) and field.type.tz is not None:
+            if field.type.tz != "UTC":
+                # Convert to UTC
+                col = table.column(i)
+                # Cast to UTC timestamp
+                utc_type = pa.timestamp(field.type.unit, tz="UTC")
+                new_col = col.cast(utc_type)
+                table = table.set_column(i, field.name, new_col)
+    return table
+
+
 def get_embedding_columns(schema: pa.Schema, min_dim: int = 10) -> list[str]:
     """
     Find columns that are likely embeddings (fixed-size float/double arrays with dim > min_dim).
@@ -158,6 +175,9 @@ def main(parquet_path: str, lance_path: str) -> None:
             new_col = convert_to_fixed_size_list(old_col, size)
             table = table.set_column(col_idx, col_name, new_col)
             print(f"   ✓ Converted '{col_name}' to fixed_size_list[{size}]")
+
+    # Convert timezone-aware timestamps to UTC (Lance doesn't support non-UTC timezones)
+    table = convert_timestamps_to_utc(table)
 
     # Show final schema
     print("📋 Final schema:")
