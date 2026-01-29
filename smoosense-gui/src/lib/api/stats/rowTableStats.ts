@@ -3,7 +3,7 @@ import type { Stats } from '../queries'
 import { executeQueryAsListOfDict } from '../queries'
 import { getFileType, FileType } from '@/lib/utils/fileTypes'
 
-export async function getRowTableStats(tablePath: string, dispatch: AppDispatch, queryEngine: string): Promise<Record<string, Stats> | null> {
+export async function getRowTableStats(tablePath: string, dispatch: AppDispatch): Promise<Record<string, Stats> | null> {
   // Check if the file is a row-based table that DuckDB can query directly
   const fileType = getFileType(tablePath)
 
@@ -15,7 +15,7 @@ export async function getRowTableStats(tablePath: string, dispatch: AppDispatch,
   try {
     const statsQuery = `SUMMARIZE SELECT * FROM '${tablePath}'`
 
-    const rows = await executeQueryAsListOfDict(statsQuery, `row_table_stats`, dispatch, queryEngine, tablePath)
+    const rows = await executeQueryAsListOfDict(statsQuery, `row_table_stats`, dispatch)
     const statsMap: Record<string, Stats> = {}
 
     for (const row of rows) {

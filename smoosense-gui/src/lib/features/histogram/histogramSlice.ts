@@ -24,7 +24,6 @@ interface FetchHistogramParams {
   histogramColumn: string
   histogramBreakdownColumn: string | null
   tablePath: string
-  queryEngine: string
   filterCondition: string | null
   histogramStatsData: {
     bin: {
@@ -41,7 +40,7 @@ const fetchHistogramFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<HistogramGroup[]> => {
-  const { histogramColumn, histogramBreakdownColumn, tablePath, queryEngine, filterCondition, histogramStatsData } = params
+  const { histogramColumn, histogramBreakdownColumn, tablePath, filterCondition, histogramStatsData } = params
   
   if (!histogramStatsData?.bin) {
     throw new Error('Missing histogram bin data')
@@ -53,16 +52,13 @@ const fetchHistogramFunction = async (
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
 
-  // Use lance_table when queryEngine is lance, otherwise use tablePath
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
-
   // Build query
   const query = `
     WITH filtered AS (
       SELECT
         ${sanitizeName(histogramColumn)} AS value,
         ${isNil(histogramBreakdownColumn) ? 'NULL' : sanitizeName(histogramBreakdownColumn)} AS breakdown
-      FROM ${tableRef}
+      FROM '${tablePath}'
       ${additionalWhere} value IS NOT NULL
     )
     SELECT breakdown, FLOOR((value - ${min}) / ${step}) AS binIdx,
@@ -72,7 +68,7 @@ const fetchHistogramFunction = async (
     ORDER BY 1, 2
   `
 
-  const data = await executeQueryAsListOfDict(query, 'histogram', dispatch, queryEngine, tablePath)
+  const data = await executeQueryAsListOfDict(query, 'histogram', dispatch)
 
   // Process data into histogram groups
   const grouped = _(data as unknown as HistogramDataPoint[])

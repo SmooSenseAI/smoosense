@@ -47,8 +47,6 @@ export const queryFilteredColumnStats = createAsyncThunk<
       keyPrefix: 'colFilteredStats',
       sqlQuery,
       filterType,
-      queryEngine,
-      tablePath
     })
   }
 )

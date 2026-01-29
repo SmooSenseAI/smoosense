@@ -218,7 +218,12 @@ class DummyDataGenerator:
         lance_columns = []
         lance_column_names = []
         for i, field in enumerate(table.schema):
-            if not (pa.types.is_struct(field.type) or pa.types.is_map(field.type)):
+            if not (
+                pa.types.is_struct(field.type)
+                or pa.types.is_map(field.type)
+                or pa.types.is_float16(field.type)
+                or pa.types.is_null(field.type)
+            ):
                 lance_columns.append(table.column(i))
                 lance_column_names.append(field.name)
             else:

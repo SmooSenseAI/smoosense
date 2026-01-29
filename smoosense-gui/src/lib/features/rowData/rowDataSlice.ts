@@ -7,18 +7,16 @@ export type RowDataState = BaseAsyncDataState<Record<string, unknown>[]>
 
 interface FetchRowDataParams {
   query: string
-  tablePath: string
-  queryEngine: string
 }
 
 // Row data fetch function
 const fetchRowDataFunction = async (
-  { query, tablePath, queryEngine }: FetchRowDataParams,
+  { query }: FetchRowDataParams,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<Record<string, unknown>[]> => {
   // Fetch the raw row data only
-  const rowData = await executeQueryAsListOfDict(query, 'rowData', dispatch, queryEngine, tablePath)
+  const rowData = await executeQueryAsListOfDict(query, 'rowData', dispatch)
   return rowData
 }
 

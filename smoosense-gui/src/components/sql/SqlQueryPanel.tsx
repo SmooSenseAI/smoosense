@@ -73,9 +73,7 @@ export default function SqlQueryPanel() {
   // Initialize default query when no query exists and tablePath is available
   useEffect(() => {
     if (tablePath && !sqlQuery) {
-      // Use lance_table when queryEngine is lance, otherwise use tablePath
-      const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
-      dispatch(setSqlQuery(`SELECT * FROM ${tableRef} LIMIT 10`))
+      dispatch(setSqlQuery(`SELECT * FROM '${tablePath}' LIMIT 10`))
     }
   }, [tablePath, queryEngine, sqlQuery, dispatch])
 
@@ -95,7 +93,7 @@ export default function SqlQueryPanel() {
 
     try {
       const sqlKey = generateSqlKey('user_query')
-      const result = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+      const result = await executeQuery(sqlQuery, sqlKey, dispatch)
 
       // Save to Redux store
       dispatch(setSqlResult(result))

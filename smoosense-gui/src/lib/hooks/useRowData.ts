@@ -25,9 +25,6 @@ export function useRowData(): UseRowDataResult {
   const query = useMemo(() => {
     if (!tablePath) return null
 
-    // Use lance_table when queryEngine is lance, otherwise use tablePath
-    const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
-
     const offset = (pageNumber - 1) * pageSize
 
     // Combine SQL condition with sampling condition using AND
@@ -43,7 +40,7 @@ export function useRowData(): UseRowDataResult {
     // When samplingCondition is not null, use reservoir sampling
     if (samplingCondition !== null) {
       return `SELECT *
-    FROM (SELECT * FROM ${tableRef}${combinedCondition})
+    FROM (SELECT * FROM '${tablePath}'${combinedCondition})
     ORDER BY random()  --- Changed from reservoir to random. Reservoir does not work for large dataset.
     LIMIT ${pageSize}`
     }
@@ -55,8 +52,8 @@ export function useRowData(): UseRowDataResult {
       orderByClause = ` ORDER BY ${sortClauses.join(', ')}`
     }
 
-    return `SELECT * FROM ${tableRef}${combinedCondition}${orderByClause} LIMIT ${pageSize} OFFSET ${offset}`
-  }, [tablePath, queryEngine, pageSize, pageNumber, sqlCondition, samplingCondition, sorting])
+    return `SELECT * FROM '${tablePath}'${combinedCondition}${orderByClause} LIMIT ${pageSize} OFFSET ${offset}`
+  }, [tablePath, pageSize, pageNumber, sqlCondition, samplingCondition, sorting])
 
   const { data, loading, error, setNeedRefresh } = useAsyncData({
     stateSelector: (state) => state.rowData,

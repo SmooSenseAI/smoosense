@@ -21,11 +21,9 @@ export function useTotalRows(): number | null {
 
       try {
         // Build COUNT query with filter conditions
-        // Use lance_table when queryEngine is lance, otherwise use tablePath
-        const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
         const whereCondition = filterCondition ? ` WHERE ${filterCondition}` : ''
-        const countQuery = `SELECT COUNT(*) as total FROM ${tableRef}${whereCondition}`
-        const result = await executeQueryAsListOfDict(countQuery, 'totalRows', dispatch, queryEngine, tablePath)
+        const countQuery = `SELECT COUNT(*) as total FROM '${tablePath}'${whereCondition}`
+        const result = await executeQueryAsListOfDict(countQuery, 'totalRows', dispatch)
         
         if (result && result.length > 0) {
           const total = Number(result[0].total)

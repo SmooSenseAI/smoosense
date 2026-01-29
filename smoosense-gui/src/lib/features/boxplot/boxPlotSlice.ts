@@ -16,7 +16,6 @@ interface FetchBoxPlotParams {
   boxPlotColumns: string[]
   boxPlotBreakdownColumn: string | null
   tablePath: string
-  queryEngine: string
   filterCondition: string | null
 }
 
@@ -26,7 +25,7 @@ const fetchBoxPlotFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<BoxPlotDataPoint[]> => {
-  const { boxPlotColumns, boxPlotBreakdownColumn, tablePath, queryEngine, filterCondition } = params
+  const { boxPlotColumns, boxPlotBreakdownColumn, tablePath, filterCondition } = params
   
   if (boxPlotColumns.length === 0) {
     return []
@@ -47,12 +46,6 @@ const fetchBoxPlotFunction = async (
     } AS ${e}`
   }
 
-  // Use lance_table when queryEngine is lance, otherwise use tablePath
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
-
-  // Build FROM clause
-  const fromClause = `FROM ${tableRef}`
-
   // Build WHERE clause
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
 
@@ -61,14 +54,14 @@ const fetchBoxPlotFunction = async (
     WITH filtered AS (
       SELECT ${isNil(boxPlotBreakdownColumn) ? 'NULL' : sanitizeName(boxPlotBreakdownColumn)} AS breakdown,
       ${boxPlotColumns.map(sanitizeName).join(', ')}
-      ${fromClause}
+      FROM '${tablePath}'
       ${whereClause}
     ) SELECT breakdown, COUNT(*) AS count, ${boxPlotColumns.map(c => boxExpr(c)).join(', ')}
     FROM filtered
     GROUP BY breakdown
   `
 
-  const data = await executeQueryAsListOfDict(query, 'boxPlot', dispatch, queryEngine, tablePath)
+  const data = await executeQueryAsListOfDict(query, 'boxPlot', dispatch)
 
   // Return raw data directly without grouping
   return data as unknown as BoxPlotDataPoint[]

@@ -3,7 +3,6 @@ import os
 from typing import Optional
 
 import boto3
-import duckdb
 from botocore.client import BaseClient
 from flask import Flask
 from pydantic import ConfigDict, validate_call
@@ -16,7 +15,7 @@ from smoosense.handlers.parquet import parquet_bp
 from smoosense.handlers.query import query_bp
 from smoosense.handlers.s3 import s3_bp
 from smoosense.handlers.umap import umap_bp
-from smoosense.utils.duckdb_connections import duckdb_connection_using_s3
+from smoosense.utils.duckdb_connections import duckdb_connection_default, duckdb_connection_using_s3
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,7 +50,7 @@ class SmooSenseApp:
         if has_s3_config:
             self.duckdb_connection_maker = duckdb_connection_using_s3(s3_client=self.s3_client)
         else:
-            self.duckdb_connection_maker = lambda: duckdb.connect()
+            self.duckdb_connection_maker = duckdb_connection_default()
 
         self.passover_config = {
             "S3_PREFIX_TO_SAVE_SHAREABLE_LINK": s3_prefix_to_save_shareable_link,

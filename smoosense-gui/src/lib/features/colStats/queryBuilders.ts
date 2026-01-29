@@ -8,15 +8,13 @@ import { INVALID_COLUMN_NAME } from '@/lib/utils/columnNameUtils'
 export function buildCategoricalStatsQuery(
   columnName: string,
   tablePath: string,
-  filterCondition: string | null | undefined,
-  queryEngine: string
+  filterCondition: string | null | undefined
 ): string {
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
 
   return `
     WITH filtered AS (
-      SELECT * FROM ${tableRef} ${whereClause}
+      SELECT * FROM '${tablePath}' ${whereClause}
     ), stats AS (
       SELECT
         COUNT(*) AS cnt_all,
@@ -50,15 +48,13 @@ export function buildHistogramStatsQuery(
   columnName: string,
   tablePath: string,
   histogramNumberOfBins: number,
-  filterCondition: string | null | undefined,
-  queryEngine: string
+  filterCondition: string | null | undefined
 ): string {
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
 
   return `
     WITH filtered AS (
-      SELECT * FROM ${tableRef} ${whereClause}
+      SELECT * FROM '${tablePath}' ${whereClause}
     ), stats AS (
       SELECT
         COUNT(*) AS cnt_all,
@@ -109,11 +105,9 @@ export function buildHistogramStatsQuery(
 export function buildTextStatsQuery(
   columnName: string,
   tablePath: string,
-  filterCondition: string | null | undefined,
-  queryEngine: string
+  filterCondition: string | null | undefined
 ): string {
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
 
   return `
     SELECT
@@ -125,7 +119,7 @@ export function buildTextStatsQuery(
       COUNT(*) AS cnt_all,
       COUNT_IF(${sanitizeName(columnName)} IS NULL) AS cnt_null,
       COUNT(*) - COUNT_IF(${sanitizeName(columnName)} IS NULL) AS cnt_not_null
-    FROM ${tableRef}
+    FROM '${tablePath}'
     ${whereClause}
   `.trim()
 }
@@ -151,9 +145,6 @@ export function buildColStatsQueryFromState({
     throw new Error('No table path found in state')
   }
 
-  // Get query engine from UI state
-  const queryEngine = state.ui.queryEngine
-
   // Get histogram bins from UI state
   let histogramNumberOfBins = state.ui.histogramNumberOfBins
 
@@ -174,11 +165,11 @@ export function buildColStatsQueryFromState({
 
   // Build and return appropriate query
   if (filterType === FilterType.ENUM) {
-    return buildCategoricalStatsQuery(columnName, tablePath, whereClause, queryEngine)
+    return buildCategoricalStatsQuery(columnName, tablePath, whereClause)
   } else if (filterType === FilterType.RANGE) {
-    return buildHistogramStatsQuery(columnName, tablePath, histogramNumberOfBins, whereClause, queryEngine)
+    return buildHistogramStatsQuery(columnName, tablePath, histogramNumberOfBins, whereClause)
   } else {
     // TEXT or NONE - default to text query
-    return buildTextStatsQuery(columnName, tablePath, whereClause, queryEngine)
+    return buildTextStatsQuery(columnName, tablePath, whereClause)
   }
 }

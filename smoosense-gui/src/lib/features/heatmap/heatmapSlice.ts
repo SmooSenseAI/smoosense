@@ -32,7 +32,6 @@ interface FetchHeatmapParams {
   heatmapXColumn: string
   heatmapYColumn: string
   tablePath: string
-  queryEngine: string
   filterCondition: string | null
 }
 
@@ -81,7 +80,7 @@ const fetchHeatmapFunction = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any
 ): Promise<HeatmapResult> => {
-  const { heatmapXColumn, heatmapYColumn, tablePath, queryEngine, filterCondition } = params
+  const { heatmapXColumn, heatmapYColumn, tablePath, filterCondition } = params
   
   if (!heatmapXColumn || !heatmapYColumn || !tablePath) {
     throw new Error('Missing required parameters for heatmap')
@@ -91,22 +90,19 @@ const fetchHeatmapFunction = async (
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
 
-  // Use lance_table when queryEngine is lance, otherwise use tablePath
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
-
   const query = `
 WITH filtered AS (
       SELECT
         ${sanitizeName(heatmapXColumn)} AS x,
         ${sanitizeName(heatmapYColumn)} AS y
-      FROM ${tableRef}
+      FROM '${tablePath}'
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
   ) SELECT x, y, COUNT(*) AS cnt
    FROM filtered
    GROUP BY x, y
   `
 
-  const data = (await executeQueryAsListOfDict(query, 'heatMap', dispatch, queryEngine, tablePath) as unknown) as HeatmapDataPoint[]
+  const data = (await executeQueryAsListOfDict(query, 'heatMap', dispatch) as unknown) as HeatmapDataPoint[]
 
   const heatMap = pivotData(data)
   return heatMap

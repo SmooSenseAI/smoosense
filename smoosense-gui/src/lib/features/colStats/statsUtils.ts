@@ -76,16 +76,12 @@ export async function queryColumnStats({
   keyPrefix,
   sqlQuery,
   filterType,
-  queryEngine,
-  tablePath
 }: {
   columnName: string
   dispatch: AppDispatch
   keyPrefix: string
   sqlQuery: string
   filterType: FilterType
-  queryEngine: string
-  tablePath: string
 }): Promise<{ columnName: string; stats: ColumnStats }> {
   // Set up timeout controller
   const controller = new AbortController()
@@ -96,7 +92,7 @@ export async function queryColumnStats({
     }, 15000) // 15 second timeout
 
     const sqlKey = generateSqlKey(`${keyPrefix}_${columnName}`)
-    const result = await executeQueryAsListOfDict(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+    const result = await executeQueryAsListOfDict(sqlQuery, sqlKey, dispatch)
     clearTimeout(timeoutId)
 
     if (controller.signal.aborted) {

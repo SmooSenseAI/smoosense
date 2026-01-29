@@ -51,8 +51,6 @@ export const queryBaseColumnStats = createAsyncThunk<
       keyPrefix: 'colstats',
       sqlQuery,
       filterType,
-      queryEngine,
-      tablePath
     })
   }
 )

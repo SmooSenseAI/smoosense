@@ -41,8 +41,6 @@ export async function executeQuery(
   sqlQuery: string,
   sqlKey: string,
   dispatch: AppDispatch,
-  queryEngine: string,
-  tablePath: string
 ): Promise<QueryResult> {
   if (!sqlQuery.trim()) {
     throw new Error('Query cannot be empty')
@@ -59,8 +57,6 @@ export async function executeQuery(
 
   const requestData = {
     query: sqlQuery.trim(),
-    queryEngine,
-    tablePath
   }
 
   // Executing SQL query
@@ -106,10 +102,8 @@ export async function executeQueryAsListOfDict(
   sqlKey: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: any,
-  queryEngine: string,
-  tablePath: string
 ): Promise<RowObject[]> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
 
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
@@ -125,10 +119,8 @@ export async function executeQueryAsDictOfList(
   sqlQuery: string,
   sqlKey: string,
   dispatch: AppDispatch,
-  queryEngine: string,
-  tablePath: string
 ): Promise<DictOfList> {
-  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+  const rawResult = await executeQuery(sqlQuery, sqlKey, dispatch)
 
   if (rawResult.status === 'error') {
     throw new Error(rawResult.error || 'Query failed')
@@ -150,10 +142,8 @@ export async function getColumnMetadata(
     throw new Error('Table path cannot be empty')
   }
 
-  // Use lance_table when queryEngine is lance, otherwise use tablePath
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
-  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM ${tableRef})`
-  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch, queryEngine, tablePath)
+  const metaQuery = `SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '${tablePath}')`
+  const rows = await executeQueryAsListOfDict(metaQuery, `column_metadata`, dispatch)
 
   // Get stats if available (Lance, Parquet, or row-based tables)
   const stats = await getTableStats(tablePath, dispatch, queryEngine)

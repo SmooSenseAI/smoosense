@@ -15,9 +15,9 @@ export async function getTableStats(tablePath: string, dispatch: AppDispatch, qu
   const fileType = getFileType(tablePath)
 
   if (fileType === FileType.ColumnarTable) {
-    return getParquetStats(tablePath, dispatch, queryEngine)
+    return getParquetStats(tablePath, dispatch)
   } else if (fileType === FileType.RowTable) {
-    return getRowTableStats(tablePath, dispatch, queryEngine)
+    return getRowTableStats(tablePath, dispatch)
   } else {
     return null
   }

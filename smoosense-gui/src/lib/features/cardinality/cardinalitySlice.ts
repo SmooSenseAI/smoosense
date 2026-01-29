@@ -92,12 +92,8 @@ export const queryCardinality = createAsyncThunk<
   { dispatch: AppDispatch; state: RootState }
 >(
   'cardinality/queryCardinality',
-  async ({ columnName, tablePath }, { dispatch, getState }) => {
-    const state = getState()
-    const queryEngine = state.ui.queryEngine
+  async ({ columnName, tablePath }, { dispatch }) => {
     const cutoff = 1000
-    // Use lance_table when queryEngine is lance, otherwise use tablePath
-    const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
     const sqlQuery = `
       SELECT
         approx_count_distinct(${sanitizeName(columnName)}) AS approxCntD,
@@ -110,7 +106,7 @@ export const queryCardinality = createAsyncThunk<
           WHEN approx_count_distinct(${sanitizeName(columnName)}) <= ${cutoff} THEN 'low'
           ELSE 'high'
         END AS cardinality
-      FROM ${tableRef}
+      FROM '${tablePath}'
       WHERE ${sanitizeName(columnName)} IS NOT NULL
     `.trim()
 
@@ -123,7 +119,7 @@ export const queryCardinality = createAsyncThunk<
       }, 5000) // 5 second timeout
 
       const sqlKey = generateSqlKey(`cardinality_${columnName}`)
-      const result = await executeQuery(sqlQuery, sqlKey, dispatch, queryEngine, tablePath)
+      const result = await executeQuery(sqlQuery, sqlKey, dispatch)
       clearTimeout(timeoutId)
 
       if (controller.signal.aborted) {

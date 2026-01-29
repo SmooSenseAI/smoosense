@@ -14,6 +14,21 @@ logger = logging.getLogger(__name__)
 DuckdbConnectionMaker = Callable[[], DuckDBPyConnection]
 
 
+@validate_call()
+def duckdb_connection_default() -> DuckdbConnectionMaker:
+    def maker() -> DuckDBPyConnection:
+        con = duckdb.connect()
+
+        # Now install and load the extension
+        con.execute("INSTALL httpfs")
+        con.execute("LOAD httpfs")
+        con.execute("INSTALL lance FROM community")
+        con.execute("LOAD lance")
+        return con
+
+    return maker
+
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def duckdb_connection_using_s3(
     s3_client: Optional[BaseClient] = None,
@@ -28,7 +43,7 @@ def duckdb_connection_using_s3(
         aws_key = credentials.access_key
         aws_secret = credentials.secret_key
         aws_token = credentials.token  # May be None if not temporary credentials
-        con = duckdb.connect()
+        con = duckdb_connection_default()()
         home_directory = os.getenv("HOME", "/tmp")
         temp_directory = os.path.join(home_directory, ".tmp")
 
@@ -43,6 +58,8 @@ def duckdb_connection_using_s3(
         # Now install and load the extension
         con.execute("INSTALL httpfs")
         con.execute("LOAD httpfs")
+        con.execute("INSTALL lance FROM community")
+        con.execute("LOAD lance")
         # Configure DuckDB S3 settings
         con.execute(f"SET s3_region='{region}'")
         con.execute(f"SET s3_access_key_id='{aws_key}'")

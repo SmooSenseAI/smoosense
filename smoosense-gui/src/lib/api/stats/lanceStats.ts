@@ -9,9 +9,9 @@ export async function getLanceStats(tablePath: string, dispatch: AppDispatch, qu
   }
 
   try {
-    const statsQuery = `SUMMARIZE SELECT * FROM lance_table`
+    const statsQuery = `SUMMARIZE SELECT * FROM '${tablePath}'`
 
-    const rows = await executeQueryAsListOfDict(statsQuery, `lance_stats`, dispatch, queryEngine, tablePath)
+    const rows = await executeQueryAsListOfDict(statsQuery, `lance_stats`, dispatch)
     const statsMap: Record<string, Stats> = {}
 
     for (const row of rows) {

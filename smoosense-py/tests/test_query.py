@@ -62,9 +62,7 @@ class TestQueryEndpoint(unittest.TestCase):
         lance_path = os.path.join(PWD, "../../data/lance/dummy_data_various_types.lance")
 
         query_payload = {
-            "query": "SELECT COUNT(*) as row_count FROM lance_table",
-            "queryEngine": "lance",
-            "tablePath": lance_path,
+            "query": f"SELECT COUNT(*) as row_count FROM '{lance_path}'",
         }
 
         response = self.client.post("/api/query", json=query_payload)

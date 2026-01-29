@@ -31,7 +31,6 @@ interface FetchBubblePlotParams {
   bubblePlotBreakdownColumn: string | null // Optional - BubblePlot can work without breakdown column
   bubblePlotColorColumn: string // Optional - column to compute AVG for coloring (empty string = not set)
   tablePath: string
-  queryEngine: string
   filterCondition: string | null
   xBin: {
     min: number
@@ -57,7 +56,6 @@ const fetchBubblePlotFunction = async (
     bubblePlotBreakdownColumn,
     bubblePlotColorColumn,
     tablePath,
-    queryEngine,
     filterCondition,
     xBin,
     yBin
@@ -66,9 +64,6 @@ const fetchBubblePlotFunction = async (
   // Use filter condition from parameters
   const whereClause = filterCondition ? `WHERE ${filterCondition}` : ''
   const additionalWhere = whereClause ? `${whereClause} AND` : 'WHERE'
-
-  // Use lance_table when queryEngine is lance, otherwise use tablePath
-  const tableRef = queryEngine === 'lance' ? 'lance_table' : `'${tablePath}'`
 
   // Build query with optional color column
   // Handle special __bubble_size__ value - use COUNT(*) as color value
@@ -89,7 +84,7 @@ const fetchBubblePlotFunction = async (
         ${sanitizeName(bubblePlotYColumn)} AS y,
         ${isNil(bubblePlotBreakdownColumn) ? 'NULL' : sanitizeName(bubblePlotBreakdownColumn)} AS breakdown,
         ${colorColumnSelect}
-      FROM ${tableRef}
+      FROM '${tablePath}'
       ${additionalWhere} x IS NOT NULL AND y IS NOT NULL
     ), binned AS (
       SELECT
@@ -109,7 +104,7 @@ const fetchBubblePlotFunction = async (
     ORDER BY 1, 2, 3
   `
 
-  const data = await executeQueryAsListOfDict(query, 'bubblePlot', dispatch, queryEngine, tablePath)
+  const data = await executeQueryAsListOfDict(query, 'bubblePlot', dispatch)
 
   // Process data into bubble plot groups
   const grouped = _(data as unknown as BubblePlotDataPoint[])

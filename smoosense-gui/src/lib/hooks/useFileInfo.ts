@@ -51,7 +51,7 @@ export function useFileInfo(): UseFileInfoResult {
           try {
             const metadataQuery = `SELECT CAST(key AS VARCHAR) AS key, CAST(value AS VARCHAR) AS value FROM parquet_kv_metadata('${tablePath}')`
             const sqlKey = generateSqlKey('parquet_kv_metadata')
-            const metadataResult = await executeQueryAsListOfDict(metadataQuery, sqlKey, dispatch, queryEngine, tablePath)
+            const metadataResult = await executeQueryAsListOfDict(metadataQuery, sqlKey, dispatch)
 
             // Convert the result to metadata object
             for (const row of metadataResult) {

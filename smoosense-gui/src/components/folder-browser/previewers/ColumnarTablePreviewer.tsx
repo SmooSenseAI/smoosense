@@ -47,7 +47,7 @@ export default function ColumnarTablePreviewer({ item }: ColumnarTablePreviewerP
       
       try {
         const sqlKey = generateSqlKey('parquet_metadata')
-        const result = await executeQueryAsListOfDict(query, sqlKey, dispatch, 'duckdb', item.path)
+        const result = await executeQueryAsListOfDict(query, sqlKey, dispatch)
         setData(result)
       } catch (err) {
         console.error('Error executing parquet metadata query:', err)
@@ -58,7 +58,6 @@ export default function ColumnarTablePreviewer({ item }: ColumnarTablePreviewerP
     }
     
     fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, dispatch, isParquet])
   // Note: item.path is not included because it's already captured in the query dependency
 

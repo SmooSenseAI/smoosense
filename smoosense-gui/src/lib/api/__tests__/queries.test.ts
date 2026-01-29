@@ -184,8 +184,6 @@ describe('getColumnMetadata', () => {
       },
       body: JSON.stringify({
         query: "SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM '/test/file.csv')",
-        queryEngine: 'duckdb',
-        tablePath: '/test/file.csv'
       }),
     })
   })

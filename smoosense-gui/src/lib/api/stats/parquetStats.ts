@@ -2,7 +2,7 @@ import type { AppDispatch } from '@/lib/store'
 import type { Stats } from '../queries'
 import { executeQueryAsListOfDict } from '../queries'
 
-export async function getParquetStats(tablePath: string, dispatch: AppDispatch, queryEngine: string): Promise<Record<string, Stats> | null> {
+export async function getParquetStats(tablePath: string, dispatch: AppDispatch): Promise<Record<string, Stats> | null> {
   try {
     const statsQuery = `
       SELECT
@@ -18,7 +18,7 @@ export async function getParquetStats(tablePath: string, dispatch: AppDispatch, 
       GROUP BY path_in_schema
     `
 
-    const rows = await executeQueryAsListOfDict(statsQuery, `parquet_stats`, dispatch, queryEngine, tablePath)
+    const rows = await executeQueryAsListOfDict(statsQuery, `parquet_stats`, dispatch)
     const statsMap: Record<string, Stats> = {}
 
     for (const row of rows) {
