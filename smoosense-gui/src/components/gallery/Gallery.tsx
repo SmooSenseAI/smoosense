@@ -3,7 +3,7 @@
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { useRenderType, useRowData } from '@/lib/hooks'
 import { setJustClickedRowId } from '@/lib/features/viewing/viewingSlice'
-import { handPickRow } from '@/lib/features/handPickedRows/handPickedRowsSlice'
+import { handPickRow, PrimaryKeyValue } from '@/lib/features/handPickedRows/handPickedRowsSlice'
 import { isVisualType } from '@/lib/utils/renderTypeUtils'
 import { toast } from 'sonner'
 import GalleryControls from './GalleryControls'
@@ -17,6 +17,8 @@ export default function Gallery() {
   const columnForGalleryCaption = useAppSelector((state) => state.ui.columnForGalleryCaption)
   const galleryItemWidth = useAppSelector((state) => state.ui.galleryItemWidth)
   const galleryItemHeight = useAppSelector((state) => state.ui.galleryItemHeight)
+  const primaryKeyColumn = useAppSelector((state) => state.ui.primaryKeyColumn)
+  const pickedKeys = useAppSelector((state) => state.handPickedRows.pickedKeys)
 
   if (!rowData || rowData.length === 0) {
     return (
@@ -56,13 +58,22 @@ export default function Gallery() {
     const captionValue = row[columnForGalleryCaption]
     const renderType = renderTypeColumns[columnForGalleryVisual]
 
+    // Check if this row is picked
+    const isPicked = primaryKeyColumn
+      ? pickedKeys.includes(row[primaryKeyColumn] as PrimaryKeyValue)
+      : false
+
     const handleClick = (event: React.MouseEvent) => {
       dispatch(setJustClickedRowId(String(index)))
 
       // Check if Ctrl key (or Cmd on Mac) is pressed
       if (event.ctrlKey || event.metaKey) {
-        dispatch(handPickRow(row))
-        toast.success(`Row ${index} has been hand-picked`)
+        if (!primaryKeyColumn) {
+          toast.error('Please set a primary key column in the Hand Pick tab first')
+          return
+        }
+        const pkValue = row[primaryKeyColumn] as PrimaryKeyValue
+        dispatch(handPickRow(pkValue))
       }
     }
 
@@ -74,6 +85,7 @@ export default function Gallery() {
         visualValue={visualValue}
         captionValue={captionValue}
         renderType={renderType}
+        isPicked={isPicked}
         onClick={handleClick}
       />
     )

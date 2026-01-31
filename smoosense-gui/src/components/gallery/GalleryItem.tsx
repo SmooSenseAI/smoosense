@@ -11,6 +11,7 @@ interface GalleryItemProps {
   visualValue: unknown
   captionValue: unknown
   renderType: RenderType
+  isPicked?: boolean
   onClick?: ((event: React.MouseEvent) => void) | null
 }
 
@@ -20,6 +21,7 @@ export default function GalleryItem({
   visualValue,
   captionValue,
   renderType,
+  isPicked = false,
   onClick = null
 }: GalleryItemProps) {
   const galleryItemWidth = useAppSelector((state) => state.ui.galleryItemWidth)
@@ -30,12 +32,13 @@ export default function GalleryItem({
     height: `${galleryItemHeight + galleryCaptionHeight}px`
   }
 
-  const baseClasses = "gallery-item border rounded-lg overflow-hidden transition-all"
-  const cursorClass = onClick ? "cursor-pointer hover:shadow-md hover:ring-1 hover:ring-primary" : ""
+  const baseClasses = "gallery-item border rounded-lg overflow-hidden transition-all cursor-pointer"
+  const cursorClass = (onClick && !isPicked) ? "hover:shadow-md hover:ring-1 hover:ring-primary" : ""
+  const pickedClass = isPicked ? "ring-2 ring-attention bg-attention/10" : ""
 
   return (
     <div
-      className={`${baseClasses} ${cursorClass}`}
+      className={`${baseClasses} ${cursorClass} ${pickedClass}`}
       style={itemStyle}
       onClick={onClick ?? undefined}
     >

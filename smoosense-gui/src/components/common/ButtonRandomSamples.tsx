@@ -12,7 +12,7 @@ export default function ButtonRandomSamples() {
     <Button
       variant="outline"
       size="sm"
-      className="flex items-center gap-2"
+      className="h-7 text-xs cursor-pointer"
       onClick={() => dispatch(clickForRandomSamples())}
     >
       <RefreshCcw className="h-4 w-4" />

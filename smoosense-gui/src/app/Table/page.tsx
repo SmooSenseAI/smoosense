@@ -16,7 +16,6 @@ import PlotTabContent from '@/components/layout/PlotTabContent'
 import EmbeddingTabContent from '@/components/layout/EmbeddingTabContent'
 import Summary from '@/components/Summary'
 import SqlQueryPanel from '@/components/sql/SqlQueryPanel'
-import HandPickedRowsTable from '@/components/handpick/HandPickedRowsTable'
 import TableUrlParamsProvider from '@/components/providers/TableUrlParamsProvider'
 
 const getActiveContent = (activeTab: string) => {
@@ -171,10 +170,6 @@ function TablePageInner() {
           <PlotTabContent />
         ) : activeTab === 'Embedding' ? (
           <EmbeddingTabContent />
-        ) : activeTab === 'HandPick' ? (
-          <div className="h-full">
-            <HandPickedRowsTable />
-          </div>
         ) : (
           <div className="flex items-center justify-center h-full px-4">
             <h1 className="text-4xl font-bold text-foreground">

@@ -14,8 +14,9 @@ import NavbarSkeleton from './NavbarSkeleton'
 import FolderBrowserTabContent from '@/components/folder-browser/FolderBrowserTabContent'
 import TableStatusBar from './TableStatusBar'
 import FileInfoDialog from '@/components/common/fileInfo/FileInfoDialog'
+import HandPickBar from '@/components/handpick/HandPickBar'
 
-const mainTabs = ['Summarize', 'Table', 'Gallery', 'Plot','Embedding',  'Query'] // Hide 'HandPick' for now
+const mainTabs = ['Summarize', 'Table', 'Gallery', 'Plot', 'Embedding', 'Query']
 
 
 export default function TableNavbar() {
@@ -81,9 +82,11 @@ export default function TableNavbar() {
 
   // Second level content
   const secondLevel = (
-    <div className="h-10 px-4 relative flex items-center">
+    <div className="h-10 px-4 relative flex items-center justify-between">
       {/* Table Status Bar */}
-      {activeTab !== 'Query' && activeTab !== 'HandPick' && <TableStatusBar />}
+      {activeTab !== 'Query' ? <TableStatusBar /> : <div />}
+      {/* Hand Pick Bar */}
+      <HandPickBar />
     </div>
   )
 

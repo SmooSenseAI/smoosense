@@ -143,6 +143,11 @@
   border-radius: 0 !important;
 }
 
+/* Picked row highlight */
+.ag-row-picked {
+  background-color: color-mix(in oklch, var(--attention) 15%, transparent) !important;
+}
+
 /* React H5 Audio Player dark mode support */
 .rhap_container {
   border: 1px solid oklch(0.92 0.004 286.32);

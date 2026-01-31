@@ -50,6 +50,7 @@ interface UiState {
   boxPlotSortBy: 'min' | 'max' | 'avg' | 'q50' | 'std' | 'skewness'
   boxPlotSorting: Array<{ field: string; direction: 'asc' | 'desc' }>
   fileInfoToShow: 'size' | 'lastModified' | 'lastModifiedRelative'
+  primaryKeyColumn: string | null
 }
 
 const initialState: UiState = {
@@ -100,6 +101,7 @@ const initialState: UiState = {
   boxPlotSortBy: 'avg',
   boxPlotSorting: [],
   fileInfoToShow: 'size',
+  primaryKeyColumn: null,
 }
 
 export const uiSlice = createSlice({
@@ -257,6 +259,9 @@ export const uiSlice = createSlice({
     setFileInfoToShow: (state, action: PayloadAction<'size' | 'lastModified' | 'lastModifiedRelative'>) => {
       state.fileInfoToShow = action.payload
     },
+    setPrimaryKeyColumn: (state, action: PayloadAction<string | null>) => {
+      state.primaryKeyColumn = action.payload
+    },
     setBatchUISettings: (state, action: PayloadAction<Partial<UiState>>) => {
       // Batch update multiple UI settings at once
       Object.entries(action.payload).forEach(([key, value]) => {
@@ -341,6 +346,7 @@ export const {
   setBoxPlotSortBy,
   setBoxPlotSorting,
   setFileInfoToShow,
+  setPrimaryKeyColumn,
   setBatchUISettings
 } = uiSlice.actions
 export default uiSlice.reducer

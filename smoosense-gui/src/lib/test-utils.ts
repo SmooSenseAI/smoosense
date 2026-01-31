@@ -75,6 +75,7 @@ export function createDefaultTestState(): RootState {
       boxPlotSorting: [],
       fileInfoToShow: 'size' as const,
       showRowDetailsPanel: true,
+      primaryKeyColumn: null,
     },
     columnMeta: {
       data: null,
@@ -157,7 +158,7 @@ export function createDefaultTestState(): RootState {
       viewingId: null,
     },
     handPickedRows: {
-      rows: [],
+      pickedKeys: [],
     },
   }
 }

@@ -25,6 +25,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import ButtonRandomSamples from '@/components/common/ButtonRandomSamples'
+import PickAllButton from '@/components/handpick/PickAllButton'
 
 export default function PaginationBar() {
   const dispatch = useAppDispatch()
@@ -97,6 +98,9 @@ export default function PaginationBar() {
           </DropdownMenu>
 
         </div>
+
+        {/* Pick All Button */}
+        <PickAllButton />
 
         {/* Random Samples Button */}
         <ButtonRandomSamples />

@@ -12,7 +12,7 @@ import { AlertCircle } from 'lucide-react'
 import PaginationBar from '@/components/ui/PaginationBar'
 import { updateColumnWidth, reorderColumns, updateColumnDef, setSorting } from '@/lib/features/colDefs/agSlice'
 import { setJustClickedRowId } from '@/lib/features/viewing/viewingSlice'
-import { handPickRow } from '@/lib/features/handPickedRows/handPickedRowsSlice'
+import { handPickRow, PrimaryKeyValue } from '@/lib/features/handPickedRows/handPickedRowsSlice'
 import { InnerHeaderComponent } from './InnerHeaderComponent'
 import { toast } from 'sonner'
 
@@ -29,12 +29,14 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
   const theme = useAGGridTheme()
 
   // Combine UI selectors to reduce re-renders
-  const { rowHeight, headerPlotHeight, tablePath, sorting, samplingCondition } = useAppSelector((state) => ({
+  const { rowHeight, headerPlotHeight, tablePath, sorting, samplingCondition, primaryKeyColumn, pickedKeys } = useAppSelector((state) => ({
     rowHeight: state.ui.rowHeight,
     headerPlotHeight: state.ui.headerPlotHeight,
     tablePath: state.ui.tablePath,
     sorting: state.ag.sorting,
-    samplingCondition: state.viewing.samplingCondition
+    samplingCondition: state.viewing.samplingCondition,
+    primaryKeyColumn: state.ui.primaryKeyColumn,
+    pickedKeys: state.handPickedRows.pickedKeys
   }), shallowEqual)
 
   const defaultColDef = useMemo(() => ({
@@ -138,13 +140,17 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
     // Check if Ctrl key (or Cmd on Mac) is pressed
     const mouseEvent = event.event as MouseEvent | undefined
     if (mouseEvent && (mouseEvent.ctrlKey || mouseEvent.metaKey)) {
+      if (!primaryKeyColumn) {
+        toast.error('Please set a primary key column in the Hand Pick tab first')
+        return
+      }
       const rowData = event.data
       if (rowData) {
-        dispatch(handPickRow(rowData))
-        toast.success(`Row ${rowId} has been hand-picked`)
+        const pkValue = rowData[primaryKeyColumn] as PrimaryKeyValue
+        dispatch(handPickRow(pkValue))
       }
     }
-  }, [dispatch])
+  }, [dispatch, primaryKeyColumn])
   
   const handleSortChanged = useCallback((event: SortChangedEvent) => {
     const columns = event.api.getColumns()
@@ -179,7 +185,7 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
         sort: sort.direction,
         sortIndex: index
       }))
-      
+
       // Apply the sort state to the grid
       gridApiRef.current.applyColumnState({
         state: columnState,
@@ -187,6 +193,13 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
       })
     }
   }, [sorting])
+
+  // Refresh rows when picked keys change to update row classes
+  useEffect(() => {
+    if (gridApiRef.current) {
+      gridApiRef.current.redrawRows()
+    }
+  }, [pickedKeys])
   
 
 
@@ -197,6 +210,13 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
     }
     return rowHeight
   }, [headerPlotHeight, rowHeight])
+
+  // Function to apply CSS class for picked rows
+  const getRowClass = useCallback((params: { data?: Record<string, unknown> }) => {
+    if (!primaryKeyColumn || !params.data) return ''
+    const pkValue = params.data[primaryKeyColumn] as PrimaryKeyValue
+    return pickedKeys.includes(pkValue) ? 'ag-row-picked' : ''
+  }, [primaryKeyColumn, pickedKeys])
   
   useImperativeHandle(ref, () => ({
     scrollToColumn
@@ -247,6 +267,7 @@ const MainTable = memo(forwardRef<MainTableRef, object>((_props, ref) => {
           onSortChanged={handleSortChanged}
           defaultColDef={defaultColDef}
           getRowHeight={getRowHeight}
+          getRowClass={getRowClass}
           pinnedTopRowData={pinnedTopRowData}
           suppressRowVirtualisation={true}
           suppressColumnVirtualisation={true}
