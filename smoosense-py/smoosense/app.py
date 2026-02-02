@@ -14,6 +14,7 @@ from smoosense.handlers.pages import pages_bp
 from smoosense.handlers.parquet import parquet_bp
 from smoosense.handlers.query import query_bp
 from smoosense.handlers.s3 import s3_bp
+from smoosense.handlers.shell import shell_bp
 from smoosense.handlers.umap import umap_bp
 from smoosense.utils.duckdb_connections import duckdb_connection_default, duckdb_connection_using_s3
 
@@ -81,6 +82,7 @@ class SmooSenseApp:
         app.register_blueprint(parquet_bp, url_prefix="/api")
         app.register_blueprint(pages_bp, url_prefix="")
         app.register_blueprint(s3_bp, url_prefix="/api")
+        app.register_blueprint(shell_bp, url_prefix="/api")
         app.register_blueprint(umap_bp, url_prefix="/api")
 
         return app

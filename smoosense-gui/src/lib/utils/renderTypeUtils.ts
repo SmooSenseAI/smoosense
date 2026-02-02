@@ -222,6 +222,11 @@ export function inferRenderTypeFromData(columnValues: unknown[], columnName?: st
     if (columnName && columnName.includes('word_score')) {
       return RenderType.WordScores
     }
+
+    // Check if all strings start with 'shell$' prefix for ShellCommand render type
+    if (stringValues.every(str => str.startsWith('shell$'))) {
+      return RenderType.ShellCommand
+    }
   }
 
   // Default to Text for mixed types or anything else

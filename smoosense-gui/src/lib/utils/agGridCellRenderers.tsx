@@ -20,6 +20,7 @@ import HeaderStatsCellRenderer from './cellRenderers/HeaderStatsCellRenderer'
 import BboxCellRenderer from './cellRenderers/BboxCellRenderer'
 import HuggingFaceMediaCellRenderer from './cellRenderers/HuggingFaceMediaCellRenderer'
 import EmbeddingCellRenderer from './cellRenderers/EmbeddingCellRenderer'
+import ShellCommandCellRenderer from './cellRenderers/ShellCommandCellRenderer'
 import ImageMask from '@/components/viz/ImageMask'
 import WordScores from '@/components/viz/WordScores'
 
@@ -43,7 +44,8 @@ export enum RenderType {
   WordScores = 'wordScores',
   Bbox = 'bbox',
   HuggingFaceMedia = 'huggingFaceMedia',
-  Embedding = 'embedding'
+  Embedding = 'embedding',
+  ShellCommand = 'shellCommand'
 }
 
 interface CellRendererProps {
@@ -87,6 +89,8 @@ function CellRenderer({ value, type, nodeData, columnName }: CellRendererProps) 
       return <HuggingFaceMediaCellRenderer value={value}/>
     case RenderType.Embedding:
       return <EmbeddingCellRenderer value={value} columnName={columnName}/>
+    case RenderType.ShellCommand:
+      return <ShellCommandCellRenderer value={value} columnName={columnName}/>
     case RenderType.Text:
       return <TextCellRenderer value={value}/>
     default:

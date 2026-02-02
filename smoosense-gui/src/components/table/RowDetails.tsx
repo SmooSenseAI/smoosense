@@ -10,6 +10,7 @@ import { isNil } from 'lodash'
 import { useRenderType, useRowData } from '@/lib/hooks'
 import AutoLink from '@/components/common/AutoLink'
 import { setShowRowDetailsPanel } from '@/lib/features/ui/uiSlice'
+import ShellCommandCellRenderer from '@/lib/utils/cellRenderers/ShellCommandCellRenderer'
 
 interface RowDetailsWrapperProps {
   children: React.ReactNode
@@ -50,7 +51,8 @@ function RowDetailsWrapper({ children }: RowDetailsWrapperProps) {
 
 function renderValueByType(
   value: unknown,
-  renderType: RenderType
+  renderType: RenderType,
+  columnName?: string
 ): React.ReactNode {
   if (value === null) return <span className="text-muted-foreground italic">null</span>
   if (value === undefined) return <span className="text-muted-foreground italic">undefined</span>
@@ -83,6 +85,9 @@ function renderValueByType(
 
     case RenderType.Number:
       return <span className="font-mono">{String(value)}</span>
+
+    case RenderType.ShellCommand:
+      return <ShellCommandCellRenderer value={value} columnName={columnName} />
 
     default:
       return <span className="text-sm font-mono">{String(value)}</span>
@@ -142,7 +147,7 @@ export default function RowDetails() {
                 </CardHeader>
                 <CardContent className="pt-0 px-3 pb-2">
                   <div className="text-sm text-foreground break-words max-h-[450px] overflow-y-auto">
-                    {renderValueByType(value, renderType)}
+                    {renderValueByType(value, renderType, key)}
                   </div>
                 </CardContent>
               </Card>
