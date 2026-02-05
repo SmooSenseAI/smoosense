@@ -1,12 +1,14 @@
 import logging
 import os
 from functools import lru_cache
+from typing import cast
 
 import duckdb
 import pyarrow as pa
 from pydantic import validate_call
 
 from smoosense.lance.models import ColumnInfo, IndexInfo, VersionInfo
+from smoosense.utils.serialization import serialize
 
 logger = logging.getLogger(__name__)
 
@@ -466,7 +468,7 @@ class LanceTableClient:
             results: list[dict] = query.to_list()
 
             logger.info(f"Vector search returned {len(results)} results")
-            return results
+            return cast(list[dict], serialize(results))
         except Exception as e:
             logger.error(f"Vector search failed: {e}")
             raise
