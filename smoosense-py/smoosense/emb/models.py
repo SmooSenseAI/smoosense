@@ -46,7 +46,7 @@ def load_clip_model(device: str) -> tuple[CLIPModel, CLIPProcessor]:
     in the same 512-dim projected space, enabling text-to-image search.
     """
     processor = CLIPProcessor.from_pretrained(CLIP_MODEL_NAME)
-    model = CLIPModel.from_pretrained(CLIP_MODEL_NAME).to(device)  # type: ignore[arg-type]
+    model = CLIPModel.from_pretrained(CLIP_MODEL_NAME).to(device)
     model.eval()
     return model, processor
 
