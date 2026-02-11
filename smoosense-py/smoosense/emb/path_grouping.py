@@ -1,10 +1,9 @@
 """Utilities for computing group labels from file paths."""
 
 import os
-from typing import Optional
 
 
-def compute_path_groups(file_paths: list[str]) -> Optional[list[str]]:
+def compute_path_groups(file_paths: list[str]) -> list[str] | None:
     """
     Compute group labels based on the differing parts of folder paths.
 

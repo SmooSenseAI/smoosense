@@ -8,7 +8,6 @@ If so, converts them to fixed-size arrays.
 
 import os
 import re
-from typing import Optional
 
 import click
 import lancedb
@@ -24,12 +23,12 @@ def sanitize_table_name(name: str) -> str:
     return re.sub(r"[^a-zA-Z0-9]", "_", name)
 
 
-def get_list_element_size(column: pa.ChunkedArray) -> Optional[int]:
+def get_list_element_size(column: pa.ChunkedArray) -> int | None:
     """
     Check if all non-null values in a list column have the same length.
     Returns the common length if consistent, None otherwise.
     """
-    common_size: Optional[int] = None
+    common_size: int | None = None
 
     for chunk in column.chunks:
         for i in range(len(chunk)):

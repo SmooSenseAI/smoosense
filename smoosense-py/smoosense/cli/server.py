@@ -6,7 +6,6 @@ import atexit
 import os
 import threading
 import webbrowser
-from typing import Optional
 
 from smoosense.app import SmooSenseApp
 from smoosense.cli.state import (
@@ -22,7 +21,7 @@ from smoosense.utils.port import find_available_port
 logger = getLogger(__name__)
 
 
-def run_app(page_path: str, port: Optional[int] = None) -> None:
+def run_app(page_path: str, port: int | None = None) -> None:
     """
     Run the SmooSense application server.
 

@@ -3,7 +3,7 @@ name = "smoosense"
 version = "0.1.38"
 description = "Smoothly make sense of your large multi-modal datasets"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
 keywords = ["data-analysis", "visualization", "multimodal", "parquet", "csv", "sql", "duckdb"]
 authors = [
@@ -15,10 +15,9 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Database",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -108,7 +107,7 @@ parquet-to-lance = "smoosense.lance.parquet_to_lance:main"
 
 # Ruff configuration
 [tool.ruff]
-target-version = "py39"
+target-version = "py311"
 line-length = 100
 exclude = [
     "tests_integration/doc_*.py",  # Skip doc test files
@@ -136,7 +135,7 @@ docstring-code-format = true
 
 # MyPy configuration
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

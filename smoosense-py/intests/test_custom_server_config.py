@@ -6,7 +6,6 @@ import threading
 import time
 import unittest
 from pathlib import Path
-from typing import Optional
 
 # Add the intests directory to sys.path for imports
 sys.path.insert(0, str(Path(__file__).parent))
@@ -31,11 +30,11 @@ def find_free_port() -> int:
 class CustomServerFixture:
     """Test server wrapper for SmooSenseApp with custom port."""
 
-    def __init__(self, host: str = "localhost", port: Optional[int] = None):
+    def __init__(self, host: str = "localhost", port: int | None = None):
         self.host = host
         self.port = port or find_free_port()
-        self.app_instance: Optional[SmooSenseApp] = None
-        self.thread: Optional[threading.Thread] = None
+        self.app_instance: SmooSenseApp | None = None
+        self.thread: threading.Thread | None = None
         self.server_ready = threading.Event()
         self.shutdown_flag = threading.Event()
 

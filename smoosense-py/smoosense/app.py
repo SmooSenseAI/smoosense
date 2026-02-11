@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Optional
 
 import boto3
 from botocore.client import BaseClient
@@ -29,9 +28,9 @@ class SmooSenseApp:
     def __init__(
         self,
         *,
-        s3_client: Optional[BaseClient] = None,
+        s3_client: BaseClient | None = None,
         s3_prefix_to_save_shareable_link: str = "",
-        folder_shortcuts: Optional[dict[str, str]] = None,
+        folder_shortcuts: dict[str, str] | None = None,
     ):
         self.s3_client = s3_client if s3_client is not None else boto3.client("s3")
 

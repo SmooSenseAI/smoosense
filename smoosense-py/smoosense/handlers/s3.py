@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from flask import Blueprint, Response, current_app, jsonify, redirect, request
 from werkzeug.wrappers import Response as WerkzeugResponse
@@ -16,7 +15,7 @@ s3_bp = Blueprint("s3", __name__)
 @requires_auth_api
 @handle_api_errors
 def proxy() -> WerkzeugResponse:
-    url: Optional[str] = request.args.get("url")
+    url: str | None = request.args.get("url")
     if not url:
         raise ValueError("url parameter is required")
 

@@ -5,7 +5,6 @@ Provides command-line interface for SmooSense application.
 """
 
 import os
-from typing import Optional
 
 import click
 
@@ -17,7 +16,7 @@ from smoosense.cli.utils import get_package_version, server_options
 @click.option("--version", "-v", is_flag=True, help="Show the version and exit.")
 @server_options
 @click.pass_context
-def main(ctx: click.Context, version: bool, port: Optional[int]) -> None:
+def main(ctx: click.Context, version: bool, port: int | None) -> None:
     """Smoothly make sense of your large-scale multi-modal tabular data.
 
     SmooSense provides a web interface for exploring and analyzing your data files.
@@ -46,7 +45,7 @@ def main(ctx: click.Context, version: bool, port: Optional[int]) -> None:
 @main.command()
 @click.argument("path", type=click.STRING, default=".")
 @server_options
-def folder(path: str, port: Optional[int]) -> None:
+def folder(path: str, port: int | None) -> None:
     """Open folder browser for the specified directory or S3 prefix.
 
     Supports both local file system paths and S3 URIs.
@@ -75,7 +74,7 @@ def folder(path: str, port: Optional[int]) -> None:
 @main.command()
 @click.argument("path", type=click.STRING)
 @server_options
-def table(path: str, port: Optional[int]) -> None:
+def table(path: str, port: int | None) -> None:
     """Open table viewer for the specified file or S3 object.
 
     Supports both local file paths and S3 URIs.
@@ -104,7 +103,7 @@ def table(path: str, port: Optional[int]) -> None:
 @main.command()
 @click.argument("path", type=click.Path(exists=True), default=".")
 @server_options
-def db(path: str, port: Optional[int]) -> None:
+def db(path: str, port: int | None) -> None:
     """Open database browser for the specified directory.
 
     Scans the directory for Lance database folders (*.lance) and opens the DB viewer.

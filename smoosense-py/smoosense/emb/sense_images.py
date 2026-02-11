@@ -2,7 +2,6 @@
 
 import os
 from pathlib import Path
-from typing import Optional
 
 import click
 import pyarrow as pa
@@ -136,7 +135,7 @@ def process_images(
         return
 
     # Compute groups based on folder structure
-    groups: Optional[list[str]] = compute_path_groups(processed_file_paths)
+    groups: list[str] | None = compute_path_groups(processed_file_paths)
     has_groups = groups is not None
 
     # Convert to PyArrow table

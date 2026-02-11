@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Optional
 from urllib.parse import urlparse
 
 import boto3
@@ -102,7 +101,7 @@ class S3FileSystem:
             self.s3_client.put_object(Bucket=bucket, Key=key, Body=content)
 
     @validate_call
-    def read_text_file(self, url: str) -> Optional[str]:
+    def read_text_file(self, url: str) -> str | None:
         parsed = urlparse(url)
         if parsed.scheme == "s3":
             bucket = parsed.netloc

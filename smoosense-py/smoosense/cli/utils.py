@@ -4,9 +4,9 @@ Utility functions for SmooSense CLI.
 
 import time
 import webbrowser
+from collections.abc import Callable
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as get_version
-from typing import Callable
 
 import click
 

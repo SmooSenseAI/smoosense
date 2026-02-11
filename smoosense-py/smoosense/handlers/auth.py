@@ -8,8 +8,9 @@ Documentation:
 import json
 import logging
 import os
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, TypeVar
 from urllib.parse import quote_plus, urlencode
 
 from authlib.integrations.flask_client import OAuth
@@ -24,13 +25,13 @@ logger = logging.getLogger(__name__)
 F = TypeVar("F", bound=Callable[..., Any])
 
 # Union type for responses that could be either Flask or Werkzeug Response
-AnyResponse = Union[Response, WerkzeugResponse]
+AnyResponse = Response | WerkzeugResponse
 
 # Cache the generated secret key so it persists across requests
-_cached_secret_key: Optional[str] = None
+_cached_secret_key: str | None = None
 
 
-def get_auth0_config() -> Optional[dict[str, str]]:
+def get_auth0_config() -> dict[str, str] | None:
     """Get Auth0 configuration from environment variables.
 
     Returns None if Auth0 is not configured.
@@ -59,7 +60,7 @@ def is_auth_enabled() -> bool:
     return get_auth0_config() is not None
 
 
-def init_oauth(app: Any) -> Optional[OAuth]:
+def init_oauth(app: Any) -> OAuth | None:
     """Initialize OAuth with Auth0 configuration.
 
     Returns None if Auth0 is not configured.
@@ -98,7 +99,7 @@ def init_oauth(app: Any) -> Optional[OAuth]:
     return oauth
 
 
-def _check_auth() -> Optional[str]:
+def _check_auth() -> str | None:
     """Check if user is authenticated.
 
     Returns None if authenticated or auth is disabled.

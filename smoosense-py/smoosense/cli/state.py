@@ -10,7 +10,6 @@ import fcntl
 import json
 import os
 from pathlib import Path
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -48,7 +47,7 @@ def is_process_running(pid: int) -> bool:
         return e.errno != errno.ESRCH
 
 
-def read_server_state() -> Optional[ServerState]:
+def read_server_state() -> ServerState | None:
     """
     Read server state from file with file locking.
 
@@ -96,7 +95,7 @@ def write_server_state(state: ServerState) -> None:
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
 
-def get_running_server() -> Optional[ServerState]:
+def get_running_server() -> ServerState | None:
     """
     Get information about running server if one exists.
 

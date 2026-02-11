@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import boto3
 import duckdb
@@ -31,7 +31,7 @@ def duckdb_connection_default() -> DuckdbConnectionMaker:
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def duckdb_connection_using_s3(
-    s3_client: Optional[BaseClient] = None,
+    s3_client: BaseClient | None = None,
     memory_limit: str = "3GB",
 ) -> DuckdbConnectionMaker:
     if s3_client is None:
@@ -81,7 +81,7 @@ def duckdb_connection_using_s3(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def duckdb_connection_using_one_zone_s3(
-    s3_client: Optional[BaseClient] = None,
+    s3_client: BaseClient | None = None,
     zone: str = "usw2-az1",
 ) -> DuckdbConnectionMaker:
     if s3_client is None:

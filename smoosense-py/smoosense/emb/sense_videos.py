@@ -2,7 +2,6 @@
 
 import os
 from pathlib import Path
-from typing import Optional
 
 import click
 import cv2
@@ -26,7 +25,7 @@ logger = getLogger(__name__)
 
 def get_video_info_and_first_frame(
     video_path: str,
-) -> Optional[tuple[dict, Image.Image]]:
+) -> tuple[dict, Image.Image] | None:
     """
     Extract video metadata and first frame using OpenCV.
 
@@ -142,7 +141,7 @@ def process_video_batch(
 
 def build_pyarrow_table(
     records: list[dict],
-    groups: Optional[list[str]],
+    groups: list[str] | None,
 ) -> pa.Table:
     """
     Build a PyArrow table from video records.

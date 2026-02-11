@@ -43,10 +43,10 @@ class _SmooSenseServer:
         if self._initialized:
             return
 
-        self.app: Optional[SmooSenseApp] = None
-        self.port: Optional[int] = None
-        self.thread: Optional[threading.Thread] = None
-        self.base_url: Optional[str] = None
+        self.app: SmooSenseApp | None = None
+        self.port: int | None = None
+        self.thread: threading.Thread | None = None
+        self.base_url: str | None = None
         self._temp_files: set[str] = set()
         self._initialized = True
 

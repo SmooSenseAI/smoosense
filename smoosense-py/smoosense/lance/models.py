@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -7,10 +5,10 @@ class TableInfo(BaseModel):
     """Information about a Lance table."""
 
     name: str = Field(..., description="Name of the table")
-    cnt_rows: Optional[int] = Field(None, description="Number of rows in the table")
-    cnt_columns: Optional[int] = Field(None, description="Number of columns in the table")
-    cnt_versions: Optional[int] = Field(None, description="Number of versions of the table")
-    cnt_indices: Optional[int] = Field(None, description="Number of indices of the table")
+    cnt_rows: int | None = Field(None, description="Number of rows in the table")
+    cnt_columns: int | None = Field(None, description="Number of columns in the table")
+    cnt_versions: int | None = Field(None, description="Number of versions of the table")
+    cnt_indices: int | None = Field(None, description="Number of indices of the table")
 
 
 class VersionInfo(BaseModel):
@@ -18,14 +16,14 @@ class VersionInfo(BaseModel):
 
     version: int = Field(..., description="Version number")
     timestamp: int = Field(..., description="Unix timestamp (epoch) of the version")
-    total_data_files: Optional[int] = Field(
+    total_data_files: int | None = Field(
         None, description="Total number of data files in this version"
     )
-    total_rows: Optional[int] = Field(None, description="Total number of rows in this version")
-    rows_add: Optional[int] = Field(
+    total_rows: int | None = Field(None, description="Total number of rows in this version")
+    rows_add: int | None = Field(
         None, description="Number of rows added compared to previous version"
     )
-    rows_remove: Optional[int] = Field(
+    rows_remove: int | None = Field(
         None, description="Number of rows deleted compared to previous version"
     )
     columns_add: list[str] = Field(
@@ -48,7 +46,7 @@ class IndexInfo(BaseModel):
     name: str = Field(..., description="Name of the index")
     index_type: str = Field(..., description="Type of the index (e.g., IVF_PQ, BTREE)")
     columns: list[str] = Field(..., description="Columns included in the index")
-    num_unindexed_rows: Optional[int] = Field(
+    num_unindexed_rows: int | None = Field(
         None, description="Number of unindexed rows in the index"
     )
 
