@@ -5,7 +5,6 @@ import numpy as np
 from flask import Blueprint, Response, current_app, jsonify, request
 
 from smoosense.handlers.auth import requires_auth_api
-from smoosense.lance.table_client import LanceTableClient
 from smoosense.utils.api import handle_api_errors
 from smoosense.utils.serialization import serialize
 
@@ -48,7 +47,6 @@ def compute_umap() -> Response:
     extra_columns: list[str] = request.json.get("extraColumns", [])
     n_neighbors = request.json.get("nNeighbors", 15)
     min_dist = request.json.get("minDist", 0.1)
-    query_engine = request.json.get("queryEngine", "duckdb")
     sql_condition = request.json.get("sqlCondition")
 
     if not table_path:
@@ -82,37 +80,22 @@ def compute_umap() -> Response:
     extra_values: dict[str, list] = {col: [] for col in extra_col_names}
 
     try:
-        if query_engine == "lance":
-            query = f"SELECT {select_clause} FROM lance_table {where_clause}"
-            lance_client = LanceTableClient.from_table_path(table_path)
-            column_names, rows = lance_client.run_duckdb_sql(query)
+        query = f"SELECT {select_clause} FROM '{table_path}' {where_clause}"
+        connection_maker = current_app.config["DUCKDB_CONNECTION_MAKER"]
+        con = connection_maker()
+        result = con.execute(query)
+        column_names = [desc[0] for desc in result.description] if result.description else []
+        rows = result.fetchall()
 
-            # Find column indices
-            emb_idx = column_names.index(emb_column)
-            extra_indices = {col: column_names.index(col) for col in extra_col_names}
+        # Find column indices
+        emb_idx = column_names.index(emb_column)
+        extra_indices = {col: column_names.index(col) for col in extra_col_names}
 
-            for row in rows:
-                if row[emb_idx] is not None:
-                    embeddings.append(row[emb_idx])
-                    for col, idx in extra_indices.items():
-                        extra_values[col].append(row[idx])
-        else:
-            query = f"SELECT {select_clause} FROM '{table_path}' {where_clause}"
-            connection_maker = current_app.config["DUCKDB_CONNECTION_MAKER"]
-            con = connection_maker()
-            result = con.execute(query)
-            column_names = [desc[0] for desc in result.description] if result.description else []
-            rows = result.fetchall()
-
-            # Find column indices
-            emb_idx = column_names.index(emb_column)
-            extra_indices = {col: column_names.index(col) for col in extra_col_names}
-
-            for row in rows:
-                if row[emb_idx] is not None:
-                    embeddings.append(row[emb_idx])
-                    for col, idx in extra_indices.items():
-                        extra_values[col].append(row[idx])
+        for row in rows:
+            if row[emb_idx] is not None:
+                embeddings.append(row[emb_idx])
+                for col, idx in extra_indices.items():
+                    extra_values[col].append(row[idx])
     except Exception as e:
         error_msg = str(e)
         logger.error(f"SQL error in UMAP query: {error_msg}")

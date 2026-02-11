@@ -2,7 +2,7 @@
 
 import { useState, memo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Loader2, Play } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { executeShellCommand } from '@/lib/api/shell'
 import { useAppSelector } from '@/lib/hooks'
