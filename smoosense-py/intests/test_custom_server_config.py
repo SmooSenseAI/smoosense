@@ -157,7 +157,7 @@ class TestCustomServerConfig(unittest.TestCase):
         self.assertEqual(response.status, 200)
 
         # Wait for the page to load completely
-        self.page.wait_for_load_state("networkidle")
+        self.page.wait_for_load_state("load")
 
         # Check that the page has loaded some content
         body_content = self.page.locator("body").text_content()
@@ -191,7 +191,7 @@ class TestCustomServerConfig(unittest.TestCase):
 
         # Wait for preview to load
         time.sleep(3)
-        self.page.wait_for_load_state("networkidle")
+        self.page.wait_for_load_state("load")
 
         # Check if preview is displayed correctly with specific elements
         logger.info("Checking for specific preview elements...")
@@ -256,7 +256,7 @@ class TestCustomServerConfig(unittest.TestCase):
 
                 # Get the new page
                 new_page = self.context.pages[-1]
-                new_page.wait_for_load_state("networkidle")
+                new_page.wait_for_load_state("load")
 
                 # Check if the new page URL contains '/Table'
                 new_url = new_page.url
