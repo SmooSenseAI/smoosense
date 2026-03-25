@@ -22,7 +22,7 @@ def duckdb_connection_default() -> DuckdbConnectionMaker:
         # Now install and load the extension
         con.execute("INSTALL httpfs")
         con.execute("LOAD httpfs")
-        con.execute("INSTALL lance FROM community")
+        con.execute("INSTALL lance")
         con.execute("LOAD lance")
         return con
 
@@ -58,7 +58,7 @@ def duckdb_connection_using_s3(
         # Now install and load the extension
         con.execute("INSTALL httpfs")
         con.execute("LOAD httpfs")
-        con.execute("INSTALL lance FROM community")
+        con.execute("INSTALL lance")
         con.execute("LOAD lance")
         # Configure DuckDB S3 settings
         con.execute(f"SET s3_region='{region}'")
