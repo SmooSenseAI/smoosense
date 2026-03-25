@@ -20,7 +20,8 @@
       "Bash(pnpm run lint:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm tsc:*)",
-      "Bash(make lint:*)"
+      "Bash(make lint:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

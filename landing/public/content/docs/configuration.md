@@ -24,6 +24,18 @@ Here is one example:
 
 Note that the relative path must **start with `./`** and absolute path must start with `/`.
 
+### Media bytes in HuggingFace format
+If your data contains media bytes (e.g. from HuggingFace datasets), SmooSense can render them directly. The column value should be a dict with `bytes` and `path` fields:
+
+```python
+{"bytes": b"\x89PNG...", "path": "image.png"}
+```
+
+SmooSense automatically detects this format and converts the bytes to a displayable media element. This works for images, audio, and video. It is the standard format used by HuggingFace `datasets` library for image and audio columns.
+
+> The `path` field **must** have a recognized file extension (e.g. `.jpg`, `.png`, `.mp4`, `.wav`). SmooSense uses it to determine the MIME type and how to render the media. Without a valid extension, the content will not be displayed.
+
+
 ### Public url
 For public data, you can expose them as urls and put the url in table cells. For example:
 
@@ -67,6 +79,13 @@ Below is an example for CloudFlare R2 storage:
 ```bash
 AWS_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com AWS_PROFILE=r2 sense
 ```
+
+
+## Customized private urls
+If you data is private, you can run an API to proxy the url.
+On the server side, use cookie to authenticate requests.
+
+Make sure the url ends with an image extension (e.g. `.jpg`) for it to be treated as image url. The same for video.
 
 ## Run with a specific port number and url prefix
 

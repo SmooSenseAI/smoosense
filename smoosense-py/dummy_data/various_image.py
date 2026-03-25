@@ -42,6 +42,7 @@ class VariousImageDataGenerator:
                 "s3_url": f"s3://smoosense-demo/images/sizes/{image_file.name}",
                 "rel_url": f"./images/{image_file.name}",
                 "image_bytes": image_bytes,
+                "hf_image": {"bytes": image_bytes, "path": image_file.name},
                 "width": width,
                 "height": height,
                 "size": size,

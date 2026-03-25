@@ -1,3 +1,5 @@
+export CLOUDFLARE_ACCOUNT_ID := 41a336bea9a67c844e5fcba526c53768
+
 env:
 	pnpm install
 
