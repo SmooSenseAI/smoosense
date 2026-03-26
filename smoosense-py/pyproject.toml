@@ -1,6 +1,6 @@
 [project]
 name = "smoosense"
-version = "0.1.40"
+version = "0.1.41"
 description = "Smoothly make sense of your large multi-modal datasets"
 readme = "README.md"
 requires-python = ">=3.11"
