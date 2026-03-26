@@ -9,6 +9,7 @@ export enum FileType {
   Model3D = 'model-3d',
   Text = 'text',
   Pdf = 'pdf',
+  Numpy = 'numpy',
   Unknown = 'unknown'
 }
 
@@ -68,6 +69,11 @@ export function getFileType(fileName: string): FileType {
   // PDF files
   if (['pdf'].includes(extension)) {
     return FileType.Pdf
+  }
+
+  // Numpy files
+  if (['npy', 'npz'].includes(extension)) {
+    return FileType.Numpy
   }
 
   // Text files (including code files)

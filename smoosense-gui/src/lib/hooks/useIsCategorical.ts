@@ -83,7 +83,8 @@ export function useIsCategorical(columnName: string): {
     columnName,
     cardinalityData.data,
     currentIsCategorical,
-    columnMeta
+    columnMeta,
+    renderType
   ])
 
   // Return object with state information

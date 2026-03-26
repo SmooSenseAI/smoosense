@@ -9,6 +9,7 @@ from pydantic import ConfigDict, validate_call
 from smoosense.handlers.auth import auth_bp, init_oauth
 from smoosense.handlers.fs import fs_bp
 from smoosense.handlers.lance import lance_bp
+from smoosense.handlers.numpy_preview import numpy_bp
 from smoosense.handlers.pages import pages_bp
 from smoosense.handlers.parquet import parquet_bp
 from smoosense.handlers.query import query_bp
@@ -77,6 +78,7 @@ class SmooSenseApp:
         app.register_blueprint(auth_bp, url_prefix="/auth")
         app.register_blueprint(query_bp, url_prefix="/api")
         app.register_blueprint(fs_bp, url_prefix="/api")
+        app.register_blueprint(numpy_bp, url_prefix="/api")
         app.register_blueprint(lance_bp, url_prefix="/api")
         app.register_blueprint(parquet_bp, url_prefix="/api")
         app.register_blueprint(pages_bp, url_prefix="")
