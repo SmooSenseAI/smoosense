@@ -19,6 +19,7 @@ import ColumnarTablePreviewer from './previewers/ColumnarTablePreviewer'
 import RowTablePreviewer from './previewers/RowTablePreviewer'
 import LanceTablePreview from '@/components/db/LanceTablePreview'
 import AlbumPreviewer from './previewers/AlbumPreviewer'
+import NumpyPreviewer from './previewers/NumpyPreviewer'
 
 // Dynamic imports to avoid SSR issues
 const PdfPreviewer = dynamic(() => import('./previewers/PdfPreviewer'), {
@@ -171,6 +172,9 @@ export default function FSItemPreview() {
 
       case FileType.Model3D:
         return <Model3DPreviewer modelUrl={getFileUrl(viewingItem.path, true)} />
+
+      case FileType.Numpy:
+        return <NumpyPreviewer item={viewingItem} />
 
       default:
         // Default view for unsupported file types or directories without media

@@ -24,14 +24,19 @@ Here is one example:
 
 Note that the relative path must **start with `./`** and absolute path must start with `/`.
 
+### Raw bytes
+If your data contains raw media bytes (e.g. image or video binary data in a BLOB column), SmooSense automatically detects the media type from magic bytes and renders them inline. Supported formats include JPEG, PNG, GIF, WebP, BMP, TIFF, MP4, AVI, MKV, WAV, MP3, FLAC, OGG, and PDF.
+
+No extra configuration is needed — just store the binary data in your table and SmooSense will handle the rest.
+
 ### Media bytes in HuggingFace format
-If your data contains media bytes (e.g. from HuggingFace datasets), SmooSense can render them directly. The column value should be a dict with `bytes` and `path` fields:
+If your data uses the HuggingFace `datasets` format for media columns, SmooSense also supports that. The column value should be a struct with `bytes` and `path` fields:
 
 ```python
 {"bytes": b"\x89PNG...", "path": "image.png"}
 ```
 
-SmooSense automatically detects this format and converts the bytes to a displayable media element. This works for images, audio, and video. It is the standard format used by HuggingFace `datasets` library for image and audio columns.
+This works for images, audio, and video.
 
 > The `path` field **must** have a recognized file extension (e.g. `.jpg`, `.png`, `.mp4`, `.wav`). SmooSense uses it to determine the MIME type and how to render the media. Without a valid extension, the content will not be displayed.
 

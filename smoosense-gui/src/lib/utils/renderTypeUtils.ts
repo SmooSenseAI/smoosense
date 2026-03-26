@@ -13,7 +13,8 @@ export function isMediaType(renderType: RenderType): boolean {
     RenderType.PdfUrl,
     RenderType.ImageMask,
     RenderType.ImageList,
-    RenderType.VideoList
+    RenderType.VideoList,
+    RenderType.HuggingFaceMedia
   ].includes(renderType)
 }
 

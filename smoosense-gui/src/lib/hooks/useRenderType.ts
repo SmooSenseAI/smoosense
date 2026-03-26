@@ -15,9 +15,10 @@ import { isNil, isEmpty, map, fromPairs } from 'lodash'
 function inferColumnRenderType(columnMeta: ColumnMeta): RenderType {
   const duckdbType = columnMeta.duckdbType || ''
 
-  // Check if column type is BLOB - treat as Text for rendering
+  // Check if column type is BLOB - backend detects magic bytes and converts
+  // media BLOBs to HuggingFace media format {bytes: data_url, path: filename}
   if (duckdbType.toUpperCase().trim() === 'BLOB') {
-    return RenderType.Text
+    return RenderType.HuggingFaceMedia
   }
 
   // Check if column type is HuggingFace media struct

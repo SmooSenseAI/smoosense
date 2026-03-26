@@ -2,7 +2,9 @@ import { useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { useCardinality } from './useCardinality'
 import { useSingleColumnMeta } from './useColumnMeta'
+import { useSingleColumnRenderType } from './useRenderType'
 import { setIsCategorical } from '@/lib/features/isCategorical/isCategoricalSlice'
+import { isMediaType } from '@/lib/utils/renderTypeUtils'
 import { isNil } from 'lodash'
 
 /**
@@ -24,6 +26,7 @@ export function useIsCategorical(columnName: string): {
 
   // Get column metadata for this specific column
   const { columnMeta } = useSingleColumnMeta(columnName)
+  const renderType = useSingleColumnRenderType(columnName)
 
   // Get cardinality data for this column
   const cardinalityData = useCardinality(columnName)
@@ -35,8 +38,8 @@ export function useIsCategorical(columnName: string): {
       return
     }
 
-    // If column is numeric, initialize as false immediately
-    if (columnMeta?.typeShortcuts?.isNumeric) {
+    // If column is numeric or media, initialize as false immediately
+    if (columnMeta?.typeShortcuts?.isNumeric || isMediaType(renderType)) {
       dispatch(setIsCategorical({
         columnName,
         isCategorical: false

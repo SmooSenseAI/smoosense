@@ -20,8 +20,8 @@ const HuggingFaceMediaCellRenderer = memo(function HuggingFaceMediaCellRenderer(
   // Handle empty or invalid values
   if (!value || typeof value !== 'object') {
     return (
-      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-        No media
+      <div className="w-full h-full flex items-center justify-start p-1 text-muted-foreground text-xs truncate">
+        {value != null ? String(value) : 'No media'}
       </div>
     )
   }
