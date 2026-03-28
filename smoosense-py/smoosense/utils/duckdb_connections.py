@@ -40,9 +40,16 @@ def duckdb_connection_using_s3(
     def maker() -> DuckDBPyConnection:
         credentials = s3_client._request_signer._credentials
         region = s3_client.meta.region_name
-        aws_key = credentials.access_key
-        aws_secret = credentials.secret_key
-        aws_token = credentials.token  # May be None if not temporary credentials
+        aws_key = credentials.access_key if credentials else None
+        aws_secret = credentials.secret_key if credentials else None
+        aws_token = credentials.token if credentials else None  # May be None if not temporary credentials
+
+        if not credentials or not aws_key or not aws_secret:
+            raise ValueError(
+                "AWS credentials are not configured. "
+                "Please set up AWS credentials (e.g. via environment variables, ~/.aws/credentials, or an IAM role), "
+                "or do not pass s3_client if you do not need S3 access."
+            )
         con = duckdb_connection_default()()
         home_directory = os.getenv("HOME", "/tmp")
         temp_directory = os.path.join(home_directory, ".tmp")
