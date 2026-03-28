@@ -1,5 +1,7 @@
 You can install SmooSense to your laptop to keep your data private and secure.
 
+> The CLI is designed for personal, local use. To share SmooSense with your team, see [Deployment](/docs/deployment/).
+
 # CLI Installation
 
 First, install [uv](https://docs.astral.sh/uv/) (an extremely fast Python package manager):

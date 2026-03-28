@@ -17,6 +17,10 @@ export const docsConfig: DocSection[] = [
         slug: 'install',
       },
       {
+        label: 'Deployment',
+        slug: 'deployment',
+      },
+      {
         label: 'Configuration',
         slug: 'configuration',
       },
