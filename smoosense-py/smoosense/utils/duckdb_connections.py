@@ -42,7 +42,9 @@ def duckdb_connection_using_s3(
         region = s3_client.meta.region_name
         aws_key = credentials.access_key if credentials else None
         aws_secret = credentials.secret_key if credentials else None
-        aws_token = credentials.token if credentials else None  # May be None if not temporary credentials
+        aws_token = (
+            credentials.token if credentials else None
+        )  # May be None if not temporary credentials
 
         if not credentials or not aws_key or not aws_secret:
             raise ValueError(
