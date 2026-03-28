@@ -7,8 +7,12 @@ from PIL import Image
 from transformers import (
     AutoImageProcessor,
     AutoModel,
-    CLIPModel,
-    CLIPProcessor,
+)
+from transformers import (
+    CLIPModel as CLIPModel,
+)
+from transformers import (
+    CLIPProcessor as CLIPProcessor,
 )
 
 # Model names

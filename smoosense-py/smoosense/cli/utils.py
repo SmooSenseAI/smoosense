@@ -7,6 +7,7 @@ import webbrowser
 from collections.abc import Callable
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as get_version
+from typing import Any
 
 import click
 
@@ -32,7 +33,7 @@ def open_browser_after_delay(url: str, delay: int = 1) -> None:
     webbrowser.open(url)
 
 
-def server_options(f: Callable) -> Callable:
+def server_options(f: Callable[..., Any]) -> Callable[..., Any]:
     """
     Add common server options to a CLI command.
 

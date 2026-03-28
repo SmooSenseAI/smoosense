@@ -1,5 +1,6 @@
 import logging
 from timeit import default_timer
+from typing import Any
 
 import numpy as np
 from flask import Blueprint, Response, current_app, jsonify, request
@@ -77,7 +78,7 @@ def compute_umap() -> Response:
     embeddings: list[list[float]] = []
     # Use stripped column names for extra_values (excluding embedding column)
     extra_col_names = [col for col in select_cols if col != emb_column]
-    extra_values: dict[str, list] = {col: [] for col in extra_col_names}
+    extra_values: dict[str, list[Any]] = {col: [] for col in extra_col_names}
 
     try:
         query = f"SELECT {select_clause} FROM '{table_path}' {where_clause}"

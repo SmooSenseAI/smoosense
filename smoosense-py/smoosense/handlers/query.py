@@ -1,5 +1,6 @@
 import logging
 from timeit import default_timer
+from typing import Any
 
 from flask import Blueprint, Response, current_app, jsonify, request
 
@@ -28,7 +29,7 @@ def run_query() -> Response:
     check_permissions(query)
 
     column_names: list[str] = []
-    rows: list[tuple] = []
+    rows: list[tuple[Any, ...]] = []
     error = None
 
     try:

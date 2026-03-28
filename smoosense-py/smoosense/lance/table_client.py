@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import cast
+from typing import Any, cast
 
 from pydantic import validate_call
 
@@ -90,7 +90,7 @@ class LanceTableClient:
         return LanceTableClient(root_folder, table_name)
 
     @staticmethod
-    def _extract_int_from_metadata(metadata: dict, key: str, default: int = 0) -> int:
+    def _extract_int_from_metadata(metadata: dict[str, Any], key: str, default: int = 0) -> int:
         """
         Extract an integer value from metadata, handling various data types.
 
@@ -285,7 +285,7 @@ class LanceTableClient:
         vector_column: str,
         select_columns: list[str],
         limit: int = 12,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """
         Perform vector similarity search using Lance's native search.
 
@@ -312,10 +312,10 @@ class LanceTableClient:
             query = query.limit(limit)
 
             # Execute and convert to list of dicts
-            results: list[dict] = query.to_list()
+            results: list[dict[str, Any]] = query.to_list()
 
             logger.info(f"Vector search returned {len(results)} results")
-            return cast(list[dict], serialize(results))
+            return cast(list[dict[str, Any]], serialize(results))
         except Exception as e:
             logger.error(f"Vector search failed: {e}")
             raise

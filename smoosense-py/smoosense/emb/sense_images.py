@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import Any
 
 import click
 import pyarrow as pa
@@ -56,7 +57,7 @@ def process_images(
     dinov2_model, dinov2_processor = load_dinov2_model(device)
 
     # Process emb
-    records: list[dict] = []
+    records: list[dict[str, Any]] = []
     processed_file_paths: list[str] = []  # Track original paths for group computation
 
     # Get absolute output path for computing relative paths
@@ -69,7 +70,7 @@ def process_images(
 
         # Load emb and collect metadata
         batch_images: list[Image.Image] = []
-        batch_metadata: list[dict] = []
+        batch_metadata: list[dict[str, Any]] = []
         batch_original_paths: list[str] = []
 
         for image_path in batch_files:

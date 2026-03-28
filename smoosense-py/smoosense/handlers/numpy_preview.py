@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any
 
 import numpy as np
 from flask import Blueprint, jsonify
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 numpy_bp = Blueprint("numpy_preview", __name__)
 
 
-def _array_to_preview(arr: np.ndarray) -> dict:
+def _array_to_preview(arr: np.ndarray) -> dict[str, Any]:
     """Convert a numpy array to a JSON-serializable preview dict."""
     return {
         "shape": list(arr.shape),

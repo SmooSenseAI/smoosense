@@ -62,7 +62,7 @@ def _detect_extension_from_magic(data: bytes) -> str | None:
     return None
 
 
-def _is_huggingface_media(obj: dict) -> bool:
+def _is_huggingface_media(obj: dict[str, Any]) -> bool:
     """Check if a dict is a HuggingFace media struct with bytes and path fields."""
     if len(obj) != 2:
         return False

@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import Any
 
 import click
 import cv2
@@ -25,7 +26,7 @@ logger = getLogger(__name__)
 
 def get_video_info_and_first_frame(
     video_path: str,
-) -> tuple[dict, Image.Image] | None:
+) -> tuple[dict[str, Any], Image.Image] | None:
     """
     Extract video metadata and first frame using OpenCV.
 
@@ -74,7 +75,7 @@ def process_video_batch(
     clip_model: CLIPModel,
     clip_processor: CLIPProcessor,
     device: str,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict[str, Any]], list[str]]:
     """
     Process a batch of video files and compute embeddings.
 
@@ -89,7 +90,7 @@ def process_video_batch(
         Tuple of (records list, processed file paths list)
     """
     batch_images: list[Image.Image] = []
-    batch_metadata: list[dict] = []
+    batch_metadata: list[dict[str, Any]] = []
     batch_original_paths: list[str] = []
 
     for video_path in batch_files:
@@ -140,7 +141,7 @@ def process_video_batch(
 
 
 def build_pyarrow_table(
-    records: list[dict],
+    records: list[dict[str, Any]],
     groups: list[str] | None,
 ) -> pa.Table:
     """
@@ -260,7 +261,7 @@ def process_videos(
     logger.info("Loading CLIP model...")
     clip_model, clip_processor = load_clip_model(device)
 
-    records: list[dict] = []
+    records: list[dict[str, Any]] = []
     processed_file_paths: list[str] = []
     abs_output_path = os.path.abspath(output_path)
     output_dir = os.path.dirname(abs_output_path)
