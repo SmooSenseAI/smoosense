@@ -32,7 +32,7 @@ def list_tables() -> Response:
     except ValueError as e:
         raise InvalidInputException(str(e)) from e
     except Exception as e:
-        logger.error(f"Failed to list tables from {db_path}: {e}")
+        logger.exception(f"Failed to list tables from {db_path}: {e}")
         raise InvalidInputException(f"Failed to list Lance tables: {e}") from e
 
 
@@ -55,7 +55,7 @@ def list_versions() -> Response:
     except ValueError as e:
         raise InvalidInputException(str(e)) from e
     except Exception as e:
-        logger.error(f"Failed to list versions for table {table_name}: {e}")
+        logger.exception(f"Failed to list versions for table {table_name}: {e}")
         raise InvalidInputException(f"Failed to list versions: {e}") from e
 
 
@@ -78,7 +78,7 @@ def list_indices() -> Response:
     except ValueError as e:
         raise InvalidInputException(str(e)) from e
     except Exception as e:
-        logger.error(f"Failed to list indices for table {table_name}: {e}")
+        logger.exception(f"Failed to list indices for table {table_name}: {e}")
         raise InvalidInputException(f"Failed to list indices: {e}") from e
 
 
@@ -101,7 +101,7 @@ def list_columns() -> Response:
     except ValueError as e:
         raise InvalidInputException(str(e)) from e
     except Exception as e:
-        logger.error(f"Failed to list columns for table {table_name}: {e}")
+        logger.exception(f"Failed to list columns for table {table_name}: {e}")
         raise InvalidInputException(f"Failed to list columns: {e}") from e
 
 
@@ -155,5 +155,5 @@ def vector_search() -> Response:
     except ValueError as e:
         raise InvalidInputException(str(e)) from e
     except Exception as e:
-        logger.error(f"Vector search failed on {table_path}: {e}")
+        logger.exception(f"Vector search failed on {table_path}: {e}")
         raise InvalidInputException(f"Vector search failed: {e}") from e

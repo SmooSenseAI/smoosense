@@ -46,7 +46,7 @@ class TestLSEndpoint(BaseFSTest):
 
             # Test should return 403 due to permission denied
             response = self.client.get(f"/ls?path={restricted_dir}")
-            logger.error(response.json)
+            logger.exception(response.json)
             self.assertEqual(response.status_code, 403)
             data = json.loads(response.get_data(as_text=True))
             self.assertIn("error", data)

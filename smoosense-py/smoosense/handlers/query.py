@@ -42,7 +42,7 @@ def run_query() -> Response:
 
     except Exception as e:
         error = str(e)
-        logger.error(f"Query execution failed: {error}")
+        logger.exception(f"Query execution failed: {error}")
 
     return jsonify(
         {

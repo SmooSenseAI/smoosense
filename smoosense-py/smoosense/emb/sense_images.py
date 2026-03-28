@@ -102,7 +102,7 @@ def process_images(
                 )
 
             except Exception as e:
-                logger.error(f"Error loading {image_path}: {e}")
+                logger.exception(f"Error loading {image_path}: {e}")
                 continue
 
         if not batch_images:
@@ -128,7 +128,7 @@ def process_images(
                 processed_file_paths.append(batch_original_paths[i])
 
         except Exception as e:
-            logger.error(f"Error computing embeddings for batch: {e}")
+            logger.exception(f"Error computing embeddings for batch: {e}")
             continue
 
     if not records:

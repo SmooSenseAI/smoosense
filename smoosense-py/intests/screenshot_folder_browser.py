@@ -39,7 +39,7 @@ class FolderBrowserScreenshotCapture(BaseIntegrationTest):
         # Navigate to the FolderBrowser
         response = self.page.goto(self.folder_browser_url)
         if response.status != 200:
-            logger.error(f"Failed to load FolderBrowser: HTTP {response.status}")
+            logger.exception(f"Failed to load FolderBrowser: HTTP {response.status}")
             return
 
         # Wait for the page to load completely

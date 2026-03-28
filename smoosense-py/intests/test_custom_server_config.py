@@ -69,7 +69,7 @@ class CustomServerFixture:
             )
 
         except Exception as e:
-            logger.error(f"Server failed to start: {e}")
+            logger.exception(f"Server failed to start: {e}")
             self.server_ready.set()  # Set event even on failure to prevent hanging
             raise
 

@@ -99,7 +99,7 @@ def compute_umap() -> Response:
                     extra_values[col].append(row[idx])
     except Exception as e:
         error_msg = str(e)
-        logger.error(f"SQL error in UMAP query: {error_msg}")
+        logger.exception(f"SQL error in UMAP query: {error_msg}")
         return jsonify(
             {
                 "status": "error",

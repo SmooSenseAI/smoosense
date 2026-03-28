@@ -183,14 +183,14 @@ def callback() -> AnyResponse:
 
     oauth = current_app.config.get("OAUTH")
     if oauth is None:
-        logger.error("OAuth not configured in callback")
+        logger.exception("OAuth not configured in callback")
         return redirect("/")
 
     # Check for error from Auth0
     error = request.args.get("error")
     if error:
         error_description = request.args.get("error_description", "Unknown error")
-        logger.error(f"Auth0 returned error: {error} - {error_description}")
+        logger.exception(f"Auth0 returned error: {error} - {error_description}")
         return Response(
             f"""<!DOCTYPE html>
 <html>

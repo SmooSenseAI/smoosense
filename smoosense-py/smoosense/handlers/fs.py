@@ -70,7 +70,7 @@ def get_file() -> Response:
 
             return create_streaming_response(generate(), content_type)
         except requests.RequestException as e:
-            logger.error(f"Failed to fetch HTTP URL {path}: {e}")
+            logger.exception(f"Failed to fetch HTTP URL {path}: {e}")
             raise InvalidInputException(f"Failed to fetch URL: {e}") from e
 
     elif path.startswith("s3://"):
@@ -106,7 +106,7 @@ def get_file() -> Response:
                 content_type = get_mime_type(ext)
                 return create_streaming_response(generate(), content_type)
             except Exception as e:
-                logger.error(f"Failed to proxy S3 file {path}: {e}")
+                logger.exception(f"Failed to proxy S3 file {path}: {e}")
                 raise InvalidInputException(f"Failed to read S3 file: {e}") from e
 
     else:

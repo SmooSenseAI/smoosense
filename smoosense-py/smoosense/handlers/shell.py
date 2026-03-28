@@ -60,7 +60,7 @@ def run_shell_command() -> Response:
             }
         )
     except subprocess.TimeoutExpired:
-        logger.error(f"Shell command timed out: {command}")
+        logger.exception(f"Shell command timed out: {command}")
         return jsonify(
             {
                 "success": False,
@@ -68,7 +68,7 @@ def run_shell_command() -> Response:
             }
         )
     except Exception as e:
-        logger.error(f"Shell command failed: {e}")
+        logger.exception(f"Shell command failed: {e}")
         return jsonify(
             {
                 "success": False,

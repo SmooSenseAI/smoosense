@@ -221,7 +221,7 @@ class LanceTableClient:
         try:
             indices_list = self.table.list_indices()
         except Exception as e:
-            logger.error(f"Failed to list indices for table {self.table_name}: {e}")
+            logger.exception(f"Failed to list indices for table {self.table_name}: {e}")
             # If list_indices fails, return empty list
             return []
 
@@ -274,7 +274,7 @@ class LanceTableClient:
             logger.info(f"Found {len(columns_info)} columns for table {self.table_name}")
             return columns_info
         except Exception as e:
-            logger.error(f"Failed to list columns for table {self.table_name}: {e}")
+            logger.exception(f"Failed to list columns for table {self.table_name}: {e}")
             # If schema access fails, return empty list
             return []
 
@@ -317,5 +317,5 @@ class LanceTableClient:
             logger.info(f"Vector search returned {len(results)} results")
             return cast(list[dict[str, Any]], serialize(results))
         except Exception as e:
-            logger.error(f"Vector search failed: {e}")
+            logger.exception(f"Vector search failed: {e}")
             raise

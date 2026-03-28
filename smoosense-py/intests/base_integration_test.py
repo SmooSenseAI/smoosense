@@ -62,7 +62,7 @@ class ServerFixture:
                 host=self.host, port=self.port, debug=False, use_reloader=False, threaded=True
             )
         except Exception as e:
-            logger.error(f"Server failed to start: {e}")
+            logger.exception(f"Server failed to start: {e}")
             self.server_ready.set()  # Set anyway to unblock waiting thread
 
     def start(self) -> None:
@@ -74,7 +74,7 @@ class ServerFixture:
         # Wait for server to be ready (with timeout)
         logger.info("Waiting for server to be ready...")
         if not self.server_ready.wait(timeout=10):
-            logger.error("Server failed to start within 10 seconds")
+            logger.exception("Server failed to start within 10 seconds")
             raise RuntimeError("Server failed to start within 10 seconds")
 
         # Give the server a moment to fully initialize

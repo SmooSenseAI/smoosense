@@ -35,7 +35,7 @@ def get_video_info_and_first_frame(
     try:
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
-            logger.error(f"Could not open video: {video_path}")
+            logger.exception(f"Could not open video: {video_path}")
             return None
 
         # Get metadata
@@ -50,7 +50,7 @@ def get_video_info_and_first_frame(
         cap.release()
 
         if not ret or frame is None:
-            logger.error(f"Could not read first frame from: {video_path}")
+            logger.exception(f"Could not read first frame from: {video_path}")
             return None
 
         # Convert BGR to RGB and create PIL Image
@@ -65,7 +65,7 @@ def get_video_info_and_first_frame(
         return info, image
 
     except Exception as e:
-        logger.error(f"Error processing video {video_path}: {e}")
+        logger.exception(f"Error processing video {video_path}: {e}")
         return None
 
 
@@ -119,7 +119,7 @@ def process_video_batch(
                 }
             )
         except Exception as e:
-            logger.error(f"Error processing {video_path}: {e}")
+            logger.exception(f"Error processing {video_path}: {e}")
             continue
 
     if not batch_images:
@@ -136,7 +136,7 @@ def process_video_batch(
             processed_paths.append(batch_original_paths[i])
         return records, processed_paths
     except Exception as e:
-        logger.error(f"Error computing embeddings for batch: {e}")
+        logger.exception(f"Error computing embeddings for batch: {e}")
         return [], []
 
 
