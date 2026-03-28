@@ -3,6 +3,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
+from botocore.exceptions import NoCredentialsError
 from flask import Response, jsonify, request
 from werkzeug.exceptions import BadRequest
 
@@ -27,7 +28,7 @@ def handle_api_errors(f: Callable[..., Any]) -> Callable[..., Any]:
             return f(*args, **kwargs)
         except (AssertionError, InvalidInputException, BadRequest) as e:
             return make_error_response(e, 400)
-        except (PermissionError, AccessDeniedException) as e:
+        except (PermissionError, AccessDeniedException, NoCredentialsError) as e:
             return make_error_response(e, 403)
         except FileNotFoundError as e:
             return make_error_response(e, 404)

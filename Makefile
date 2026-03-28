@@ -30,6 +30,18 @@ build-release:
 	rm -rf ${PWD}/smoosense-gui/dist/_next/static
 	make build-sync
 
+docker-run:
+	make build-local
+	@echo "SmooSense running at http://localhost:8000"
+	docker run --rm -it \
+		-p 8000:8000 \
+		-v $(PWD)/smoosense-py/dist:/dist:ro \
+		-v $(PWD)/landing/public/content/deploy/app.py:/app/app.py:ro \
+		-w /app \
+		-v $(PWD)/data:/data:ro \
+		python:3.11-slim \
+		sh -c "pip install --no-cache-dir /dist/*.whl gunicorn && gunicorn --bind 0.0.0.0:8000 --workers 1 --timeout 120 app:app"
+
 env:
 	for project in $(SUB_PROJECTS); do \
 		make -C $$project env; \
