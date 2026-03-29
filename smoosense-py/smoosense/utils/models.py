@@ -1,4 +1,6 @@
 # models/base.py
+from typing import Literal
+
 from pydantic import BaseModel, Extra
 
 
@@ -13,3 +15,14 @@ class FSItem(ImmutableBaseModel):
     size: int
     lastModified: int
     isDir: bool
+
+
+SortBy = Literal["name", "size", "modified"]
+SortOrder = Literal["asc", "desc"]
+
+
+class FSListResponse(ImmutableBaseModel):
+    items: list[FSItem]
+    total: int
+    offset: int
+    limit: int
