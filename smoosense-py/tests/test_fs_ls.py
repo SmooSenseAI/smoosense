@@ -1,6 +1,5 @@
 import json
 import os
-import tempfile
 import unittest
 
 from smoosense.my_logging import getLogger
@@ -62,6 +61,18 @@ class TestLSEndpoint(BaseFSTest):
         sizes = [i["size"] for i in data["items"] if not i["isDir"]]
         self.assertEqual(sizes, sorted(sizes))
 
+    def test_sort_by_size_desc(self):
+        """Items sorted by size descending."""
+        data = self._ls(sort_by="size", sort_order="desc")
+        sizes = [i["size"] for i in data["items"] if not i["isDir"]]
+        self.assertEqual(sizes, sorted(sizes, reverse=True))
+
+    def test_sort_by_modified(self):
+        """Items sorted by modification time ascending."""
+        data = self._ls(sort_by="modified", sort_order="asc")
+        timestamps = [i["lastModified"] for i in data["items"] if not i["isDir"]]
+        self.assertEqual(timestamps, sorted(timestamps))
+
     def test_pagination_offset(self):
         """Offset skips the first N items."""
         all_data = self._ls(sort_by="name", sort_order="asc")
@@ -79,6 +90,7 @@ class TestLSEndpoint(BaseFSTest):
 
     def test_access_denied(self):
         import shutil
+
         restricted_dir = "/tmp/dummy-test"
         if os.path.exists(restricted_dir):
             shutil.rmtree(restricted_dir)
@@ -99,6 +111,7 @@ class TestLSEndpoint(BaseFSTest):
         nonexistent = "/tmp/this-does-not-exist-12345"
         if os.path.exists(nonexistent):
             import shutil
+
             shutil.rmtree(nonexistent)
         response = self.client.get(f"/ls?path={nonexistent}")
         self.assertEqual(response.status_code, 404)
