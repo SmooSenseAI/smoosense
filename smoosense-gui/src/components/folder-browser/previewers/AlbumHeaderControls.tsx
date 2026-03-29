@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronLeft, ChevronRight, Play, Square, Images } from 'lucide-react'
+import { Play, Square, Images } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import GalleryMoreControls from '@/components/gallery/GalleryMoreControls'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
@@ -8,19 +8,11 @@ import { setAutoPlayAllVideos } from '@/lib/features/ui/uiSlice'
 
 interface AlbumHeaderControlsProps {
   hasVideos: boolean
-  totalPages: number
-  currentPage: number
-  onPrevPage: () => void
-  onNextPage: () => void
   mediaFilesCount: number
 }
 
 export default function AlbumHeaderControls({
   hasVideos,
-  totalPages,
-  currentPage,
-  onPrevPage,
-  onNextPage,
   mediaFilesCount
 }: AlbumHeaderControlsProps) {
   const dispatch = useAppDispatch()
@@ -32,7 +24,7 @@ export default function AlbumHeaderControls({
 
   return (
     <div className="flex items-center justify-between w-full">
-      {/* Album title and video play/stop button - leftmost */}
+      {/* Album title and video play/stop button */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Images className="h-5 w-5" />
@@ -59,34 +51,6 @@ export default function AlbumHeaderControls({
               </>
             )}
           </Button>
-        )}
-      </div>
-
-      {/* Pagination and gallery controls - rightmost */}
-      <div className="flex items-center gap-2">
-
-        {totalPages > 1 && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onPrevPage}
-              disabled={currentPage === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-muted-foreground px-2">
-              {currentPage + 1} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onNextPage}
-              disabled={currentPage === totalPages - 1}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </>
         )}
       </div>
 

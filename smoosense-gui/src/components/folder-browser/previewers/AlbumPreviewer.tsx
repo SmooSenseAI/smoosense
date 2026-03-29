@@ -1,20 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Images } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { type TreeNode } from '@/lib/features/folderTree/folderTreeSlice'
+import { type TreeNode, loadFolderContents } from '@/lib/features/folderTree/folderTreeSlice'
 import { getFileType, FileType } from '@/lib/utils/fileTypes'
-import { pathJoin } from '@/lib/utils/pathUtils'
 import { getFileUrl } from '@/lib/utils/apiUtils'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
-import { loadFolderContents } from '@/lib/features/folderTree/folderTreeSlice'
 import ImageBlock from '@/components/common/ImageBlock'
 import GalleryVideoItem from '@/components/gallery/GalleryVideoItem'
 import AudioMiniMelSpectrogram from '@/components/audio/AudioMiniMelSpectrogram'
 import AlbumHeaderControls from './AlbumHeaderControls'
-import PreviewLoading from './shared/PreviewLoading'
-import PreviewError from './shared/PreviewError'
 
 // Dynamic import for Model3DPreviewer to avoid SSR issues
 const Model3DPreviewer = dynamic(() => import('./Model3DPreviewer'), {
@@ -32,108 +27,36 @@ interface MediaFile {
   type: 'image' | 'video' | 'audio' | 'model3d'
 }
 
-const ITEMS_PER_PAGE = 10
-
 export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
   const dispatch = useAppDispatch()
-  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
-  const [currentPage, setCurrentPage] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  // Get gallery UI settings from Redux
   const galleryItemWidth = useAppSelector((state) => state.ui.galleryItemWidth)
   const galleryItemHeight = useAppSelector((state) => state.ui.galleryItemHeight)
   const galleryCaptionHeight = useAppSelector((state) => state.ui.galleryCaptionHeight)
 
-  useEffect(() => {
-    const fetchFolderContents = async () => {
-      setIsLoading(true)
-      setError(null)
+  // Derive media files from already-loaded Redux tree node children
+  const mediaFiles: MediaFile[] = (item.children ?? [])
+    .filter(child => !child.isDir)
+    .map(child => {
+      const fileType = getFileType(child.name)
+      if (fileType === FileType.Image) return { name: child.name, path: child.path, type: 'image' as const }
+      if (fileType === FileType.Video) return { name: child.name, path: child.path, type: 'video' as const }
+      if (fileType === FileType.Audio) return { name: child.name, path: child.path, type: 'audio' as const }
+      if (fileType === FileType.Model3D) return { name: child.name, path: child.path, type: 'model3d' as const }
+      return null
+    })
+    .filter((f): f is MediaFile => f !== null)
 
-      try {
-        const result = await dispatch(loadFolderContents({
-          path: item.path,
-          limit: 1000  // Load more items to find media files
-        })).unwrap()
+  const loadedCount = item.children?.length ?? 0
+  const hasMore = item.isLoaded && item.childrenTotal > loadedCount
+  const remaining = item.childrenTotal - loadedCount
+  const hasVideos = mediaFiles.some(f => f.type === 'video')
 
-        // Filter for image, video, audio, and 3D model files
-        const media: MediaFile[] = result.items
-          .filter(file => !file.isDir)
-          .map(file => {
-            const fileType = getFileType(file.name)
-            if (fileType === FileType.Image) {
-              return {
-                name: file.name,
-                path: pathJoin(item.path, file.name),
-                type: 'image' as const
-              }
-            } else if (fileType === FileType.Video) {
-              return {
-                name: file.name,
-                path: pathJoin(item.path, file.name),
-                type: 'video' as const
-              }
-            } else if (fileType === FileType.Audio) {
-              return {
-                name: file.name,
-                path: pathJoin(item.path, file.name),
-                type: 'audio' as const
-              }
-            } else if (fileType === FileType.Model3D) {
-              return {
-                name: file.name,
-                path: pathJoin(item.path, file.name),
-                type: 'model3d' as const
-              }
-            }
-            return null
-          })
-          .filter((file): file is MediaFile => file !== null)
-
-        setMediaFiles(media)
-        setCurrentPage(0) // Reset to first page
-      } catch (err) {
-        console.error('Error loading folder contents:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load folder contents')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchFolderContents()
-  }, [item.path, dispatch])
-
-  const totalPages = Math.ceil(mediaFiles.length / ITEMS_PER_PAGE)
-  const currentItems = mediaFiles.slice(
-    currentPage * ITEMS_PER_PAGE,
-    (currentPage + 1) * ITEMS_PER_PAGE
-  )
-
-  // Check if there are any videos in the current items
-  const hasVideos = currentItems.some(file => file.type === 'video')
-
-  const handlePrevPage = () => {
-    setCurrentPage(prev => Math.max(0, prev - 1))
-  }
-
-  const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))
-  }
-
-
-  if (isLoading) {
-    return <PreviewLoading message="Loading album contents..." />
-  }
-
-  if (error) {
-    return (
-      <PreviewError
-        title="Error loading album"
-        message={error}
-        details={`Folder: ${item.path}`}
-      />
-    )
+  const handleLoadMore = () => {
+    dispatch(loadFolderContents({
+      path: item.path,
+      offset: loadedCount,
+      append: true,
+    }))
   }
 
   if (mediaFiles.length === 0) {
@@ -154,10 +77,6 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
       <div className="flex-shrink-0 p-4 border-b">
         <AlbumHeaderControls
           hasVideos={hasVideos}
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPrevPage={handlePrevPage}
-          onNextPage={handleNextPage}
           mediaFilesCount={mediaFiles.length}
         />
       </div>
@@ -170,7 +89,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
             gridTemplateColumns: `repeat(auto-fill, ${galleryItemWidth}px)`
           }}
         >
-          {currentItems.map((mediaFile) => (
+          {mediaFiles.map((mediaFile) => (
             <div
               key={mediaFile.path}
               className="relative border rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-muted/30"
@@ -204,7 +123,7 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
                 )}
               </div>
 
-              {/* File name overlay */}
+              {/* File name caption */}
               <div
                 className="p-3 bg-background border-t"
                 style={{ height: `${galleryCaptionHeight}px` }}
@@ -216,6 +135,19 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
             </div>
           ))}
         </div>
+
+        {/* Load more button */}
+        {hasMore && (
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={handleLoadMore}
+              disabled={item.loading}
+              className="px-4 py-2 text-sm text-muted-foreground border rounded hover:bg-muted/30 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {item.loading ? 'Loading…' : `Load ${remaining} more…`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
