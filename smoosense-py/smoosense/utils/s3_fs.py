@@ -6,7 +6,7 @@ import boto3
 from pydantic import validate_call
 
 from smoosense.exceptions import AccessDeniedException
-from smoosense.utils.models import FSItem
+from smoosense.utils.models import FSItem, SortBy, SortOrder
 
 logger = logging.getLogger(__name__)
 
@@ -16,25 +16,29 @@ class S3FileSystem:
         self.s3_client = s3_client
 
     @validate_call()
-    def list_one_level(self, key: str, limit: int = 100) -> list[FSItem]:
+    def list_one_level(
+        self,
+        key: str,
+        limit: int = 50,
+        offset: int = 0,
+        sort_by: SortBy = "name",
+        sort_order: SortOrder = "asc",
+    ) -> tuple[list[FSItem], int]:
         from botocore.exceptions import ClientError
 
-        # Parse the S3 URL to get bucket and prefix
         parsed = urlparse(key)
         bucket = parsed.netloc
         prefix = parsed.path.lstrip("/")
         if prefix:
             prefix = prefix.rstrip("/") + "/"
 
-        # List objects with the prefix
         paginator = self.s3_client.get_paginator("list_objects_v2")
-        items = []
+        all_items: list[FSItem] = []
 
         try:
             for page in paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter="/"):
-                # Add common prefixes (directories)
                 for prefix_entry in page.get("CommonPrefixes", []):
-                    items.append(
+                    all_items.append(
                         FSItem(
                             name=os.path.basename(prefix_entry["Prefix"].rstrip("/")),
                             size=0,
@@ -42,13 +46,10 @@ class S3FileSystem:
                             isDir=True,
                         )
                     )
-
-                # Add objects (files)
                 for obj in page.get("Contents", []):
-                    # Skip the directory marker itself
                     if obj["Key"] == prefix:
                         continue
-                    items.append(
+                    all_items.append(
                         FSItem(
                             name=os.path.basename(obj["Key"]),
                             size=obj["Size"],
@@ -56,10 +57,6 @@ class S3FileSystem:
                             isDir=False,
                         )
                     )
-
-                if len(items) >= limit:
-                    items = items[:limit]
-                    break
         except ClientError as e:
             error_code = e.response.get("Error", {}).get("Code", "")
             if error_code == "AccessDenied":
@@ -68,7 +65,16 @@ class S3FileSystem:
                 raise FileNotFoundError(str(e)) from e
             raise
 
-        return items
+        reverse = sort_order == "desc"
+        if sort_by == "size":
+            all_items.sort(key=lambda x: x.size, reverse=reverse)
+        elif sort_by == "modified":
+            all_items.sort(key=lambda x: x.lastModified, reverse=reverse)
+        else:
+            all_items.sort(key=lambda x: x.name.lower(), reverse=reverse)
+
+        total = len(all_items)
+        return all_items[offset : offset + limit], total
 
     @validate_call
     def sign_get_url(self, url: str, expires_in: int = 3600) -> str:
