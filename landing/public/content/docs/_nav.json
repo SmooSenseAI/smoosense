@@ -1,0 +1,23 @@
+{
+  "groups": [
+    {
+      "title": "Getting Started",
+      "items": ["install", "configuration", "authentication", "deployment"]
+    },
+    {
+      "title": "Features",
+      "items": [
+        "folder-browser",
+        "table-viewer",
+        "exploratory-data-analysis",
+        "visualization",
+        "embedding",
+        "database-browser"
+      ]
+    },
+    {
+      "title": "Reference",
+      "items": ["render-type"]
+    }
+  ]
+}
