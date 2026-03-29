@@ -5,6 +5,7 @@ import FolderTreeView from './FolderTreeView'
 import FolderHelpCard from './FolderHelpCard'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setFileInfoToShow } from '@/lib/features/ui/uiSlice'
+import { setSortBy, setSortOrder, type SortBy, type SortOrder } from '@/lib/features/folderTree/folderTreeSlice'
 import { pathParent, pathBasename } from '@/lib/utils/pathUtils'
 import {
   Select,
@@ -13,68 +14,83 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
 export default function FolderNavigation() {
   const dispatch = useAppDispatch()
   const fileInfoToShow = useAppSelector(state => state.ui.fileInfoToShow)
-  
-  // Get current root folder from Redux state (managed by FolderUrlParamsProvider)
+  const sortBy = useAppSelector(state => state.folderTree.sortBy)
+  const sortOrder = useAppSelector(state => state.folderTree.sortOrder)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
-  
-  // Helper function to create breadcrumb items
+
   const createBreadcrumbItems = (path: string) => {
-    if (!path) {
-      return []
-    }
-    
+    if (!path) return []
     const items = []
-    
-    // Get parent and grandparent using pathParent
     const parent = pathParent(path)
     const grandparent = pathParent(parent)
-    
-    // Check if we need ellipsis (more than 2 levels deep)
     const needsEllipsis = grandparent && grandparent !== parent && pathParent(grandparent) !== grandparent
-    
     if (needsEllipsis) {
       items.push({ name: '...', path: '', isEllipsis: true })
     }
-    
-    // Add grandparent if it exists and is different from parent
     if (grandparent && grandparent !== parent) {
-      const grandparentName = pathBasename(grandparent) || grandparent
-      items.push({ name: grandparentName, path: grandparent, isEllipsis: false })
+      items.push({ name: pathBasename(grandparent) || grandparent, path: grandparent, isEllipsis: false })
     }
-    
-    // Add parent if it exists and is different from current path
     if (parent && parent !== path) {
-      const parentName = pathBasename(parent) || parent
-      items.push({ name: parentName, path: parent, isEllipsis: false })
+      items.push({ name: pathBasename(parent) || parent, path: parent, isEllipsis: false })
     }
-    
     return items
   }
-  
+
   const breadcrumbItems = createBreadcrumbItems(rootFolder || '~')
-  
+
   const handleBreadcrumbClick = (path: string) => {
-    const url = `./FolderBrowser?rootFolder=${encodeURIComponent(path)}`
-    window.open(url, '_blank')
+    window.open(`./FolderBrowser?rootFolder=${encodeURIComponent(path)}`, '_blank')
   }
+
   return (
     <div className="h-full w-full border-r bg-muted/10 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-2 border-b">
+      <div className="flex items-center justify-between p-2 border-b gap-2 flex-wrap">
         <div className="flex items-center space-x-2">
           <FolderOpen className="h-5 w-5 text-muted-foreground" />
           <h3 className="font-medium text-sm">Folder Navigation</h3>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Sort field */}
           <Select
-              value={fileInfoToShow}
-              onValueChange={(value: 'size' | 'lastModified' | 'lastModifiedRelative') =>
-                  dispatch(setFileInfoToShow(value))
-              }
+            value={sortBy}
+            onValueChange={(value: SortBy) => dispatch(setSortBy(value))}
+          >
+            <SelectTrigger className="w-auto h-7 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Sort: Name</SelectItem>
+              <SelectItem value="size">Sort: Size</SelectItem>
+              <SelectItem value="modified">Sort: Modified</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort direction */}
+          <Select
+            value={sortOrder}
+            onValueChange={(value: SortOrder) => dispatch(setSortOrder(value))}
+          >
+            <SelectTrigger className="w-auto h-7 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">↑ Asc</SelectItem>
+              <SelectItem value="desc">↓ Desc</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* File info display */}
+          <Select
+            value={fileInfoToShow}
+            onValueChange={(value: 'size' | 'lastModified' | 'lastModifiedRelative') =>
+              dispatch(setFileInfoToShow(value))
+            }
           >
             <SelectTrigger className="w-auto h-7 text-xs">
               <SelectValue />
@@ -85,6 +101,7 @@ export default function FolderNavigation() {
               <SelectItem value="lastModifiedRelative">Modified (Relative)</SelectItem>
             </SelectContent>
           </Select>
+
           <FolderHelpCard />
         </div>
       </div>
@@ -107,18 +124,14 @@ export default function FolderNavigation() {
                   className="flex items-center space-x-1 px-1 py-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors min-w-0 cursor-pointer"
                   title={item.path}
                 >
-                  <span className="truncate">
-                    {item.name}
-                  </span>
+                  <span className="truncate">{item.name}</span>
                 </button>
               )}
             </div>
           ))}
         </nav>
       </div>
-      
 
-      
       <div className="flex-1 overflow-hidden">
         <FolderTreeView />
       </div>

@@ -21,6 +21,9 @@ export interface ArboristNodeData {
   loading: boolean
   isExpanded: boolean
   children?: ArboristNodeData[]
+  isLoadMore?: boolean
+  parentPath?: string
+  loadedCount?: number
 }
 
 interface TreeNodeComponentProps {
@@ -43,6 +46,26 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
   const fileInfoToShow = useAppSelector(state => state.ui.fileInfoToShow)
   const nodeData = node.data
   const isViewing = viewingId === nodeData.id
+
+  // Render "load more" button for pseudo-nodes
+  if (nodeData.isLoadMore) {
+    return (
+      <div
+        style={style}
+        className="flex items-center px-2 py-1 text-xs text-muted-foreground cursor-pointer hover:text-foreground hover:bg-muted/30 rounded"
+        onClick={(e) => {
+          e.stopPropagation()
+          dispatch(loadFolderContents({
+            path: nodeData.parentPath!,
+            offset: nodeData.loadedCount!,
+            append: true,
+          }))
+        }}
+      >
+        <span className="ml-8">{nodeData.name}</span>
+      </div>
+    )
+  }
 
   // Sync react-arborist expansion state with Redux state
   useEffect(() => {

@@ -14,55 +14,71 @@ import TreeNodeComponent, { type ArboristNodeData } from './TreeNodeComponent'
 
 export default function FolderTreeView() {
   const dispatch = useAppDispatch()
-  const { rootNode, loading, error } = useAppSelector(state => state.folderTree)
+  const { rootNode, loading, error, sortBy, sortOrder } = useAppSelector(state => state.folderTree)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
   const searchParams = useSearchParams()
   const containerRef = useRef<HTMLDivElement>(null)
   const [height, setHeight] = useState(600)
 
-  // Load folder contents when rootFolder changes
-  // Skip if there's a viewing parameter (FolderUrlParamsProvider will handle it)
+  // Reload when rootFolder or sort settings change
   useEffect(() => {
     const viewing = searchParams.get('viewing')
-
     if (rootFolder) {
       dispatch(clearTree())
-      // Only load root if there's no viewing parameter
       if (!viewing || viewing.trim() === '') {
         dispatch(loadFolderContents({ path: rootFolder }))
       }
     } else {
       dispatch(clearTree())
     }
-  }, [rootFolder, searchParams, dispatch])
+  }, [rootFolder, sortBy, sortOrder, searchParams, dispatch])
 
-  // Expand root node when it's first loaded
+  // Expand root node when first loaded
   useEffect(() => {
     if (rootNode && !rootNode.isExpanded) {
       dispatch(toggleNodeExpansion(rootNode.path))
     }
   }, [rootNode, dispatch])
 
-  // Measure container height synchronously before paint
   useLayoutEffect(() => {
     const updateHeight = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect()
-        if (rect.height > 0) {
-          setHeight(Math.floor(rect.height))
-        }
+        if (rect.height > 0) setHeight(Math.floor(rect.height))
       }
     }
-
     updateHeight()
-
-    // Also update on window resize
     window.addEventListener('resize', updateHeight)
     return () => window.removeEventListener('resize', updateHeight)
   }, [rootNode])
 
-  // Convert tree structure to hierarchical format for react-arborist
   const convertToArboristData = (node: TreeNode): ArboristNodeData => {
+    let children: ArboristNodeData[] | undefined = node.children
+      ? node.children.map(convertToArboristData)
+      : undefined
+
+    // Inject "load more" pseudo-node when the folder is loaded but has more items
+    if (children && node.isLoaded && node.childrenTotal > children.length) {
+      const remaining = node.childrenTotal - children.length
+      children = [
+        ...children,
+        {
+          id: `${node.path}/__load_more__`,
+          name: `Load ${remaining} more…`,
+          path: `${node.path}/__load_more__`,
+          isDir: false,
+          size: 0,
+          lastModified: 0,
+          isLoaded: false,
+          loading: false,
+          isExpanded: false,
+          isLoadMore: true,
+          parentPath: node.path,
+          loadedCount: children.length,
+        },
+      ]
+    }
+
     return {
       id: node.id,
       name: node.name,
@@ -73,10 +89,10 @@ export default function FolderTreeView() {
       isLoaded: node.isLoaded,
       loading: node.loading,
       isExpanded: node.isExpanded,
-      children: node.children ? node.children.map(convertToArboristData) : undefined
+      children,
     }
   }
-  
+
   const treeData = rootNode ? [convertToArboristData(rootNode)] : []
 
   if (error) {
@@ -87,7 +103,7 @@ export default function FolderTreeView() {
       </div>
     )
   }
-  
+
   if (!rootNode && loading) {
     return (
       <div className="p-4 text-center text-sm text-muted-foreground">
@@ -98,7 +114,7 @@ export default function FolderTreeView() {
       </div>
     )
   }
-  
+
   if (!rootNode) {
     return (
       <div className="p-4 text-center text-sm text-muted-foreground">
@@ -106,7 +122,7 @@ export default function FolderTreeView() {
       </div>
     )
   }
-  
+
   return (
     <div ref={containerRef} className="h-full w-full">
       <Tree
