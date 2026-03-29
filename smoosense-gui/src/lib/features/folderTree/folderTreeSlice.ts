@@ -187,6 +187,7 @@ export const folderTreeSlice = createSlice({
       state.error = null
     },
     setFilterPattern: (state, action: PayloadAction<string>) => {
+      if (state.filterPattern === action.payload) return
       state.filterPattern = action.payload
       state.rootNode = null
       state.expandedPaths = []

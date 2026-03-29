@@ -1,29 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(mkdir:*)",
-      "Bash(uv run:*)",
-      "Bash(pnpm exec tsc:*)",
-      "Bash(pnpm run lint)",
-      "Bash(for file in balanceMapSlice.ts rowDataSlice.ts bubblePlotSlice.ts)",
-      "Bash(do)",
-      "Bash(echo:*)",
-      "Bash(done)",
-      "Bash(pnpm run typecheck:*)",
-      "Bash(for file in src/lib/features/bubblePlot/bubblePlotSlice.ts src/lib/features/heatmap/heatmapSlice.ts src/lib/features/histogram/histogramSlice.ts)",
-      "Bash(pnpm test:*)",
-      "Bash(make typecheck:*)",
-      "Bash(pnpm lint:*)",
-      "Bash(make test:*)",
-      "Bash(python -m pytest:*)",
-      "Bash(git mv:*)",
-      "Bash(pnpm run lint:*)",
-      "Bash(pnpm typecheck:*)",
-      "Bash(pnpm tsc:*)",
-      "Bash(make lint:*)",
-      "Bash(grep:*)"
-    ],
-    "deny": [],
-    "ask": []
+    "allow": ["Bash", "Read", "Edit", "Write", "Glob", "Grep", "WebFetch", "WebSearch", "Agent", "Skill"]
   }
 }
