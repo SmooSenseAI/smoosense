@@ -2,6 +2,7 @@ import logging
 import os
 import pathlib
 from collections.abc import Generator
+from typing import cast
 
 import requests
 from botocore.exceptions import ClientError
@@ -14,6 +15,7 @@ from smoosense.handlers.auth import requires_auth_api
 from smoosense.utils.api import handle_api_errors, require_arg
 from smoosense.utils.local_fs import LocalFileSystem
 from smoosense.utils.mime_types import get_mime_type
+from smoosense.utils.models import FSListResponse, SortBy, SortOrder
 from smoosense.utils.s3_fs import S3FileSystem
 
 logger = logging.getLogger(__name__)
@@ -37,14 +39,20 @@ def create_streaming_response(
 @handle_api_errors
 def get_ls() -> Response:
     path = require_arg("path")
-    limit = int(request.args.get("limit", 100))
+    limit = int(request.args.get("limit", 50))
+    offset = int(request.args.get("offset", 0))
+    sort_by = cast(SortBy, request.args.get("sort_by", "name"))
+    sort_order = cast(SortOrder, request.args.get("sort_order", "asc"))
     show_hidden = request.args.get("show_hidden", "false").lower() == "true"
+
     if path.startswith("s3://"):
         s3_client = current_app.config["S3_CLIENT"]
-        items = S3FileSystem(s3_client).list_one_level(path, limit)
+        items, total = S3FileSystem(s3_client).list_one_level(path, limit, offset, sort_by, sort_order)
     else:
-        items = LocalFileSystem.list_one_level(path, limit, show_hidden)
-    return jsonify([item.model_dump() for item in items])
+        items, total = LocalFileSystem.list_one_level(path, limit, offset, sort_by, sort_order, show_hidden)
+
+    result = FSListResponse(items=items, total=total, offset=offset, limit=limit)
+    return jsonify(result.model_dump())
 
 
 @fs_bp.get("/get-file")
