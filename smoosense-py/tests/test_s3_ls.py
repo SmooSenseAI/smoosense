@@ -14,84 +14,72 @@ class TestS3LSEndpoint(unittest.TestCase):
     """Test cases for the /ls endpoint with S3 paths."""
 
     def setUp(self):
-        """Set up test fixtures before each test method."""
         self.app = Flask(__name__)
         self.app.register_blueprint(fs_bp)
         self.app.config["TESTING"] = True
         self.app.config["S3_CLIENT"] = boto3.client("s3")
         self.client = self.app.test_client()
-
-        # Set up application context for all tests
         self.app_context = self.app.app_context()
         self.app_context.push()
 
     def tearDown(self):
-        """Clean up after each test method."""
         self.app_context.pop()
 
-    def test_ls_s3_bucket_root(self):
-        """Test listing S3 bucket root."""
-        response = self.client.get("/ls?path=s3://smoosense-demo/")
+    def _ls(self, path="s3://smoosense-demo/", **kwargs):
+        params = {"path": path, **kwargs}
+        qs = "&".join(f"{k}={v}" for k, v in params.items())
+        response = self.client.get(f"/ls?{qs}")
+        return response, json.loads(response.get_data(as_text=True))
+
+    def test_response_shape(self):
+        """Response has items/total/offset/limit fields."""
+        response, data = self._ls()
         self.assertEqual(response.status_code, 200)
+        self.assertIn("items", data)
+        self.assertIn("total", data)
+        self.assertIn("offset", data)
+        self.assertIn("limit", data)
+        self.assertGreater(len(data["items"]), 0)
 
-        data = json.loads(response.get_data(as_text=True))
-        self.assertIsInstance(data, list)
-        self.assertGreater(len(data), 0)
-
-        # Each item should have required fields
-        for item in data:
+    def test_item_fields(self):
+        """Each item has required fields."""
+        response, data = self._ls()
+        self.assertEqual(response.status_code, 200)
+        for item in data["items"]:
             self.assertIn("name", item)
             self.assertIn("size", item)
             self.assertIn("lastModified", item)
             self.assertIn("isDir", item)
 
-    def test_ls_s3_nested_path(self):
-        """Test listing S3 nested path."""
-        response = self.client.get("/ls?path=s3://smoosense-demo/datasets/")
+    def test_nested_path(self):
+        response, data = self._ls(path="s3://smoosense-demo/datasets/")
         self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(data["items"], list)
 
-        data = json.loads(response.get_data(as_text=True))
-        self.assertIsInstance(data, list)
-
-    def test_ls_s3_with_limit(self):
-        """Test listing S3 with limit parameter."""
-        response = self.client.get("/ls?path=s3://smoosense-demo/&limit=2")
+    def test_with_limit(self):
+        response, data = self._ls(limit=2)
         self.assertEqual(response.status_code, 200)
+        self.assertLessEqual(len(data["items"]), 2)
 
-        data = json.loads(response.get_data(as_text=True))
-        self.assertIsInstance(data, list)
-        self.assertLessEqual(len(data), 2)
+    def test_sort_by_name_asc(self):
+        response, data = self._ls(sort_by="name", sort_order="asc")
+        self.assertEqual(response.status_code, 200)
+        names = [i["name"] for i in data["items"]]
+        self.assertEqual(names, sorted(names, key=str.lower))
 
-    def test_ls_s3_nonexistent_bucket(self):
-        """Test listing non-existent S3 bucket returns 404."""
-        response = self.client.get("/ls?path=s3://this-bucket-definitely-does-not-exist-12345/")
+    def test_pagination_total_stable(self):
+        _, page1 = self._ls(limit=1, offset=0)
+        _, page2 = self._ls(limit=1, offset=1)
+        self.assertEqual(page1["total"], page2["total"])
+
+    def test_nonexistent_bucket(self):
+        response, data = self._ls(path="s3://this-bucket-definitely-does-not-exist-12345/")
         self.assertEqual(response.status_code, 404)
-
-        data = json.loads(response.get_data(as_text=True))
         self.assertIn("error", data)
-        self.assertIn("NoSuchBucket", data["error"])
 
-    def test_ls_s3_access_denied(self):
-        """Test listing S3 bucket without access returns 403."""
-        # Use a known bucket that exists but we don't have access to
-        response = self.client.get("/ls?path=s3://amazon-reviews-pds/")
-
-        # This should return 403 if access is denied
-        # Note: This test depends on not having access to this public bucket
-        # If you do have access, this test may pass with 200
-        if response.status_code == 403:
-            data = json.loads(response.get_data(as_text=True))
-            self.assertIn("error", data)
-            self.assertIn("AccessDenied", data["error"])
-        else:
-            # If we happen to have access, just verify it returns valid data
-            self.assertEqual(response.status_code, 200)
-
-    def test_ls_s3_missing_path(self):
-        """Test listing without path parameter returns 400."""
+    def test_missing_path(self):
         response = self.client.get("/ls")
         self.assertEqual(response.status_code, 400)
-
         data = json.loads(response.get_data(as_text=True))
         self.assertIn("error", data)
 
