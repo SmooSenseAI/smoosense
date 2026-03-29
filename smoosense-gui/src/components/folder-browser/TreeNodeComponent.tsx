@@ -55,9 +55,10 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
         className="flex items-center px-2 py-1 text-xs text-muted-foreground cursor-pointer hover:text-foreground hover:bg-muted/30 rounded"
         onClick={(e) => {
           e.stopPropagation()
+          if (nodeData.parentPath == null || nodeData.loadedCount == null) return
           dispatch(loadFolderContents({
-            path: nodeData.parentPath!,
-            offset: nodeData.loadedCount!,
+            path: nodeData.parentPath,
+            offset: nodeData.loadedCount,
             append: true,
           }))
         }}
