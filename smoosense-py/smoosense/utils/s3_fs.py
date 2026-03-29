@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 from urllib.parse import urlparse
@@ -19,10 +20,11 @@ class S3FileSystem:
     def list_one_level(
         self,
         key: str,
-        limit: int = 50,
+        limit: int = 10,
         offset: int = 0,
         sort_by: SortBy = "name",
         sort_order: SortOrder = "asc",
+        pattern: str = "",
     ) -> tuple[list[FSItem], int]:
         from botocore.exceptions import ClientError
 
@@ -64,6 +66,9 @@ class S3FileSystem:
             if error_code == "NoSuchBucket":
                 raise FileNotFoundError(str(e)) from e
             raise
+
+        if pattern:
+            all_items = [item for item in all_items if fnmatch.fnmatch(item.name.lower(), pattern.lower())]
 
         reverse = sort_order == "desc"
         if sort_by == "size":

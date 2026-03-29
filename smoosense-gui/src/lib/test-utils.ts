@@ -158,6 +158,7 @@ export function createDefaultTestState(): RootState {
       viewingId: null,
       sortBy: 'name' as const,
       sortOrder: 'asc' as const,
+      filterPattern: '',
     },
     handPickedRows: {
       pickedKeys: [],

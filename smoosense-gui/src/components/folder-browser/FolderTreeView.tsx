@@ -14,7 +14,7 @@ import TreeNodeComponent, { type ArboristNodeData } from './TreeNodeComponent'
 
 export default function FolderTreeView() {
   const dispatch = useAppDispatch()
-  const { rootNode, loading, error, sortBy, sortOrder } = useAppSelector(state => state.folderTree)
+  const { rootNode, loading, error, sortBy, sortOrder, filterPattern } = useAppSelector(state => state.folderTree)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
   const searchParams = useSearchParams()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -31,7 +31,7 @@ export default function FolderTreeView() {
     } else {
       dispatch(clearTree())
     }
-  }, [rootFolder, sortBy, sortOrder, searchParams, dispatch])
+  }, [rootFolder, sortBy, sortOrder, filterPattern, searchParams, dispatch])
 
   // Expand root node when first loaded
   useEffect(() => {

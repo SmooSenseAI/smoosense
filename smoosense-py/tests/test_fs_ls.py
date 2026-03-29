@@ -73,6 +73,21 @@ class TestLSEndpoint(BaseFSTest):
         timestamps = [i["lastModified"] for i in data["items"] if not i["isDir"]]
         self.assertEqual(timestamps, sorted(timestamps))
 
+    def test_pattern_filter(self):
+        """Pattern filter returns only matching filenames."""
+        data = self._ls(pattern="alpha*")
+        names = [i["name"] for i in data["items"]]
+        self.assertIn("alpha.txt", names)
+        self.assertNotIn("beta.txt", names)
+        self.assertNotIn("gamma.txt", names)
+
+    def test_pattern_filter_total(self):
+        """Total reflects filtered count, not full directory count."""
+        all_data = self._ls()
+        filtered_data = self._ls(pattern="*.txt")
+        self.assertLess(filtered_data["total"], all_data["total"])
+        self.assertTrue(all(i["name"].endswith(".txt") for i in filtered_data["items"]))
+
     def test_pagination_offset(self):
         """Offset skips the first N items."""
         all_data = self._ls(sort_by="name", sort_order="asc")

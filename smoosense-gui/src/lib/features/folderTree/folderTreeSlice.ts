@@ -37,6 +37,7 @@ interface FolderTreeState {
   viewingId: string | null
   sortBy: SortBy
   sortOrder: SortOrder
+  filterPattern: string
 }
 
 const initialState: FolderTreeState = {
@@ -47,6 +48,7 @@ const initialState: FolderTreeState = {
   viewingId: null,
   sortBy: 'name',
   sortOrder: 'asc',
+  filterPattern: '',
 }
 
 interface FSListResponse {
@@ -58,7 +60,7 @@ interface FSListResponse {
 
 export const loadFolderContents = createAsyncThunk(
   'folderTree/loadFolderContents',
-  async ({ path, offset = 0, limit = 50, showHidden = false, append = false }: {
+  async ({ path, offset = 0, limit = 10, showHidden = false, append = false }: {
     path: string
     offset?: number
     limit?: number
@@ -66,7 +68,7 @@ export const loadFolderContents = createAsyncThunk(
     append?: boolean
   }, { getState }) => {
     const state = getState() as RootState
-    const { sortBy, sortOrder } = state.folderTree
+    const { sortBy, sortOrder, filterPattern } = state.folderTree
 
     const params = new URLSearchParams({
       path,
@@ -75,6 +77,7 @@ export const loadFolderContents = createAsyncThunk(
       sort_by: sortBy,
       sort_order: sortOrder,
       show_hidden: showHidden.toString(),
+      ...(filterPattern ? { pattern: filterPattern } : {}),
     })
 
     const response = await fetch(`${API_PREFIX}/ls?${params}`)
@@ -183,6 +186,12 @@ export const folderTreeSlice = createSlice({
       state.expandedPaths = []
       state.error = null
     },
+    setFilterPattern: (state, action: PayloadAction<string>) => {
+      state.filterPattern = action.payload
+      state.rootNode = null
+      state.expandedPaths = []
+      state.error = null
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -241,6 +250,7 @@ export const {
   setNodeLoading,
   setSortBy,
   setSortOrder,
+  setFilterPattern,
 } = folderTreeSlice.actions
 
 const { setViewingId: setViewingIdAction } = folderTreeSlice.actions

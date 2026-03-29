@@ -1,11 +1,12 @@
 'use client'
 
-import { FolderOpen, ChevronRight, MoreHorizontal } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { FolderOpen, ChevronRight, MoreHorizontal, X } from 'lucide-react'
 import FolderTreeView from './FolderTreeView'
 import FolderHelpCard from './FolderHelpCard'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setFileInfoToShow } from '@/lib/features/ui/uiSlice'
-import { setSortBy, setSortOrder, type SortBy, type SortOrder } from '@/lib/features/folderTree/folderTreeSlice'
+import { setSortBy, setSortOrder, setFilterPattern, type SortBy, type SortOrder } from '@/lib/features/folderTree/folderTreeSlice'
 import { pathParent, pathBasename } from '@/lib/utils/pathUtils'
 import {
   Select,
@@ -21,6 +22,16 @@ export default function FolderNavigation() {
   const sortBy = useAppSelector(state => state.folderTree.sortBy)
   const sortOrder = useAppSelector(state => state.folderTree.sortOrder)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
+
+  const [patternInput, setPatternInput] = useState('')
+
+  // Debounce: dispatch filter 300ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(setFilterPattern(patternInput))
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [patternInput, dispatch])
 
   const createBreadcrumbItems = (path: string) => {
     if (!path) return []
@@ -103,6 +114,27 @@ export default function FolderNavigation() {
           </Select>
 
           <FolderHelpCard />
+        </div>
+      </div>
+
+      {/* Pattern filter */}
+      <div className="px-2 py-1.5 border-b">
+        <div className="relative">
+          <input
+            type="text"
+            value={patternInput}
+            onChange={(e) => setPatternInput(e.target.value)}
+            placeholder="Filter: *.jpg, data_*, …"
+            className="w-full h-7 pl-2 pr-6 text-xs rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+          />
+          {patternInput && (
+            <button
+              onClick={() => setPatternInput('')}
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </div>
 

@@ -39,17 +39,22 @@ def create_streaming_response(
 @handle_api_errors
 def get_ls() -> Response:
     path = require_arg("path")
-    limit = int(request.args.get("limit", 50))
+    limit = int(request.args.get("limit", 10))
     offset = int(request.args.get("offset", 0))
     sort_by = cast(SortBy, request.args.get("sort_by", "name"))
     sort_order = cast(SortOrder, request.args.get("sort_order", "asc"))
     show_hidden = request.args.get("show_hidden", "false").lower() == "true"
+    pattern = request.args.get("pattern", "")
 
     if path.startswith("s3://"):
         s3_client = current_app.config["S3_CLIENT"]
-        items, total = S3FileSystem(s3_client).list_one_level(path, limit, offset, sort_by, sort_order)
+        items, total = S3FileSystem(s3_client).list_one_level(
+            path, limit, offset, sort_by, sort_order, pattern
+        )
     else:
-        items, total = LocalFileSystem.list_one_level(path, limit, offset, sort_by, sort_order, show_hidden)
+        items, total = LocalFileSystem.list_one_level(
+            path, limit, offset, sort_by, sort_order, show_hidden, pattern
+        )
 
     result = FSListResponse(items=items, total=total, offset=offset, limit=limit)
     return jsonify(result.model_dump())

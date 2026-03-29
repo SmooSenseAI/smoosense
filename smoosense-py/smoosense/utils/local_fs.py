@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 
@@ -13,11 +14,12 @@ class LocalFileSystem:
     @validate_call
     def list_one_level(
         path: str,
-        limit: int = 50,
+        limit: int = 10,
         offset: int = 0,
         sort_by: SortBy = "name",
         sort_order: SortOrder = "asc",
         show_hidden: bool = False,
+        pattern: str = "",
     ) -> tuple[list[FSItem], int]:
         if path.startswith("~"):
             path = os.path.expanduser(path)
@@ -36,6 +38,9 @@ class LocalFileSystem:
                     isDir=entry.is_dir(),
                 )
             )
+
+        if pattern:
+            all_items = [item for item in all_items if fnmatch.fnmatch(item.name.lower(), pattern.lower())]
 
         reverse = sort_order == "desc"
         if sort_by == "size":
