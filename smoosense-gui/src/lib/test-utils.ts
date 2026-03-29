@@ -156,6 +156,8 @@ export function createDefaultTestState(): RootState {
       loading: false,
       error: null,
       viewingId: null,
+      sortBy: 'name' as const,
+      sortOrder: 'asc' as const,
     },
     handPickedRows: {
       pickedKeys: [],
