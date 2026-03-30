@@ -38,6 +38,7 @@ interface FolderTreeState {
   sortBy: SortBy
   sortOrder: SortOrder
   filterPattern: string
+  pageSize: number
 }
 
 const initialState: FolderTreeState = {
@@ -49,6 +50,7 @@ const initialState: FolderTreeState = {
   sortBy: 'name',
   sortOrder: 'asc',
   filterPattern: '',
+  pageSize: 10,
 }
 
 interface FSListResponse {
@@ -60,7 +62,7 @@ interface FSListResponse {
 
 export const loadFolderContents = createAsyncThunk(
   'folderTree/loadFolderContents',
-  async ({ path, offset = 0, limit = 10, showHidden = false, append = false }: {
+  async ({ path, offset = 0, limit, showHidden = false, append = false }: {
     path: string
     offset?: number
     limit?: number
@@ -68,11 +70,12 @@ export const loadFolderContents = createAsyncThunk(
     append?: boolean
   }, { getState }) => {
     const state = getState() as RootState
-    const { sortBy, sortOrder, filterPattern } = state.folderTree
+    const { sortBy, sortOrder, filterPattern, pageSize } = state.folderTree
+    const effectiveLimit = limit ?? pageSize
 
     const params = new URLSearchParams({
       path,
-      limit: limit.toString(),
+      limit: effectiveLimit.toString(),
       offset: offset.toString(),
       sort_by: sortBy,
       sort_order: sortOrder,
@@ -193,6 +196,13 @@ export const folderTreeSlice = createSlice({
       state.expandedPaths = []
       state.error = null
     },
+    setPageSize: (state, action: PayloadAction<number>) => {
+      if (state.pageSize === action.payload) return
+      state.pageSize = action.payload
+      state.rootNode = null
+      state.expandedPaths = []
+      state.error = null
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -252,6 +262,7 @@ export const {
   setSortBy,
   setSortOrder,
   setFilterPattern,
+  setPageSize,
 } = folderTreeSlice.actions
 
 const { setViewingId: setViewingIdAction } = folderTreeSlice.actions

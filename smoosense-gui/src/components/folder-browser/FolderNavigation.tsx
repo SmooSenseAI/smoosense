@@ -6,7 +6,7 @@ import FolderTreeView from './FolderTreeView'
 import FolderHelpCard from './FolderHelpCard'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setFileInfoToShow } from '@/lib/features/ui/uiSlice'
-import { setSortBy, setSortOrder, setFilterPattern, type SortBy, type SortOrder } from '@/lib/features/folderTree/folderTreeSlice'
+import { setSortBy, setSortOrder, setFilterPattern, setPageSize, type SortBy, type SortOrder } from '@/lib/features/folderTree/folderTreeSlice'
 import { pathParent, pathBasename } from '@/lib/utils/pathUtils'
 import {
   Select,
@@ -21,6 +21,7 @@ export default function FolderNavigation() {
   const fileInfoToShow = useAppSelector(state => state.ui.fileInfoToShow)
   const sortBy = useAppSelector(state => state.folderTree.sortBy)
   const sortOrder = useAppSelector(state => state.folderTree.sortOrder)
+  const pageSize = useAppSelector(state => state.folderTree.pageSize)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
 
   const [patternInput, setPatternInput] = useState('')
@@ -117,9 +118,9 @@ export default function FolderNavigation() {
         </div>
       </div>
 
-      {/* Pattern filter */}
-      <div className="px-2 py-1.5 border-b">
-        <div className="relative">
+      {/* Pattern filter + page size */}
+      <div className="px-2 py-1.5 border-b flex items-center gap-2">
+        <div className="relative flex-1">
           <input
             type="text"
             value={patternInput}
@@ -136,6 +137,20 @@ export default function FolderNavigation() {
             </button>
           )}
         </div>
+        <Select
+          value={String(pageSize)}
+          onValueChange={(value) => dispatch(setPageSize(Number(value)))}
+        >
+          <SelectTrigger className="w-auto h-7 text-xs flex-shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="20">20</SelectItem>
+            <SelectItem value="50">50</SelectItem>
+            <SelectItem value="100">100</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Breadcrumb */}

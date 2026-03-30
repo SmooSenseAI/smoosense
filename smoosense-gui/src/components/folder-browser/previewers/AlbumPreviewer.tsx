@@ -29,6 +29,7 @@ interface MediaFile {
 
 export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
   const dispatch = useAppDispatch()
+  const pageSize = useAppSelector((state) => state.folderTree.pageSize)
   const galleryItemWidth = useAppSelector((state) => state.ui.galleryItemWidth)
   const galleryItemHeight = useAppSelector((state) => state.ui.galleryItemHeight)
   const galleryCaptionHeight = useAppSelector((state) => state.ui.galleryCaptionHeight)
@@ -48,7 +49,6 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
 
   const loadedCount = item.children?.length ?? 0
   const hasMore = item.isLoaded && item.childrenTotal > loadedCount
-  const remaining = item.childrenTotal - loadedCount
   const hasVideos = mediaFiles.some(f => f.type === 'video')
 
   const handleLoadMore = () => {
@@ -142,9 +142,9 @@ export default function AlbumPreviewer({ item }: AlbumPreviewerProps) {
             <button
               onClick={handleLoadMore}
               disabled={item.loading}
-              className="px-4 py-2 text-sm text-muted-foreground border rounded hover:bg-muted/30 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm text-muted-foreground border rounded hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {item.loading ? 'Loading…' : `Load ${remaining} more…`}
+              {item.loading ? 'Loading…' : `Load ${pageSize} more…`}
             </button>
           </div>
         )}

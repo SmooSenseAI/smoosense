@@ -14,7 +14,7 @@ import TreeNodeComponent, { type ArboristNodeData } from './TreeNodeComponent'
 
 export default function FolderTreeView() {
   const dispatch = useAppDispatch()
-  const { rootNode, loading, error, sortBy, sortOrder, filterPattern } = useAppSelector(state => state.folderTree)
+  const { rootNode, loading, error, sortBy, sortOrder, filterPattern, pageSize } = useAppSelector(state => state.folderTree)
   const rootFolder = useAppSelector(state => state.ui.rootFolder)
   const searchParams = useSearchParams()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -31,7 +31,7 @@ export default function FolderTreeView() {
     } else {
       dispatch(clearTree())
     }
-  }, [rootFolder, sortBy, sortOrder, filterPattern, searchParams, dispatch])
+  }, [rootFolder, sortBy, sortOrder, filterPattern, pageSize, searchParams, dispatch])
 
   // Expand root node when first loaded
   useEffect(() => {
@@ -59,12 +59,11 @@ export default function FolderTreeView() {
 
     // Inject "load more" pseudo-node when the folder is loaded but has more items
     if (children && node.isLoaded && node.childrenTotal > children.length) {
-      const remaining = node.childrenTotal - children.length
       children = [
         ...children,
         {
           id: `${node.path}/__load_more__`,
-          name: `Load ${remaining} more…`,
+          name: `Load ${pageSize} more…`,
           path: `${node.path}/__load_more__`,
           isDir: false,
           size: 0,

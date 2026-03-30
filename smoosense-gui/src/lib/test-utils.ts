@@ -159,6 +159,7 @@ export function createDefaultTestState(): RootState {
       sortBy: 'name' as const,
       sortOrder: 'asc' as const,
       filterPattern: '',
+      pageSize: 10,
     },
     handPickedRows: {
       pickedKeys: [],
