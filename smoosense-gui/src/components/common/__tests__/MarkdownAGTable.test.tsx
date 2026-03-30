@@ -3,7 +3,7 @@ import { Provider } from 'react-redux'
 import { createTestStore } from '@/lib/test-utils'
 import MarkdownAGTable from '../MarkdownAGTable'
 
-// ag-grid-react is mocked in jest.config.js → renders <div data-testid="ag-grid-mock">
+// ag-grid-react is mocked locally below to avoid canvas issues in jsdom
 jest.mock('ag-grid-react', () => ({
   AgGridReact: ({ columnDefs }: { columnDefs: { field?: string }[] }) => (
     <div data-testid="ag-grid-mock">

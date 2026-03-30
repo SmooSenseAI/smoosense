@@ -52,7 +52,7 @@ function parseTableData(node: HastNode): { rows: Record<string, unknown>[] } | n
 export default function MarkdownAGTable({ node, children }: MarkdownAGTableProps) {
   if (!node) return <table>{children}</table>
 
-  const parsed = node ? parseTableData(node) : null
+  const parsed = parseTableData(node)
   if (!parsed) return <table>{children}</table>
 
   return (
