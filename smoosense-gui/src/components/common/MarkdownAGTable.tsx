@@ -3,7 +3,7 @@
 import React from 'react'
 import BasicAGTable from '@/components/common/BasicAGTable'
 
-interface HastNode {
+export interface HastNode {
   type: string
   value?: string
   tagName?: string

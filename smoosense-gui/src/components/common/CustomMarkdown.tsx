@@ -10,20 +10,13 @@ import { HeaderStatsCellRendererImpl } from '@/lib/utils/cellRenderers/HeaderSta
 import { CLS } from '@/lib/utils/styles'
 import { MarkdownProvider, useMarkdownContext } from './MarkdownContext'
 import TOCFloatingPanel from './TOCFloatingPanel'
-import MarkdownAGTable from './MarkdownAGTable'
+import MarkdownAGTable, { HastNode } from './MarkdownAGTable'
 import InteractiveMermaid from './InteractiveMermaid'
 
 interface CustomMarkdownProps {
   children: string
   disableTOC?: boolean
   tocButtonPosition?: { bottom?: string; right?: string }
-}
-
-interface HastNode {
-  type: string
-  tagName?: string
-  children?: HastNode[]
-  value?: string
 }
 
 function HeadingWithCounter({
