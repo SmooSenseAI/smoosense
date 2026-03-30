@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
@@ -6,34 +8,71 @@ import Link from 'next/link'
 import FileShortcut from './FileShortcut'
 import { HeaderStatsCellRendererImpl } from '@/lib/utils/cellRenderers/HeaderStatsCellRenderer'
 import { CLS } from '@/lib/utils/styles'
+import { MarkdownProvider, useMarkdownContext } from './MarkdownContext'
+import TOCFloatingPanel from './TOCFloatingPanel'
+import MarkdownAGTable from './MarkdownAGTable'
+import InteractiveMermaid from './InteractiveMermaid'
 
 interface CustomMarkdownProps {
   children: string
+  disableTOC?: boolean
+  tocButtonPosition?: { bottom?: string; right?: string }
 }
 
-export default function CustomMarkdown({ children }: CustomMarkdownProps) {
+interface HastNode {
+  type: string
+  tagName?: string
+  children?: HastNode[]
+  value?: string
+}
+
+function HeadingWithCounter({
+  level,
+  children,
+}: {
+  level: 1 | 2 | 3
+  children: React.ReactNode
+}) {
+  const { headings, headingIndexRef } = useMarkdownContext()
+  const index = headingIndexRef.current++
+  const entry = headings[index]
+
+  const sizeClass = {
+    1: 'text-2xl font-bold mb-4',
+    2: 'text-xl font-semibold mb-3',
+    3: 'text-lg font-medium mb-2',
+  }[level]
+
+  const Tag = `h${level}` as 'h1' | 'h2' | 'h3'
+
+  return (
+    <Tag id={entry?.id} className={`${sizeClass} text-foreground`}>
+      {entry && (
+        <span className="text-muted-foreground text-[0.85em] mr-2">{entry.sectionNumber}</span>
+      )}
+      {children}
+    </Tag>
+  )
+}
+
+interface MarkdownInnerProps {
+  markdown: string
+  disableTOC?: boolean
+  tocButtonPosition?: { bottom?: string; right?: string }
+}
+
+function MarkdownInner({ markdown, disableTOC, tocButtonPosition }: MarkdownInnerProps) {
   const components: Components = {
-    // Default HTML element styling
-    h1: ({ children }) => (
-      <h1 className="text-2xl font-bold mb-4 text-foreground">{children}</h1>
-    ),
-    h2: ({ children }) => (
-      <h2 className="text-xl font-semibold mb-3 text-foreground">{children}</h2>
-    ),
-    h3: ({ children }) => (
-      <h3 className="text-lg font-medium mb-2 text-foreground">{children}</h3>
-    ),
+    h1: ({ children }) => <HeadingWithCounter level={1}>{children}</HeadingWithCounter>,
+    h2: ({ children }) => <HeadingWithCounter level={2}>{children}</HeadingWithCounter>,
+    h3: ({ children }) => <HeadingWithCounter level={3}>{children}</HeadingWithCounter>,
     p: ({ children, node }) => {
-      // Check if this paragraph contains only HTML elements (like our custom components)
-      // If the node has only one child and it's an element (not text), don't wrap in <p>
       if (node && node.children && node.children.length === 1) {
         const child = node.children[0]
         if (child.type === 'element') {
-          // Return the children directly without <p> wrapper
           return <>{children}</>
         }
       }
-
       return <p className="text-foreground mb-3 leading-relaxed">{children}</p>
     },
     ul: ({ children }) => (
@@ -42,38 +81,35 @@ export default function CustomMarkdown({ children }: CustomMarkdownProps) {
     ol: ({ children }) => (
       <ol className="list-decimal pl-6 mb-3 text-foreground">{children}</ol>
     ),
-    li: ({ children }) => (
-      <li className="mb-1">{children}</li>
-    ),
-    code: ({ children, ...props }) => {
-        return (
-          <code className="bg-muted px-1 py-0.5 rounded text-sm font-mono text-attention" {...props}>
-            {children}
-          </code>
-        )
+    li: ({ children }) => <li className="mb-1">{children}</li>,
+    code: ({ children, className, ...props }) => {
+      if (className?.includes('language-mermaid')) {
+        return <InteractiveMermaid definition={String(children).trim()} />
+      }
+      return (
+        <code
+          className="bg-muted px-1 py-0.5 rounded text-sm font-mono text-attention"
+          {...props}
+        >
+          {children}
+        </code>
+      )
     },
-    pre: ({ children }) => (
-      <pre className="mt-2 mb-5">{children}</pre>
-    ),
+    pre: ({ children }) => <pre className="mt-2 mb-5">{children}</pre>,
     blockquote: ({ children }) => (
       <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground mb-3">
         {children}
       </blockquote>
     ),
-    hr: () => (
-      <hr className="my-4 border-border" />
-    ),
+    hr: () => <hr className="my-4 border-border" />,
     a: ({ href, children, ...props }) => {
       if (!href) {
         return <span className="text-foreground">{children}</span>
       }
-
-      // Check if it's an internal link (starts with / or relative)
-      const isInternal = href.startsWith('/') || (!href.startsWith('http') && !href.startsWith('mailto:'))
-
-      // Common styling classes using centralized styles
+      const isInternal =
+        href.startsWith('/') ||
+        (!href.startsWith('http') && !href.startsWith('mailto:'))
       const linkClasses = `${CLS.HYPERLINK} break-words`
-
       if (isInternal) {
         return (
           <Link href={href} className={linkClasses} {...props}>
@@ -81,8 +117,6 @@ export default function CustomMarkdown({ children }: CustomMarkdownProps) {
           </Link>
         )
       }
-
-      // External links
       return (
         <a
           href={href}
@@ -95,22 +129,21 @@ export default function CustomMarkdown({ children }: CustomMarkdownProps) {
         </a>
       )
     },
-    // Custom component mapping - using lowercase to match HTML tag
-    fileshortcut: ({ ...props }: Record<string, string>) => {
-      const tablePath = props['filepath'] || ''
-      const description = props['description'] || ''
-
-      return <FileShortcut tablePath={tablePath} description={description} />
-    },
+    table: ({ node, children }) => (
+      <MarkdownAGTable node={node as unknown as HastNode}>{children}</MarkdownAGTable>
+    ),
+    fileshortcut: ({ ...props }: Record<string, string>) => (
+      <FileShortcut tablePath={props['filepath'] || ''} description={props['description'] || ''} />
+    ),
     headerstatscellrendererimpl: ({ ...props }: Record<string, string>) => {
       const columnname = props['columnname'] || ''
       const side = (props['side'] || 'right') as 'top' | 'right' | 'bottom' | 'left'
       const showColumnName = props['showcolumnname'] === 'true'
-
       if (!columnname) {
-        return <div className="text-sm text-muted-foreground">Column name required</div>
+        return (
+          <div className="text-sm text-muted-foreground">Column name required</div>
+        )
       }
-
       return (
         <div className="inline-block w-full h-12 border border-border rounded">
           <HeaderStatsCellRendererImpl
@@ -122,16 +155,32 @@ export default function CustomMarkdown({ children }: CustomMarkdownProps) {
       )
     },
   } as Components & {
-    fileshortcut: React.ComponentType<Record<string, string>>;
-    headerstatscellrendererimpl: React.ComponentType<Record<string, string>>;
+    fileshortcut: React.ComponentType<Record<string, string>>
+    headerstatscellrendererimpl: React.ComponentType<Record<string, string>>
   }
 
   return (
-    <ReactMarkdown
-      rehypePlugins={[rehypeRaw]}
-      components={components}
-    >
-      {children}
-    </ReactMarkdown>
+    <>
+      {!disableTOC && <TOCFloatingPanel position={tocButtonPosition} />}
+      <ReactMarkdown rehypePlugins={[rehypeRaw]} components={components}>
+        {markdown}
+      </ReactMarkdown>
+    </>
+  )
+}
+
+export default function CustomMarkdown({
+  children,
+  disableTOC = false,
+  tocButtonPosition,
+}: CustomMarkdownProps) {
+  return (
+    <MarkdownProvider markdown={children}>
+      <MarkdownInner
+        markdown={children}
+        disableTOC={disableTOC}
+        tocButtonPosition={tocButtonPosition}
+      />
+    </MarkdownProvider>
   )
 }
