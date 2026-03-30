@@ -34,7 +34,7 @@ export function computeHeadings(markdown: string): HeadingEntry[] {
     .replace(/`[^`\n]+`/g, '')
 
   const headingRegex = /^(#{1,3})[ \t]+(.+)$/gm
-  const counters: [number, number, number] = [0, 0, 0]
+  const counters: number[] = [0, 0, 0]
   const slugCounts: Record<string, number> = {}
   const result: HeadingEntry[] = []
 
