@@ -37,7 +37,6 @@ interface FolderTreeState {
   viewingId: string | null
   sortBy: SortBy
   sortOrder: SortOrder
-  filterPattern: string
   pageSize: number
 }
 
@@ -49,7 +48,6 @@ const initialState: FolderTreeState = {
   viewingId: null,
   sortBy: 'name',
   sortOrder: 'asc',
-  filterPattern: '',
   pageSize: 10,
 }
 
@@ -70,7 +68,7 @@ export const loadFolderContents = createAsyncThunk(
     append?: boolean
   }, { getState }) => {
     const state = getState() as RootState
-    const { sortBy, sortOrder, filterPattern, pageSize } = state.folderTree
+    const { sortBy, sortOrder, pageSize } = state.folderTree
     const effectiveLimit = limit ?? pageSize
 
     const params = new URLSearchParams({
@@ -80,7 +78,6 @@ export const loadFolderContents = createAsyncThunk(
       sort_by: sortBy,
       sort_order: sortOrder,
       show_hidden: showHidden.toString(),
-      ...(filterPattern ? { pattern: filterPattern } : {}),
     })
 
     const response = await fetch(`${API_PREFIX}/ls?${params}`)
@@ -189,13 +186,6 @@ export const folderTreeSlice = createSlice({
       state.expandedPaths = []
       state.error = null
     },
-    setFilterPattern: (state, action: PayloadAction<string>) => {
-      if (state.filterPattern === action.payload) return
-      state.filterPattern = action.payload
-      state.rootNode = null
-      state.expandedPaths = []
-      state.error = null
-    },
     setPageSize: (state, action: PayloadAction<number>) => {
       if (state.pageSize === action.payload) return
       state.pageSize = action.payload
@@ -261,7 +251,6 @@ export const {
   setNodeLoading,
   setSortBy,
   setSortOrder,
-  setFilterPattern,
   setPageSize,
 } = folderTreeSlice.actions
 

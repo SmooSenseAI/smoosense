@@ -40,7 +40,9 @@ class LocalFileSystem:
             )
 
         if pattern:
-            all_items = [item for item in all_items if fnmatch.fnmatch(item.name.lower(), pattern.lower())]
+            all_items = [
+                item for item in all_items if fnmatch.fnmatch(item.name.lower(), pattern.lower())
+            ]
 
         reverse = sort_order == "desc"
         if sort_by == "size":

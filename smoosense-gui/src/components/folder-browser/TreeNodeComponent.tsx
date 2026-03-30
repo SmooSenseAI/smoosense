@@ -47,27 +47,6 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
   const nodeData = node.data
   const isViewing = viewingId === nodeData.id
 
-  // Render "load more" button for pseudo-nodes
-  if (nodeData.isLoadMore) {
-    return (
-      <div
-        style={style}
-        className="flex items-center px-2 py-1 text-xs text-muted-foreground cursor-pointer hover:text-foreground hover:bg-muted/30 rounded"
-        onClick={(e) => {
-          e.stopPropagation()
-          if (nodeData.parentPath == null || nodeData.loadedCount == null) return
-          dispatch(loadFolderContents({
-            path: nodeData.parentPath,
-            offset: nodeData.loadedCount,
-            append: true,
-          }))
-        }}
-      >
-        <span className="ml-8">{nodeData.name}</span>
-      </div>
-    )
-  }
-
   // Sync react-arborist expansion state with Redux state
   useEffect(() => {
     if (nodeData.isDir && nodeData.isExpanded !== node.isOpen) {
@@ -215,8 +194,29 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
     )
   }
   
+  // Render "load more" button for pseudo-nodes (after all hooks)
+  if (nodeData.isLoadMore) {
+    return (
+      <div
+        style={style}
+        className="flex items-center px-2 py-1 text-xs text-muted-foreground cursor-pointer hover:text-foreground hover:bg-muted/30 rounded"
+        onClick={(e) => {
+          e.stopPropagation()
+          if (nodeData.parentPath == null || nodeData.loadedCount == null) return
+          dispatch(loadFolderContents({
+            path: nodeData.parentPath,
+            offset: nodeData.loadedCount,
+            append: true,
+          }))
+        }}
+      >
+        <span className="ml-8">{nodeData.name}</span>
+      </div>
+    )
+  }
+
   return (
-    <div 
+    <div
       style={style}
       className={cn(
         "group flex items-center space-x-2 px-2 py-1 text-sm cursor-pointer hover:bg-muted/50 rounded relative",
