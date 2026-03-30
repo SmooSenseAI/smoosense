@@ -7,7 +7,7 @@ import PreviewLoading from './shared/PreviewLoading'
 import PreviewError from './shared/PreviewError'
 import PreviewNotFound from './shared/PreviewNotFound'
 import ReadonlyCodeMirror from '@/components/common/ReadonlyCodeMirror'
-import ReactMarkdown from 'react-markdown'
+import CustomMarkdown from '@/components/common/CustomMarkdown'
 import { Code, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { python } from '@codemirror/lang-python'
@@ -66,7 +66,7 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
       return (
         <div className="w-full h-full overflow-auto p-6">
           <div className="markdown-content max-w-4xl">
-            <ReactMarkdown>{content || '(Empty file)'}</ReactMarkdown>
+            <CustomMarkdown>{content || '(Empty file)'}</CustomMarkdown>
           </div>
         </div>
       )

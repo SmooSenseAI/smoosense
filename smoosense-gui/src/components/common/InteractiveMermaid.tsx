@@ -3,16 +3,19 @@
 import { useEffect, useRef } from 'react'
 import mermaid from 'mermaid'
 
+let mermaidIdCounter = 0
+
 interface InteractiveMermaidProps {
   definition: string
   className?: string
 }
 
-export default function InteractiveMermaid({ 
-  definition, 
+export default function InteractiveMermaid({
+  definition,
   className = "w-full h-full"
 }: InteractiveMermaidProps) {
   const mermaidRef = useRef<HTMLDivElement>(null)
+  const mermaidId = useRef(`mermaid-graph-${++mermaidIdCounter}`)
 
   useEffect(() => {
     mermaid.initialize({
@@ -31,7 +34,7 @@ export default function InteractiveMermaid({
 
       try {
         mermaidRef.current.innerHTML = ''
-        const { svg } = await mermaid.render('mermaid-graph', definition)
+        const { svg } = await mermaid.render(mermaidId.current, definition)
         mermaidRef.current.innerHTML = svg
 
         const svgElement = mermaidRef.current.querySelector('svg')
@@ -59,9 +62,9 @@ export default function InteractiveMermaid({
           applyStyles('polyline', { stroke: 'var(--muted-foreground)', strokeWidth: '2px', fill: 'none' })
         }
       } catch (error) {
-        console.error('Error rendering mermaid diagram:', error)
         if (mermaidRef.current) {
-          mermaidRef.current.innerHTML = '<div class="p-4 text-red-500">Error rendering diagram</div>'
+          const message = error instanceof Error ? error.message : String(error)
+          mermaidRef.current.innerHTML = `<pre class="p-3 text-xs text-red-500 whitespace-pre-wrap border border-red-200 rounded bg-red-50 dark:bg-red-950/20">${message}</pre>`
         }
       }
     }
