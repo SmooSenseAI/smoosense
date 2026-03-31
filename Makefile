@@ -2,6 +2,11 @@ SUB_PROJECTS := smoosense-gui smoosense-py
 
 .PHONY: env build test release
 
+# Use named AWS profile locally; CI uses IAM roles
+ifndef CI
+export AWS_PROFILE := ss-readonly
+endif
+
 .EXPORT_ALL_VARIABLES:
 R2_PARAMS := --profile=r2 --endpoint-url=https://41a336bea9a67c844e5fcba526c53768.r2.cloudflarestorage.com
 R2_BUCKET := s3://smoosense-cdn
