@@ -240,7 +240,7 @@
 }
 
 .markdown-content blockquote {
-  @apply border-l-4 border-muted pl-4 italic my-4 text-muted-foreground;
+  @apply border-l-4 border-primary pl-4 italic my-4 text-muted-foreground;
 }
 
 .markdown-content code {
