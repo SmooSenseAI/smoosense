@@ -14,7 +14,8 @@ const customJestConfig = {
     '^@noble/ed25519$': '<rootDir>/src/__mocks__/@noble/ed25519.js',
     '^@noble/hashes/sha2.js$': '<rootDir>/src/__mocks__/@noble/hashes/sha2.js',
     '^react-markdown$': '<rootDir>/src/__mocks__/react-markdown.js',
-    '^rehype-raw$': '<rootDir>/src/__mocks__/rehype-raw.js'
+    '^rehype-raw$': '<rootDir>/src/__mocks__/rehype-raw.js',
+    '^remark-gfm$': '<rootDir>/src/__mocks__/remark-gfm.js'
   },
   transformIgnorePatterns: [
     'node_modules/(?!(mermaid|@noble|react-markdown|rehype-raw)/)'

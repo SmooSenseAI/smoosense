@@ -3,6 +3,7 @@
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
+import remarkGfm from 'remark-gfm'
 import { Components } from 'react-markdown'
 import Link from 'next/link'
 import FileShortcut from './FileShortcut'
@@ -171,7 +172,7 @@ function MarkdownInner({ markdown, disableTOC, tocButtonPosition }: MarkdownInne
   return (
     <>
       {!disableTOC && <TOCFloatingPanel position={tocButtonPosition} />}
-      <ReactMarkdown rehypePlugins={[rehypeRaw]} components={components}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={components}>
         {markdown}
       </ReactMarkdown>
     </>
