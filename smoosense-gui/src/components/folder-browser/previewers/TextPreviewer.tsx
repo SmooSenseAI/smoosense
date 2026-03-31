@@ -56,7 +56,7 @@ function TOCPopover() {
                 onClick={() => handleHeadingClick(id)}
                 className="text-xs text-left w-full text-foreground hover:text-primary transition-colors truncate cursor-pointer"
               >
-                <span className="text-muted-foreground mr-1">{sectionNumber}</span>
+                <span className="text-primary mr-1">{sectionNumber}</span>
                 {text}
               </button>
             </li>

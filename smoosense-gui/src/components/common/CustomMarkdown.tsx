@@ -49,7 +49,7 @@ function HeadingWithCounter({
   return (
     <Tag id={entry?.id} className={`${sizeClass} text-foreground`}>
       {entry?.sectionNumber && (
-        <span className="text-muted-foreground text-[0.85em] mr-2">{entry.sectionNumber}</span>
+        <span className="text-primary text-[0.85em] mr-2">{entry.sectionNumber}</span>
       )}
       {children}
     </Tag>
