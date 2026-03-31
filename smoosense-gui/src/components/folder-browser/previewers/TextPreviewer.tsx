@@ -54,7 +54,7 @@ function TOCPopover() {
             <li key={id} className={indentClass[level as 1 | 2 | 3]}>
               <button
                 onClick={() => handleHeadingClick(id)}
-                className="text-xs text-left w-full text-foreground hover:text-primary transition-colors truncate"
+                className="text-xs text-left w-full text-foreground hover:text-primary transition-colors truncate cursor-pointer"
               >
                 <span className="text-muted-foreground mr-1">{sectionNumber}</span>
                 {text}
