@@ -9,8 +9,8 @@ import PreviewError from './shared/PreviewError'
 import PreviewNotFound from './shared/PreviewNotFound'
 import ReadonlyCodeMirror from '@/components/common/ReadonlyCodeMirror'
 import CustomMarkdown from '@/components/common/CustomMarkdown'
-import TOCFloatingPanel from '@/components/common/TOCFloatingPanel'
 import { MarkdownProvider, useMarkdownContext } from '@/components/common/MarkdownContext'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Code, Eye, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { python } from '@codemirror/lang-python'
@@ -23,19 +23,47 @@ interface TextPreviewerProps {
   version?: number
 }
 
-function TOCTrigger() {
+function TOCPopover() {
   const { headings, showTOC, setShowTOC } = useMarkdownContext()
   if (headings.length === 0) return null
+
+  const indentClass: Record<1 | 2 | 3, string> = { 1: 'pl-0', 2: 'pl-4', 3: 'pl-8' }
+
+  const handleHeadingClick = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+    setShowTOC(false)
+  }
+
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      className="h-8 w-8"
-      onClick={() => setShowTOC(!showTOC)}
-      aria-label="Toggle table of contents"
-    >
-      <List className="h-4 w-4" />
-    </Button>
+    <Popover open={showTOC} onOpenChange={setShowTOC}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 h-8">
+          <List className="h-4 w-4" />
+          Table of contents
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-60 max-h-96 overflow-y-auto p-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Contents
+          </span>
+        </div>
+        <ul className="space-y-1">
+          {headings.map(({ id, level, text, sectionNumber }) => (
+            <li key={id} className={indentClass[level as 1 | 2 | 3]}>
+              <button
+                onClick={() => handleHeadingClick(id)}
+                className="text-xs text-left w-full text-foreground hover:text-primary transition-colors truncate"
+              >
+                <span className="text-muted-foreground mr-1">{sectionNumber}</span>
+                {text}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -116,7 +144,7 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
       </div>
       {showControls && headerPortal && createPortal(
         <div className="flex items-center gap-1.5">
-          {showRendered && <TOCTrigger />}
+          {showRendered && <TOCPopover />}
           <Button
             variant="outline"
             size="sm"
@@ -132,7 +160,6 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
         </div>,
         headerPortal
       )}
-      {showRendered && isMarkdown && <TOCFloatingPanel showButton={false} />}
     </MarkdownProvider>
   )
 }
