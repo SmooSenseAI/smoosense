@@ -7,10 +7,12 @@ import { List, X } from 'lucide-react'
 
 interface TOCFloatingPanelProps {
   position?: { bottom?: string; right?: string }
+  showButton?: boolean
 }
 
 export default function TOCFloatingPanel({
-  position = { bottom: '1.5rem', right: '1.5rem' }
+  position = { bottom: '1.5rem', right: '1.5rem' },
+  showButton = true,
 }: TOCFloatingPanelProps) {
   const { headings, showTOC, setShowTOC } = useMarkdownContext()
   const [mounted, setMounted] = useState(false)
@@ -37,14 +39,16 @@ export default function TOCFloatingPanel({
 
   return createPortal(
     <>
-      <button
-        onClick={() => setShowTOC(!showTOC)}
-        style={{ bottom: position.bottom, right: position.right }}
-        className="fixed z-50 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
-        aria-label="Toggle table of contents"
-      >
-        <List className="h-4 w-4" />
-      </button>
+      {showButton && (
+        <button
+          onClick={() => setShowTOC(!showTOC)}
+          style={{ bottom: position.bottom, right: position.right }}
+          className="fixed z-50 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+          aria-label="Toggle table of contents"
+        >
+          <List className="h-4 w-4" />
+        </button>
+      )}
 
       {showTOC && (
         <div

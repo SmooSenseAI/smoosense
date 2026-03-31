@@ -17,6 +17,8 @@ interface CustomMarkdownProps {
   children: string
   disableTOC?: boolean
   tocButtonPosition?: { bottom?: string; right?: string }
+  /** When true, skips creating a MarkdownProvider (caller must provide one) */
+  noProvider?: boolean
 }
 
 function HeadingWithCounter({
@@ -183,7 +185,13 @@ export default function CustomMarkdown({
   children,
   disableTOC = false,
   tocButtonPosition,
+  noProvider = false,
 }: CustomMarkdownProps) {
+  if (noProvider) {
+    return (
+      <MarkdownInner markdown={children} disableTOC={disableTOC} tocButtonPosition={tocButtonPosition} />
+    )
+  }
   return (
     <MarkdownProvider markdown={children}>
       <MarkdownInner

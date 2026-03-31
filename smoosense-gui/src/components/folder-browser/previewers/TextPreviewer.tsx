@@ -8,8 +8,11 @@ import PreviewError from './shared/PreviewError'
 import PreviewNotFound from './shared/PreviewNotFound'
 import ReadonlyCodeMirror from '@/components/common/ReadonlyCodeMirror'
 import CustomMarkdown from '@/components/common/CustomMarkdown'
-import { Code, Eye } from 'lucide-react'
+import TOCFloatingPanel from '@/components/common/TOCFloatingPanel'
+import { MarkdownProvider, useMarkdownContext } from '@/components/common/MarkdownContext'
+import { Code, Eye, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CLS } from '@/lib/utils/styles'
 import { python } from '@codemirror/lang-python'
 import { javascript } from '@codemirror/lang-javascript'
 import { sql } from '@codemirror/lang-sql'
@@ -18,6 +21,20 @@ import { markdown } from '@codemirror/lang-markdown'
 interface TextPreviewerProps {
   item: TreeNode
   version?: number
+}
+
+function TOCTrigger() {
+  const { headings, showTOC, setShowTOC } = useMarkdownContext()
+  if (headings.length === 0) return null
+  return (
+    <button
+      onClick={() => setShowTOC(!showTOC)}
+      className={`${CLS.ICON_BUTTON_SM} p-1 h-8 w-8`}
+      aria-label="Toggle table of contents"
+    >
+      <List className="h-4 w-4" />
+    </button>
+  )
 }
 
 export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps) {
@@ -66,7 +83,7 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
       return (
         <div className="w-full h-full overflow-auto p-6">
           <div className="markdown-content max-w-4xl">
-            <CustomMarkdown>{content || '(Empty file)'}</CustomMarkdown>
+            <CustomMarkdown noProvider disableTOC>{content || '(Empty file)'}</CustomMarkdown>
           </div>
         </div>
       )
@@ -83,32 +100,39 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
     )
   }
 
+  const showTopBar = isMarkdown && !isLoading && !error && fileExists !== false
+
   return (
-    <div className="w-full h-full flex flex-col relative">
-      {/* Toggle button for markdown files */}
-      {isMarkdown && !isLoading && !error && fileExists !== false && (
-        <div className="absolute top-4 right-4 z-10">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowRendered(!showRendered)}
-            className="gap-2"
-          >
-            {showRendered ? (
-              <>
-                <Code className="h-4 w-4" />
-                Show source
-              </>
-            ) : (
-              <>
-                <Eye className="h-4 w-4" />
-                See rendered
-              </>
-            )}
-          </Button>
+    <MarkdownProvider markdown={isMarkdown ? (content || '') : ''}>
+      <div className="w-full h-full flex flex-col">
+        {showTopBar && (
+          <div className="flex items-center justify-end gap-1.5 px-3 py-1.5 bg-muted border-b border-border flex-shrink-0">
+            {showRendered && <TOCTrigger />}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRendered(!showRendered)}
+              className="gap-2 bg-background"
+            >
+              {showRendered ? (
+                <>
+                  <Code className="h-4 w-4" />
+                  Show source
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4" />
+                  See rendered
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+        <div className="flex-1 overflow-hidden">
+          {renderContent()}
         </div>
-      )}
-      {renderContent()}
-    </div>
+      </div>
+      {showRendered && isMarkdown && <TOCFloatingPanel showButton={false} />}
+    </MarkdownProvider>
   )
 }
