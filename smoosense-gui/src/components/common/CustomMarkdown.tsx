@@ -10,7 +10,6 @@ import { HeaderStatsCellRendererImpl } from '@/lib/utils/cellRenderers/HeaderSta
 import { CLS } from '@/lib/utils/styles'
 import { MarkdownProvider, useMarkdownContext } from './MarkdownContext'
 import TOCFloatingPanel from './TOCFloatingPanel'
-import MarkdownAGTable, { HastNode } from './MarkdownAGTable'
 import InteractiveMermaid from './InteractiveMermaid'
 
 interface CustomMarkdownProps {
@@ -128,8 +127,19 @@ function MarkdownInner({ markdown, disableTOC, tocButtonPosition }: MarkdownInne
         </a>
       )
     },
-    table: ({ node, children }) => (
-      <MarkdownAGTable node={node as unknown as HastNode}>{children}</MarkdownAGTable>
+    table: ({ children }) => (
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full border-collapse text-sm">{children}</table>
+      </div>
+    ),
+    thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
+    tbody: ({ children }) => <tbody>{children}</tbody>,
+    tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
+    th: ({ children }) => (
+      <th className="px-3 py-2 text-left font-semibold text-foreground border border-border">{children}</th>
+    ),
+    td: ({ children }) => (
+      <td className="px-3 py-2 text-foreground border border-border">{children}</td>
     ),
     fileshortcut: ({ ...props }: Record<string, string>) => (
       <FileShortcut tablePath={props['filepath'] || ''} description={props['description'] || ''} />
