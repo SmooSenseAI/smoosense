@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { type TreeNode } from '@/lib/features/folderTree/folderTreeSlice'
 import { useTextContent } from '@/lib/hooks/useTextContent'
 import PreviewLoading from './shared/PreviewLoading'
@@ -12,7 +13,6 @@ import TOCFloatingPanel from '@/components/common/TOCFloatingPanel'
 import { MarkdownProvider, useMarkdownContext } from '@/components/common/MarkdownContext'
 import { Code, Eye, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { CLS } from '@/lib/utils/styles'
 import { python } from '@codemirror/lang-python'
 import { javascript } from '@codemirror/lang-javascript'
 import { sql } from '@codemirror/lang-sql'
@@ -27,22 +27,29 @@ function TOCTrigger() {
   const { headings, showTOC, setShowTOC } = useMarkdownContext()
   if (headings.length === 0) return null
   return (
-    <button
+    <Button
+      variant="outline"
+      size="icon"
+      className="h-8 w-8"
       onClick={() => setShowTOC(!showTOC)}
-      className={`${CLS.ICON_BUTTON_SM} p-1 h-8 w-8`}
       aria-label="Toggle table of contents"
     >
       <List className="h-4 w-4" />
-    </button>
+    </Button>
   )
 }
 
 export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps) {
   const [showRendered, setShowRendered] = useState(true)
+  const [headerPortal, setHeaderPortal] = useState<Element | null>(null)
   const { content, isLoading, error, fileExists } = useTextContent({
     itemId: item.id,
     version
   })
+
+  useEffect(() => {
+    setHeaderPortal(document.getElementById('fs-preview-header-controls'))
+  }, [item.id])
 
   // Determine file type and language extension
   const fileName = item.name.toLowerCase()
@@ -100,38 +107,31 @@ export default function TextPreviewer({ item, version = 0 }: TextPreviewerProps)
     )
   }
 
-  const showTopBar = isMarkdown && !isLoading && !error && fileExists !== false
+  const showControls = isMarkdown && !isLoading && !error && fileExists !== false
 
   return (
     <MarkdownProvider markdown={isMarkdown ? (content || '') : ''}>
-      <div className="w-full h-full flex flex-col">
-        {showTopBar && (
-          <div className="flex items-center justify-end gap-1.5 px-3 py-1.5 bg-muted border-b border-border flex-shrink-0">
-            {showRendered && <TOCTrigger />}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowRendered(!showRendered)}
-              className="gap-2 bg-background"
-            >
-              {showRendered ? (
-                <>
-                  <Code className="h-4 w-4" />
-                  Show source
-                </>
-              ) : (
-                <>
-                  <Eye className="h-4 w-4" />
-                  See rendered
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-        <div className="flex-1 overflow-hidden">
-          {renderContent()}
-        </div>
+      <div className="w-full h-full">
+        {renderContent()}
       </div>
+      {showControls && headerPortal && createPortal(
+        <div className="flex items-center gap-1.5">
+          {showRendered && <TOCTrigger />}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowRendered(!showRendered)}
+            className="gap-2"
+          >
+            {showRendered ? (
+              <><Code className="h-4 w-4" />Show source</>
+            ) : (
+              <><Eye className="h-4 w-4" />See rendered</>
+            )}
+          </Button>
+        </div>,
+        headerPortal
+      )}
       {showRendered && isMarkdown && <TOCFloatingPanel showButton={false} />}
     </MarkdownProvider>
   )

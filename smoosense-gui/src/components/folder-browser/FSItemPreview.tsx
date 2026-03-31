@@ -265,6 +265,7 @@ export default function FSItemPreview() {
     <div className="h-full w-full p-4 flex flex-col min-h-0">
       <div className="flex items-center space-x-2 mb-4 shrink-0">
         {headerComponent()}
+        <div id="fs-preview-header-controls" className="ml-auto flex items-center gap-1.5" />
       </div>
 
       <div className="flex-1 min-h-0 border rounded-md bg-muted/30 flex items-start justify-center p-2 overflow-auto">
