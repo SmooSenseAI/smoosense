@@ -98,7 +98,7 @@ function MarkdownInner({ markdown, disableTOC, tocButtonPosition }: MarkdownInne
     },
     pre: ({ children }) => <pre className="mt-2 mb-5">{children}</pre>,
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-accent pl-4 italic text-muted-foreground mb-3">
+      <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground mb-3">
         {children}
       </blockquote>
     ),
