@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import mermaid from 'mermaid'
+import { useTheme } from 'next-themes'
 import { Expand, X } from 'lucide-react'
 import {
   Dialog,
@@ -28,20 +29,19 @@ export default function InteractiveMermaid({
   const mermaidRef = useRef<HTMLDivElement>(null)
   const mermaidId = useRef(`mermaid-graph-${++mermaidIdCounter}`)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-
-  useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'default',
-      flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis', padding: 10 },
-      themeVariables: { fontSize: '14px' },
-    })
-  }, [])
+  const { theme, systemTheme } = useTheme()
+  const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
 
   useEffect(() => {
     if (!mermaidRef.current) return
 
     const renderMermaid = async () => {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'default',
+        flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis', padding: 10 },
+        themeVariables: { fontSize: '14px' },
+      })
       if (!mermaidRef.current) return
 
       try {
@@ -83,7 +83,7 @@ export default function InteractiveMermaid({
 
     const timer = setTimeout(renderMermaid, 100)
     return () => clearTimeout(timer)
-  }, [definition, expanded])
+  }, [definition, expanded, isDark])
 
   return (
     <div className={`${className} relative group`}>
