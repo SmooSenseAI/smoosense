@@ -43,9 +43,9 @@ describe('TOCFloatingPanel', () => {
   })
 
   it('shows section numbers alongside heading text', () => {
-    renderPanel('# First\n## Sub')
+    renderPanel('# Title\n## First\n### Sub')
     fireEvent.click(screen.getByLabelText('Toggle table of contents'))
-    expect(screen.getByText('1')).toBeInTheDocument()
-    expect(screen.getByText('1.1')).toBeInTheDocument()
+    expect(screen.getByText('1')).toBeInTheDocument()    // h2
+    expect(screen.getByText('1.1')).toBeInTheDocument()  // h3
   })
 })

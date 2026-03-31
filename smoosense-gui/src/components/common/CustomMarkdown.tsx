@@ -27,8 +27,14 @@ function HeadingWithCounter({
   children: React.ReactNode
 }) {
   const { headings, headingIndexRef } = useMarkdownContext()
-  const index = headingIndexRef.current++
-  const entry = headings[index]
+  // Per-instance ref so the index is claimed exactly once per mount,
+  // making it idempotent across React StrictMode's double render invocation.
+  const myIndexRef = React.useRef<number | null>(null)
+  if (myIndexRef.current === null) {
+    myIndexRef.current = headingIndexRef.current
+    headingIndexRef.current += 1
+  }
+  const entry = headings[myIndexRef.current]
 
   const sizeClass = {
     1: 'text-2xl font-bold mb-4',
@@ -40,7 +46,7 @@ function HeadingWithCounter({
 
   return (
     <Tag id={entry?.id} className={`${sizeClass} text-foreground`}>
-      {entry && (
+      {entry?.sectionNumber && (
         <span className="text-muted-foreground text-[0.85em] mr-2">{entry.sectionNumber}</span>
       )}
       {children}

@@ -5,19 +5,24 @@ describe('computeHeadings', () => {
     expect(computeHeadings('Just some **text** here.')).toEqual([])
   })
 
-  it('assigns section numbers to flat h1 headings', () => {
+  it('h1 headings have no section number', () => {
     const md = `# First\n# Second\n# Third`
-    expect(computeHeadings(md).map(h => h.sectionNumber)).toEqual(['1', '2', '3'])
+    expect(computeHeadings(md).map(h => h.sectionNumber)).toEqual(['', '', ''])
   })
 
-  it('assigns hierarchical section numbers', () => {
+  it('h2 headings have single-segment section numbers', () => {
+    const md = `# Intro\n## Background\n## Summary`
+    expect(computeHeadings(md).map(h => h.sectionNumber)).toEqual(['', '1', '2'])
+  })
+
+  it('h3 headings have two-segment section numbers', () => {
     const md = `# Intro\n## Background\n### Details\n## Summary`
-    expect(computeHeadings(md).map(h => h.sectionNumber)).toEqual(['1', '1.1', '1.1.1', '1.2'])
+    expect(computeHeadings(md).map(h => h.sectionNumber)).toEqual(['', '1', '1.1', '2'])
   })
 
   it('resets sub-counters when parent heading repeats', () => {
     const md = `# One\n## A\n## B\n# Two\n## C`
-    expect(computeHeadings(md).map(h => h.sectionNumber)).toEqual(['1', '1.1', '1.2', '2', '2.1'])
+    expect(computeHeadings(md).map(h => h.sectionNumber)).toEqual(['', '1', '2', '', '1'])
   })
 
   it('slugifies heading text for id', () => {

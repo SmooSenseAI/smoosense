@@ -46,7 +46,11 @@ export function computeHeadings(markdown: string): HeadingEntry[] {
     counters[level - 1]++
     for (let i = level; i < 3; i++) counters[i] = 0
 
-    const sectionNumber = counters.slice(0, level).join('.')
+    // h1: no counter, h2: single segment (e.g. "2"), h3: two segments (e.g. "2.1")
+    const sectionNumber =
+      level === 1 ? '' :
+      level === 2 ? `${counters[1]}` :
+      `${counters[1]}.${counters[2]}`
 
     const baseSlug = slugify(text)
     const count = slugCounts[baseSlug] ?? 0
