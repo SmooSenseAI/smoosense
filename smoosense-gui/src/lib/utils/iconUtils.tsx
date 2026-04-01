@@ -2,6 +2,7 @@ import {
   Folder, 
   FolderOpen, 
   File, 
+  FileX,
   Braces,
   Columns3, 
   Rows3, 
@@ -29,6 +30,7 @@ export const ICONS = {
   VIDEO: <Video className={CLS_ICON} />,
   TEXT: <Type className={CLS_ICON} />,
   FILE_DEFAULT: <File className={CLS_ICON} />,
+  BROKEN_SYMLINK: <FileX className={`${CLS_ICON} text-red-500`} />,
   
   // Tree navigation
   CHEVRON_DOWN: <ChevronDown className={CLS_ICON} />,
