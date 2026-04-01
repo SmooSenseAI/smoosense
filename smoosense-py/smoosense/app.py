@@ -73,7 +73,7 @@ class SmooSenseApp:
             if not path:
                 continue
             # Only check local paths (absolute or tilde-relative)
-            if not (path.startswith("/") or path.startswith("~/")):
+            if not (path.startswith("/") or path.startswith("~")):
                 continue
             # Local path detected — enforce pattern
             if self.local_folder_pattern is None:

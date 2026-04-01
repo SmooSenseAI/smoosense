@@ -1,24 +1,7 @@
 import os
 import unittest
-from unittest.mock import patch
-
-from flask import Flask
 
 from smoosense.app import SmooSenseApp
-
-
-def make_app(pattern: str | None) -> Flask:
-    """Create a test Flask app with the given local folder pattern."""
-    env = {}
-    if pattern is not None:
-        env["SMOOSENSE_LOCAL_FOLDER_PATTERN"] = pattern
-    with patch.dict(os.environ, env, clear=False):
-        # Remove the key if pattern is None so it is truly unset
-        if pattern is None:
-            os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
-        app = SmooSenseApp().create_app()
-    app.config["TESTING"] = True
-    return app
 
 
 class TestLocalFolderAccessDisabled(unittest.TestCase):
@@ -41,14 +24,18 @@ class TestLocalFolderAccessDisabled(unittest.TestCase):
         response = self.client.get("/api/ls?path=~/foo")
         self.assertEqual(response.status_code, 403)
 
+    def test_bare_tilde_blocked(self):
+        response = self.client.get("/api/ls?path=~")
+        self.assertEqual(response.status_code, 403)
+
     def test_ls_s3_path_allowed(self):
-        # S3 paths must not be blocked by the hook.
-        # The endpoint may return 403 for other reasons (e.g. S3 AccessDenied),
-        # but the hook's 403 always contains "not allowed" in the error message.
-        response = self.client.get("/api/ls?path=s3://bucket/key")
-        if response.status_code == 403:
-            data = response.get_json()
-            self.assertNotIn("not allowed", data.get("error", ""), "Hook should not block S3 paths")
+        """S3 paths are never blocked by the local access hook."""
+        from unittest.mock import patch
+
+        with patch("smoosense.handlers.fs.S3FileSystem") as mock_s3_class:
+            mock_s3_class.return_value.list_one_level.return_value = ([], 0)
+            response = self.client.get("/api/ls?path=s3://bucket/key")
+        self.assertEqual(response.status_code, 200)
 
     def test_typeahead_local_path_blocked(self):
         response = self.client.get("/api/typeahead?path=/tmp/foo")
@@ -99,14 +86,18 @@ class TestLocalFolderAccessWithPattern(unittest.TestCase):
         response = self.client.get("/api/ls?path=~/foo")
         self.assertEqual(response.status_code, 403)
 
+    def test_bare_tilde_blocked(self):
+        response = self.client.get("/api/ls?path=~")
+        self.assertEqual(response.status_code, 403)
+
     def test_s3_path_allowed(self):
-        # S3 paths must not be blocked by the hook.
-        # The endpoint may return 403 for other reasons (e.g. S3 AccessDenied),
-        # but the hook's 403 always contains "not allowed" in the error message.
-        response = self.client.get("/api/ls?path=s3://bucket/key")
-        if response.status_code == 403:
-            data = response.get_json()
-            self.assertNotIn("not allowed", data.get("error", ""), "Hook should not block S3 paths")
+        """S3 paths are never blocked by the local access hook."""
+        from unittest.mock import patch
+
+        with patch("smoosense.handlers.fs.S3FileSystem") as mock_s3_class:
+            mock_s3_class.return_value.list_one_level.return_value = ([], 0)
+            response = self.client.get("/api/ls?path=s3://bucket/key")
+        self.assertEqual(response.status_code, 200)
 
     def test_upload_allowed_path_passes_hook(self):
         response = self.client.post(
