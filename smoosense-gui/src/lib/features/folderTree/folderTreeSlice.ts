@@ -10,6 +10,8 @@ export interface FSItem {
   size: number
   lastModified: number
   isDir: boolean
+  isBrokenSymlink?: boolean
+  symlinkTarget?: string
 }
 
 export type SortBy = 'name' | 'size' | 'modified'
@@ -22,6 +24,8 @@ export interface TreeNode {
   isDir: boolean
   size: number
   lastModified: number
+  isBrokenSymlink: boolean
+  symlinkTarget: string
   children?: TreeNode[]
   childrenTotal: number   // 0 = unknown/not loaded yet
   isLoaded: boolean
@@ -107,6 +111,8 @@ function createTreeNode(item: FSItem, parentPath: string): TreeNode {
     isDir: item.isDir,
     size: item.size,
     lastModified: item.lastModified,
+    isBrokenSymlink: item.isBrokenSymlink ?? false,
+    symlinkTarget: item.symlinkTarget ?? '',
     children: item.isDir ? [] : undefined,
     childrenTotal: 0,
     isLoaded: false,

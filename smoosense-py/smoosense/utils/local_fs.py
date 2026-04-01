@@ -30,14 +30,31 @@ class LocalFileSystem:
         for entry in os.scandir(path):
             if entry.name.startswith(".") and not show_hidden:
                 continue
-            all_items.append(
-                FSItem(
-                    name=entry.name,
-                    size=entry.stat().st_size,
-                    lastModified=int(1000 * entry.stat().st_mtime),
-                    isDir=entry.is_dir(),
+            try:
+                stat = entry.stat()
+                all_items.append(
+                    FSItem(
+                        name=entry.name,
+                        size=stat.st_size,
+                        lastModified=int(1000 * stat.st_mtime),
+                        isDir=entry.is_dir(),
+                        symlinkTarget=os.readlink(entry.path) if entry.is_symlink() else "",
+                    )
                 )
-            )
+            except OSError:
+                if entry.is_symlink():
+                    all_items.append(
+                        FSItem(
+                            name=entry.name,
+                            size=0,
+                            lastModified=0,
+                            isDir=False,
+                            isBrokenSymlink=True,
+                            symlinkTarget=os.readlink(entry.path),
+                        )
+                    )
+                else:
+                    logger.warning(f"Failed to stat entry: {entry.path}")
 
         if pattern:
             all_items = [
