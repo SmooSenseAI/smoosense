@@ -158,3 +158,9 @@ export function pathRelative(targetPath: string, basePath: string): string {
 
 // Keep pathDirname as an alias for backward compatibility
 export const pathDirname = pathParent
+
+export function getLocalFolderPattern(): string | null {
+  if (typeof window === 'undefined') return null
+  const w = window as Window & { LOCAL_FOLDER_PATTERN?: string | null }
+  return w.LOCAL_FOLDER_PATTERN ?? null
+}

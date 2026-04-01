@@ -43,4 +43,13 @@ describe('HomeInfoSection — local folder access messages', () => {
     await userEvent.type(input, 'not-a-valid-path')
     expect(screen.getByText(/must start with \/, ~, or s3:\/\//i)).toBeInTheDocument()
   })
+
+  it('allows local path when LOCAL_FOLDER_PATTERN is "/" (no error shown)', async () => {
+    ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = '/'
+    renderWithStore(<HomeInfoSection />)
+    const input = screen.getByRole('textbox')
+    await userEvent.type(input, '/any/path')
+    expect(screen.queryByText(/must start with/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/not supported/i)).not.toBeInTheDocument()
+  })
 })

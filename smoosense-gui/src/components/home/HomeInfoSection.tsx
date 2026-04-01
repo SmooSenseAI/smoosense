@@ -6,17 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ExternalLink, Play, Download, AlertCircle } from 'lucide-react'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
+import { getLocalFolderPattern } from '@/lib/utils/pathUtils'
 import { debounce } from 'lodash'
 import { useAppDispatch } from '@/lib/hooks'
 import { setRootFolder } from '@/lib/features/ui/uiSlice'
 
 type PathType = 's3' | 'local' | 'invalid' | 'empty'
-
-function getLocalFolderPattern(): string | null {
-  if (typeof window === 'undefined') return null
-  const w = window as Window & { LOCAL_FOLDER_PATTERN?: string | null }
-  return w.LOCAL_FOLDER_PATTERN ?? null
-}
 
 function getPathType(path: string): PathType {
   const trimmed = path.trim()
@@ -136,13 +131,14 @@ export default function HomeInfoSection() {
     }
   }
 
+  const localFolderPattern = getLocalFolderPattern()
   const pathType = getPathType(folderPath)
   const showError = pathType === 'invalid'
 
   return (
     <div className="max-w-4xl w-full mb-12">
       <h2 className="text-xl font-semibold text-foreground mb-6">
-        {getLocalFolderPattern() !== null ? 'Browse local or S3 folders' : 'Browse S3 folders'}
+        {localFolderPattern !== null ? 'Browse local or S3 folders' : 'Browse S3 folders'}
       </h2>
 
       <div className="flex gap-2 mb-2">
@@ -151,7 +147,7 @@ export default function HomeInfoSection() {
             ref={inputRef}
             type="text"
             placeholder={
-              getLocalFolderPattern() !== null
+              localFolderPattern !== null
                 ? "Enter folder path (e.g., /tmp/folder, ~/Downloads or s3://bucket/path)"
                 : "Enter S3 path (e.g., s3://bucket/path)"
             }
@@ -190,14 +186,13 @@ export default function HomeInfoSection() {
         <div className="flex items-center gap-2 text-red-500 text-sm mb-6">
           <AlertCircle className="h-4 w-4" />
           {(() => {
-            const pattern = getLocalFolderPattern()
-            if (pattern === null) {
+            if (localFolderPattern === null) {
               return 'Local paths are not supported on this server'
             }
-            if (pattern === '/' || pattern === '~/') {
+            if (localFolderPattern === '/' || localFolderPattern === '~/') {
               return 'Path must start with /, ~, or s3://'
             }
-            return `Path must start with ${pattern} or s3://`
+            return `Path must start with ${localFolderPattern} or s3://`
           })()}
         </div>
       )}

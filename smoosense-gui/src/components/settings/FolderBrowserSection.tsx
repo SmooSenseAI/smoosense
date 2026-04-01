@@ -1,10 +1,6 @@
 'use client'
 
-function getLocalFolderPattern(): string | null {
-  if (typeof window === 'undefined') return null
-  const w = window as Window & { LOCAL_FOLDER_PATTERN?: string | null }
-  return w.LOCAL_FOLDER_PATTERN ?? null
-}
+import { getLocalFolderPattern } from '@/lib/utils/pathUtils'
 
 export default function FolderBrowserSection() {
   const pattern = getLocalFolderPattern()
