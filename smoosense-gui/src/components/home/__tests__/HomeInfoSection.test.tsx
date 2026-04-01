@@ -20,8 +20,17 @@ describe('HomeInfoSection — local folder access messages', () => {
     delete (window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN
   })
 
-  it('shows "not supported" error when LOCAL_FOLDER_PATTERN is null', async () => {
+  it('allows local path when LOCAL_FOLDER_PATTERN is null (default: allow all)', async () => {
     ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = null
+    renderWithStore(<HomeInfoSection />)
+    const input = screen.getByRole('textbox')
+    await userEvent.type(input, '/etc/passwd')
+    expect(screen.queryByText(/not supported on this server/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/must start with/i)).not.toBeInTheDocument()
+  })
+
+  it('shows "not supported" error when LOCAL_FOLDER_PATTERN is "" (explicit deny)', async () => {
+    ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = ''
     renderWithStore(<HomeInfoSection />)
     const input = screen.getByRole('textbox')
     await userEvent.type(input, '/etc/passwd')

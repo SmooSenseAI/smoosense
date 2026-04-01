@@ -11,10 +11,12 @@ export default function FolderBrowserSection() {
 
       <div className="text-sm">
         <span className="text-muted-foreground">Local folder access: </span>
-        {pattern !== null ? (
-          <span className="font-mono">enabled (prefix: {pattern})</span>
-        ) : (
+        {pattern === '' ? (
           <span className="text-muted-foreground">disabled</span>
+        ) : pattern === null || pattern === '*' ? (
+          <span>enabled (all paths)</span>
+        ) : (
+          <span className="font-mono">enabled (prefix: {pattern})</span>
         )}
       </div>
     </div>

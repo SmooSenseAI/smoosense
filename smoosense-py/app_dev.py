@@ -37,9 +37,6 @@ if __name__ == "__main__":
     # Configure logging with rich
     configure_rich_logging()
 
-    # Allow all local paths in local development (can be overridden by setting the env var explicitly)
-    os.environ.setdefault("SMOOSENSE_LOCAL_FOLDER_PATTERN", "*")
-
     session = boto3.Session(profile_name="readonly")
     s3_client = session.client("s3")
     SmooSenseApp(

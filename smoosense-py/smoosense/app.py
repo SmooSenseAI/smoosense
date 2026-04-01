@@ -62,7 +62,17 @@ class SmooSenseApp:
         }
 
     def _check_local_path_access(self) -> tuple[Response, int] | None:
-        """Flask before_request hook: block local path access based on config."""
+        """Flask before_request hook: block local path access based on config.
+
+        SMOOSENSE_LOCAL_FOLDER_PATTERN semantics:
+          unset (None) or "*" → allow all local paths (default, good for local dev)
+          ""               → deny all local paths (cloud: explicitly disable)
+          "/prefix"        → allow only paths starting with the given prefix
+        """
+        # Unset or wildcard → allow all, no further checks needed
+        if self.local_folder_pattern is None or self.local_folder_pattern == "*":
+            return None
+
         path_params = [
             request.args.get("path", ""),
             request.args.get("prefix", ""),
@@ -76,10 +86,9 @@ class SmooSenseApp:
             if not (path.startswith("/") or path.startswith("~")):
                 continue
             # Local path detected — enforce pattern
-            if self.local_folder_pattern is None:
+            if not self.local_folder_pattern:
+                # Empty string = explicitly deny all local access
                 return jsonify({"error": "Local folder access is not allowed"}), 403
-            if self.local_folder_pattern == "*":
-                return None  # wildcard: allow any local path
             if not path.startswith(self.local_folder_pattern):
                 return jsonify({"error": "Path not allowed by server configuration"}), 403
         return None

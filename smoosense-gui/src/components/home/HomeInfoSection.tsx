@@ -20,8 +20,9 @@ function getPathType(path: string): PathType {
   if (trimmed.startsWith('s3://') || 's3://'.startsWith(trimmed)) return 's3'
   if (trimmed.startsWith('/') || trimmed.startsWith('~')) {
     const pattern = getLocalFolderPattern()
-    if (pattern === null) return 'invalid'              // local access disabled
-    if (!trimmed.startsWith(pattern)) return 'invalid'  // outside allowed prefix
+    if (pattern === null || pattern === '*') return 'local'  // unset or wildcard = allow all
+    if (pattern === '') return 'invalid'                      // empty = explicitly deny all
+    if (!trimmed.startsWith(pattern)) return 'invalid'       // outside allowed prefix
     return 'local'
   }
   return 'invalid'
@@ -138,7 +139,7 @@ export default function HomeInfoSection() {
   return (
     <div className="max-w-4xl w-full mb-12">
       <h2 className="text-xl font-semibold text-foreground mb-6">
-        {localFolderPattern !== null ? 'Browse local or S3 folders' : 'Browse S3 folders'}
+        {localFolderPattern !== '' ? 'Browse local or S3 folders' : 'Browse S3 folders'}
       </h2>
 
       <div className="flex gap-2 mb-2">
@@ -147,7 +148,7 @@ export default function HomeInfoSection() {
             ref={inputRef}
             type="text"
             placeholder={
-              localFolderPattern !== null
+              localFolderPattern !== ''
                 ? "Enter folder path (e.g., /tmp/folder, ~/Downloads or s3://bucket/path)"
                 : "Enter S3 path (e.g., s3://bucket/path)"
             }
@@ -186,10 +187,10 @@ export default function HomeInfoSection() {
         <div className="flex items-center gap-2 text-red-500 text-sm mb-6">
           <AlertCircle className="h-4 w-4" />
           {(() => {
-            if (localFolderPattern === null) {
+            if (localFolderPattern === '') {
               return 'Local paths are not supported on this server'
             }
-            if (localFolderPattern === '/' || localFolderPattern === '~/') {
+            if (localFolderPattern === null || localFolderPattern === '*' || localFolderPattern === '/' || localFolderPattern === '~/') {
               return 'Path must start with /, ~, or s3://'
             }
             return `Path must start with ${localFolderPattern} or s3://`
