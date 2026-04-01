@@ -164,3 +164,9 @@ export function getLocalFolderPattern(): string | null {
   const w = window as Window & { LOCAL_FOLDER_PATTERN?: string | null }
   return w.LOCAL_FOLDER_PATTERN ?? null
 }
+
+export function isRunningLocal(): boolean {
+  if (typeof window === 'undefined') return false
+  const href = window.location.href
+  return href.startsWith('http://localhost') || href.startsWith('http://127.0.0.1')
+}

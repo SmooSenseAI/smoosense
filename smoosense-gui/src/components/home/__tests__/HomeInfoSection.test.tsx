@@ -4,24 +4,34 @@ import userEvent from '@testing-library/user-event'
 import { Provider } from 'react-redux'
 import { store } from '@/lib/store'
 import HomeInfoSection from '../HomeInfoSection'
+import * as pathUtils from '@/lib/utils/pathUtils'
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }))
 
+// Mock pathUtils so isRunningLocal can be controlled per test
+jest.mock('@/lib/utils/pathUtils', () => ({
+  ...jest.requireActual('@/lib/utils/pathUtils'),
+  isRunningLocal: jest.fn(),
+}))
+
 function renderWithStore(ui: React.ReactElement) {
   return render(<Provider store={store}>{ui}</Provider>)
 }
 
+type WindowWithConfig = Window & { LOCAL_FOLDER_PATTERN?: string | null }
+
 describe('HomeInfoSection — local folder access messages', () => {
   afterEach(() => {
-    // Reset window globals between tests
-    delete (window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN
+    delete (window as WindowWithConfig).LOCAL_FOLDER_PATTERN
+    jest.clearAllMocks()
   })
 
-  it('allows local path when LOCAL_FOLDER_PATTERN is null (default: allow all)', async () => {
-    ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = null
+  it('allows local path when LOCAL_FOLDER_PATTERN is null and running on localhost', async () => {
+    ;(pathUtils.isRunningLocal as jest.Mock).mockReturnValue(true)
+    ;(window as WindowWithConfig).LOCAL_FOLDER_PATTERN = null
     renderWithStore(<HomeInfoSection />)
     const input = screen.getByRole('textbox')
     await userEvent.type(input, '/etc/passwd')
@@ -29,8 +39,17 @@ describe('HomeInfoSection — local folder access messages', () => {
     expect(screen.queryByText(/must start with/i)).not.toBeInTheDocument()
   })
 
+  it('shows "not supported" when LOCAL_FOLDER_PATTERN is null and not on localhost', async () => {
+    ;(pathUtils.isRunningLocal as jest.Mock).mockReturnValue(false)
+    ;(window as WindowWithConfig).LOCAL_FOLDER_PATTERN = null
+    renderWithStore(<HomeInfoSection />)
+    const input = screen.getByRole('textbox')
+    await userEvent.type(input, '/etc/passwd')
+    expect(screen.getByText(/not supported on this server/i)).toBeInTheDocument()
+  })
+
   it('shows "not supported" error when LOCAL_FOLDER_PATTERN is "" (explicit deny)', async () => {
-    ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = ''
+    ;(window as WindowWithConfig).LOCAL_FOLDER_PATTERN = ''
     renderWithStore(<HomeInfoSection />)
     const input = screen.getByRole('textbox')
     await userEvent.type(input, '/etc/passwd')
@@ -38,7 +57,7 @@ describe('HomeInfoSection — local folder access messages', () => {
   })
 
   it('shows pattern-specific error when LOCAL_FOLDER_PATTERN is set', async () => {
-    ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = '/mnt/'
+    ;(window as WindowWithConfig).LOCAL_FOLDER_PATTERN = '/mnt/'
     renderWithStore(<HomeInfoSection />)
     const input = screen.getByRole('textbox')
     await userEvent.type(input, '/etc/passwd')
@@ -46,7 +65,7 @@ describe('HomeInfoSection — local folder access messages', () => {
   })
 
   it('shows generic local error when LOCAL_FOLDER_PATTERN is "/"', async () => {
-    ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = '/'
+    ;(window as WindowWithConfig).LOCAL_FOLDER_PATTERN = '/'
     renderWithStore(<HomeInfoSection />)
     const input = screen.getByRole('textbox')
     await userEvent.type(input, 'not-a-valid-path')
@@ -54,7 +73,7 @@ describe('HomeInfoSection — local folder access messages', () => {
   })
 
   it('allows local path when LOCAL_FOLDER_PATTERN is "/" (no error shown)', async () => {
-    ;(window as Window & { LOCAL_FOLDER_PATTERN?: string | null }).LOCAL_FOLDER_PATTERN = '/'
+    ;(window as WindowWithConfig).LOCAL_FOLDER_PATTERN = '/'
     renderWithStore(<HomeInfoSection />)
     const input = screen.getByRole('textbox')
     await userEvent.type(input, '/any/path')

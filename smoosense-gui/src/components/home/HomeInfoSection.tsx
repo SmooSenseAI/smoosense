@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ExternalLink, Play, Download, AlertCircle } from 'lucide-react'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
-import { getLocalFolderPattern } from '@/lib/utils/pathUtils'
+import { getLocalFolderPattern, isRunningLocal } from '@/lib/utils/pathUtils'
 import { debounce } from 'lodash'
 import { useAppDispatch } from '@/lib/hooks'
 import { setRootFolder } from '@/lib/features/ui/uiSlice'
@@ -20,9 +20,10 @@ function getPathType(path: string): PathType {
   if (trimmed.startsWith('s3://') || 's3://'.startsWith(trimmed)) return 's3'
   if (trimmed.startsWith('/') || trimmed.startsWith('~')) {
     const pattern = getLocalFolderPattern()
-    if (pattern === null || pattern === '*') return 'local'  // unset or wildcard = allow all
-    if (pattern === '') return 'invalid'                      // empty = explicitly deny all
-    if (!trimmed.startsWith(pattern)) return 'invalid'       // outside allowed prefix
+    if (pattern === '*') return 'local'                      // explicit allow all
+    if (pattern === null) return isRunningLocal() ? 'local' : 'invalid'  // auto-detect
+    if (pattern === '') return 'invalid'                     // explicit deny all
+    if (!trimmed.startsWith(pattern)) return 'invalid'      // outside allowed prefix
     return 'local'
   }
   return 'invalid'
@@ -133,13 +134,16 @@ export default function HomeInfoSection() {
   }
 
   const localFolderPattern = getLocalFolderPattern()
+  const localAccessEnabled =
+    localFolderPattern === '*' ||
+    (localFolderPattern === null ? isRunningLocal() : localFolderPattern !== '')
   const pathType = getPathType(folderPath)
   const showError = pathType === 'invalid'
 
   return (
     <div className="max-w-4xl w-full mb-12">
       <h2 className="text-xl font-semibold text-foreground mb-6">
-        {localFolderPattern !== '' ? 'Browse local or S3 folders' : 'Browse S3 folders'}
+        {localAccessEnabled ? 'Browse local or S3 folders' : 'Browse S3 folders'}
       </h2>
 
       <div className="flex gap-2 mb-2">
@@ -148,7 +152,7 @@ export default function HomeInfoSection() {
             ref={inputRef}
             type="text"
             placeholder={
-              localFolderPattern !== ''
+              localAccessEnabled
                 ? "Enter folder path (e.g., /tmp/folder, ~/Downloads or s3://bucket/path)"
                 : "Enter S3 path (e.g., s3://bucket/path)"
             }
@@ -187,7 +191,7 @@ export default function HomeInfoSection() {
         <div className="flex items-center gap-2 text-red-500 text-sm mb-6">
           <AlertCircle className="h-4 w-4" />
           {(() => {
-            if (localFolderPattern === '') {
+            if (!localAccessEnabled) {
               return 'Local paths are not supported on this server'
             }
             if (localFolderPattern === null || localFolderPattern === '*' || localFolderPattern === '/' || localFolderPattern === '~/') {

@@ -1,9 +1,12 @@
 'use client'
 
-import { getLocalFolderPattern } from '@/lib/utils/pathUtils'
+import { getLocalFolderPattern, isRunningLocal } from '@/lib/utils/pathUtils'
 
 export default function FolderBrowserSection() {
   const pattern = getLocalFolderPattern()
+  const enabled =
+    pattern === '*' ||
+    (pattern === null ? isRunningLocal() : pattern !== '')
 
   return (
     <div className="space-y-4">
@@ -11,7 +14,7 @@ export default function FolderBrowserSection() {
 
       <div className="text-sm">
         <span className="text-muted-foreground">Local folder access: </span>
-        {pattern === '' ? (
+        {!enabled ? (
           <span className="text-muted-foreground">disabled</span>
         ) : pattern === null || pattern === '*' ? (
           <span>enabled (all paths)</span>

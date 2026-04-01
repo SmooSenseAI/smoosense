@@ -61,17 +61,31 @@ class SmooSenseApp:
             "LOCAL_FOLDER_PATTERN": self.local_folder_pattern,
         }
 
+    def _is_local_request(self) -> bool:
+        """Return True if the request is coming from a local (loopback) host."""
+        host = request.host.split(":")[0]
+        return host in ("localhost", "127.0.0.1", "::1")
+
     def _check_local_path_access(self) -> tuple[Response, int] | None:
         """Flask before_request hook: block local path access based on config.
 
         SMOOSENSE_LOCAL_FOLDER_PATTERN semantics:
-          unset (None) or "*" → allow all local paths (default, good for local dev)
-          ""               → deny all local paths (cloud: explicitly disable)
-          "/prefix"        → allow only paths starting with the given prefix
+          unset (None) → auto-detect: allow on localhost, deny elsewhere
+          "*"          → allow all local paths unconditionally
+          ""           → deny all local paths unconditionally
+          "/prefix"    → allow only paths starting with the given prefix
         """
-        # Unset or wildcard → allow all, no further checks needed
-        if self.local_folder_pattern is None or self.local_folder_pattern == "*":
+        # Explicit wildcard → allow all unconditionally
+        if self.local_folder_pattern == "*":
             return None
+
+        # Resolve effective pattern for this request
+        if self.local_folder_pattern is None:
+            if self._is_local_request():
+                return None  # local server, allow everything
+            effective_pattern = ""  # not local, deny all
+        else:
+            effective_pattern = self.local_folder_pattern
 
         path_params = [
             request.args.get("path", ""),
@@ -85,11 +99,10 @@ class SmooSenseApp:
             # Only check local paths (absolute or tilde-relative)
             if not (path.startswith("/") or path.startswith("~")):
                 continue
-            # Local path detected — enforce pattern
-            if not self.local_folder_pattern:
-                # Empty string = explicitly deny all local access
+            # Local path detected — enforce effective pattern
+            if not effective_pattern:
                 return jsonify({"error": "Local folder access is not allowed"}), 403
-            if not path.startswith(self.local_folder_pattern):
+            if not path.startswith(effective_pattern):
                 return jsonify({"error": "Path not allowed by server configuration"}), 403
         return None
 
