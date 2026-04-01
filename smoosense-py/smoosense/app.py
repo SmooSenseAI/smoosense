@@ -3,7 +3,7 @@ import os
 
 import boto3
 from botocore.client import BaseClient
-from flask import Flask
+from flask import Flask, Response, jsonify, request
 from pydantic import ConfigDict, validate_call
 
 from smoosense.handlers.auth import auth_bp, init_oauth
@@ -53,10 +53,34 @@ class SmooSenseApp:
         else:
             self.duckdb_connection_maker = duckdb_connection_default()
 
+        self.local_folder_pattern: str | None = os.environ.get("SMOOSENSE_LOCAL_FOLDER_PATTERN")
+
         self.passover_config = {
             "S3_PREFIX_TO_SAVE_SHAREABLE_LINK": s3_prefix_to_save_shareable_link,
             "FOLDER_SHORTCUTS": folder_shortcuts or {},
+            "LOCAL_FOLDER_PATTERN": self.local_folder_pattern,
         }
+
+    def _check_local_path_access(self) -> tuple[Response, int] | None:
+        """Flask before_request hook: block local path access based on config."""
+        path_params = [
+            request.args.get("path", ""),
+            request.args.get("prefix", ""),
+            request.form.get("path", ""),
+        ]
+
+        for path in path_params:
+            if not path:
+                continue
+            # Only check local paths (absolute or tilde-relative)
+            if not (path.startswith("/") or path.startswith("~/")):
+                continue
+            # Local path detected — enforce pattern
+            if self.local_folder_pattern is None:
+                return jsonify({"error": "Local folder access is not allowed"}), 403
+            if not path.startswith(self.local_folder_pattern):
+                return jsonify({"error": "Path not allowed by server configuration"}), 403
+        return None
 
     def create_app(self) -> Flask:
         app = Flask(__name__, static_folder="statics", static_url_path="")
@@ -85,6 +109,8 @@ class SmooSenseApp:
         app.register_blueprint(s3_bp, url_prefix="/api")
         app.register_blueprint(shell_bp, url_prefix="/api")
         app.register_blueprint(umap_bp, url_prefix="/api")
+
+        app.before_request(self._check_local_path_access)
 
         return app
 
