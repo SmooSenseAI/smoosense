@@ -152,5 +152,30 @@ class TestPassoverConfig(unittest.TestCase):
         self.assertIsNone(app.config["PASSOVER_CONFIG"]["LOCAL_FOLDER_PATTERN"])
 
 
+class TestLocalFolderAccessWildcard(unittest.TestCase):
+    """When SMOOSENSE_LOCAL_FOLDER_PATTERN=*, all local paths are allowed."""
+
+    def setUp(self):
+        os.environ["SMOOSENSE_LOCAL_FOLDER_PATTERN"] = "*"
+        self.app = SmooSenseApp().create_app()
+        self.app.config["TESTING"] = True
+        self.client = self.app.test_client()
+
+    def tearDown(self):
+        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+
+    def test_absolute_path_allowed(self):
+        response = self.client.get("/api/ls?path=/tmp/foo")
+        self.assertNotEqual(response.status_code, 403)
+
+    def test_tilde_path_allowed(self):
+        response = self.client.get("/api/ls?path=~/foo")
+        self.assertNotEqual(response.status_code, 403)
+
+    def test_bare_tilde_allowed(self):
+        response = self.client.get("/api/ls?path=~")
+        self.assertNotEqual(response.status_code, 403)
+
+
 if __name__ == "__main__":
     unittest.main()

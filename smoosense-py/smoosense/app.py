@@ -78,6 +78,8 @@ class SmooSenseApp:
             # Local path detected — enforce pattern
             if self.local_folder_pattern is None:
                 return jsonify({"error": "Local folder access is not allowed"}), 403
+            if self.local_folder_pattern == "*":
+                return None  # wildcard: allow any local path
             if not path.startswith(self.local_folder_pattern):
                 return jsonify({"error": "Path not allowed by server configuration"}), 403
         return None
