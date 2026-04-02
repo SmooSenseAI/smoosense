@@ -32,15 +32,6 @@ class LocalFileSystem:
                 continue
             try:
                 stat = entry.stat()
-                all_items.append(
-                    FSItem(
-                        name=entry.name,
-                        size=stat.st_size,
-                        lastModified=int(1000 * stat.st_mtime),
-                        isDir=entry.is_dir(),
-                        symlinkTarget=os.readlink(entry.path) if entry.is_symlink() else "",
-                    )
-                )
             except OSError:
                 if entry.is_symlink():
                     all_items.append(
@@ -54,7 +45,17 @@ class LocalFileSystem:
                         )
                     )
                 else:
-                    logger.warning(f"Failed to stat entry: {entry.path}")
+                    logger.exception(f"Failed to stat entry: {entry.path}")
+            else:
+                all_items.append(
+                    FSItem(
+                        name=entry.name,
+                        size=stat.st_size,
+                        lastModified=int(1000 * stat.st_mtime),
+                        isDir=entry.is_dir(),
+                        symlinkTarget=os.readlink(entry.path) if entry.is_symlink() else "",
+                    )
+                )
 
         if pattern:
             all_items = [
