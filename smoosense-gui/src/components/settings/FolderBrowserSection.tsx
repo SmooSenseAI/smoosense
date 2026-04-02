@@ -1,9 +1,9 @@
 'use client'
 
-import { getLocalFolderPattern, isRunningLocal } from '@/lib/utils/pathUtils'
+import { getLocalFolderPrefix, isRunningLocal } from '@/lib/utils/pathUtils'
 
 export default function FolderBrowserSection() {
-  const pattern = getLocalFolderPattern()
+  const pattern = getLocalFolderPrefix()
   const enabled =
     pattern === '*' ||
     (pattern === null ? isRunningLocal() : pattern !== '')

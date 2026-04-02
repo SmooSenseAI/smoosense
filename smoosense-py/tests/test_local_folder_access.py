@@ -5,10 +5,10 @@ from smoosense.app import SmooSenseApp
 
 
 class TestLocalFolderAccessAutoDetect(unittest.TestCase):
-    """When SMOOSENSE_LOCAL_FOLDER_PATTERN is unset, access depends on request host."""
+    """When SMOOSENSE_LOCAL_FOLDER_PREFIX is unset, access depends on request host."""
 
     def setUp(self):
-        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PREFIX", None)
         self.app = SmooSenseApp().create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
@@ -48,16 +48,16 @@ class TestLocalFolderAccessAutoDetect(unittest.TestCase):
 
 
 class TestLocalFolderAccessExplicitDeny(unittest.TestCase):
-    """When SMOOSENSE_LOCAL_FOLDER_PATTERN="" (empty), all local paths are blocked."""
+    """When SMOOSENSE_LOCAL_FOLDER_PREFIX="" (empty), all local paths are blocked."""
 
     def setUp(self):
-        os.environ["SMOOSENSE_LOCAL_FOLDER_PATTERN"] = ""
+        os.environ["SMOOSENSE_LOCAL_FOLDER_PREFIX"] = ""
         self.app = SmooSenseApp().create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
 
     def tearDown(self):
-        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PREFIX", None)
 
     def test_ls_local_path_blocked(self):
         response = self.client.get("/api/ls?path=/tmp/foo")
@@ -95,16 +95,16 @@ class TestLocalFolderAccessExplicitDeny(unittest.TestCase):
 
 
 class TestLocalFolderAccessWithPattern(unittest.TestCase):
-    """When SMOOSENSE_LOCAL_FOLDER_PATTERN=/tmp/, only /tmp/* paths are allowed."""
+    """When SMOOSENSE_LOCAL_FOLDER_PREFIX=/tmp/, only /tmp/* paths are allowed."""
 
     def setUp(self):
-        os.environ["SMOOSENSE_LOCAL_FOLDER_PATTERN"] = "/tmp/"
+        os.environ["SMOOSENSE_LOCAL_FOLDER_PREFIX"] = "/tmp/"
         self.app = SmooSenseApp().create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
 
     def tearDown(self):
-        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PREFIX", None)
 
     def test_allowed_path_passes_hook(self):
         # /tmp/foo starts with /tmp/ — hook should not block it
@@ -152,16 +152,16 @@ class TestLocalFolderAccessWithPattern(unittest.TestCase):
 
 
 class TestLocalFolderAccessTildePattern(unittest.TestCase):
-    """When SMOOSENSE_LOCAL_FOLDER_PATTERN=~/, tilde paths are allowed."""
+    """When SMOOSENSE_LOCAL_FOLDER_PREFIX=~/, tilde paths are allowed."""
 
     def setUp(self):
-        os.environ["SMOOSENSE_LOCAL_FOLDER_PATTERN"] = "~/"
+        os.environ["SMOOSENSE_LOCAL_FOLDER_PREFIX"] = "~/"
         self.app = SmooSenseApp().create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
 
     def tearDown(self):
-        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PREFIX", None)
 
     def test_tilde_path_allowed(self):
         response = self.client.get("/api/ls?path=~/foo")
@@ -173,33 +173,33 @@ class TestLocalFolderAccessTildePattern(unittest.TestCase):
 
 
 class TestPassoverConfig(unittest.TestCase):
-    """SMOOSENSE_LOCAL_FOLDER_PATTERN is reflected in PASSOVER_CONFIG."""
+    """SMOOSENSE_LOCAL_FOLDER_PREFIX is reflected in PASSOVER_CONFIG."""
 
     def test_pattern_in_passover_config_when_set(self):
-        os.environ["SMOOSENSE_LOCAL_FOLDER_PATTERN"] = "/mnt/"
+        os.environ["SMOOSENSE_LOCAL_FOLDER_PREFIX"] = "/mnt/"
         try:
             app = SmooSenseApp().create_app()
-            self.assertEqual(app.config["PASSOVER_CONFIG"]["LOCAL_FOLDER_PATTERN"], "/mnt/")
+            self.assertEqual(app.config["PASSOVER_CONFIG"]["LOCAL_FOLDER_PREFIX"], "/mnt/")
         finally:
-            os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+            os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PREFIX", None)
 
     def test_pattern_null_in_passover_config_when_unset(self):
-        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PREFIX", None)
         app = SmooSenseApp().create_app()
-        self.assertIsNone(app.config["PASSOVER_CONFIG"]["LOCAL_FOLDER_PATTERN"])
+        self.assertIsNone(app.config["PASSOVER_CONFIG"]["LOCAL_FOLDER_PREFIX"])
 
 
 class TestLocalFolderAccessWildcard(unittest.TestCase):
-    """When SMOOSENSE_LOCAL_FOLDER_PATTERN=*, all local paths are allowed."""
+    """When SMOOSENSE_LOCAL_FOLDER_PREFIX=*, all local paths are allowed."""
 
     def setUp(self):
-        os.environ["SMOOSENSE_LOCAL_FOLDER_PATTERN"] = "*"
+        os.environ["SMOOSENSE_LOCAL_FOLDER_PREFIX"] = "*"
         self.app = SmooSenseApp().create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
 
     def tearDown(self):
-        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PATTERN", None)
+        os.environ.pop("SMOOSENSE_LOCAL_FOLDER_PREFIX", None)
 
     def test_absolute_path_allowed(self):
         response = self.client.get("/api/ls?path=/tmp/foo")

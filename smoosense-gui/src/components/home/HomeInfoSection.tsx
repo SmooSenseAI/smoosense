@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ExternalLink, Play, Download, AlertCircle } from 'lucide-react'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
-import { getLocalFolderPattern, isRunningLocal } from '@/lib/utils/pathUtils'
+import { getLocalFolderPrefix, isRunningLocal } from '@/lib/utils/pathUtils'
 import { debounce } from 'lodash'
 import { useAppDispatch } from '@/lib/hooks'
 import { setRootFolder } from '@/lib/features/ui/uiSlice'
@@ -19,7 +19,7 @@ function getPathType(path: string): PathType {
   // Match partial s3:// prefix as user is typing
   if (trimmed.startsWith('s3://') || 's3://'.startsWith(trimmed)) return 's3'
   if (trimmed.startsWith('/') || trimmed.startsWith('~')) {
-    const pattern = getLocalFolderPattern()
+    const pattern = getLocalFolderPrefix()
     if (pattern === '*') return 'local'                      // explicit allow all
     if (pattern === null) return isRunningLocal() ? 'local' : 'invalid'  // auto-detect
     if (pattern === '') return 'invalid'                     // explicit deny all
@@ -133,7 +133,7 @@ export default function HomeInfoSection() {
     }
   }
 
-  const localFolderPattern = getLocalFolderPattern()
+  const localFolderPattern = getLocalFolderPrefix()
   const localAccessEnabled =
     localFolderPattern === '*' ||
     (localFolderPattern === null ? isRunningLocal() : localFolderPattern !== '')

@@ -53,12 +53,12 @@ class SmooSenseApp:
         else:
             self.duckdb_connection_maker = duckdb_connection_default()
 
-        self.local_folder_pattern: str | None = os.environ.get("SMOOSENSE_LOCAL_FOLDER_PATTERN")
+        self.local_folder_prefix: str | None = os.environ.get("SMOOSENSE_LOCAL_FOLDER_PREFIX")
 
         self.passover_config = {
             "S3_PREFIX_TO_SAVE_SHAREABLE_LINK": s3_prefix_to_save_shareable_link,
             "FOLDER_SHORTCUTS": folder_shortcuts or {},
-            "LOCAL_FOLDER_PATTERN": self.local_folder_pattern,
+            "LOCAL_FOLDER_PREFIX": self.local_folder_prefix,
         }
 
     def _is_local_request(self) -> bool:
@@ -69,23 +69,23 @@ class SmooSenseApp:
     def _check_local_path_access(self) -> tuple[Response, int] | None:
         """Flask before_request hook: block local path access based on config.
 
-        SMOOSENSE_LOCAL_FOLDER_PATTERN semantics:
+        SMOOSENSE_LOCAL_FOLDER_PREFIX semantics:
           unset (None) → auto-detect: allow on localhost, deny elsewhere
           "*"          → allow all local paths unconditionally
           ""           → deny all local paths unconditionally
           "/prefix"    → allow only paths starting with the given prefix
         """
         # Explicit wildcard → allow all unconditionally
-        if self.local_folder_pattern == "*":
+        if self.local_folder_prefix == "*":
             return None
 
         # Resolve effective pattern for this request
-        if self.local_folder_pattern is None:
+        if self.local_folder_prefix is None:
             if self._is_local_request():
                 return None  # local server, allow everything
             effective_pattern = ""  # not local, deny all
         else:
-            effective_pattern = self.local_folder_pattern
+            effective_pattern = self.local_folder_prefix
 
         path_params = [
             request.args.get("path", ""),
