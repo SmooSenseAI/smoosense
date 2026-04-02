@@ -79,3 +79,4 @@ See [Authentication](/docs/authentication/) for the full Auth0 setup guide.
 | `AUTH0_CLIENT_ID` | Auth0 application client ID | — |
 | `AUTH0_CLIENT_SECRET` | Auth0 application client secret | — |
 | `APP_SECRET_KEY` | Flask session secret key (auto-generated if unset) | — |
+| `SMOOSENSE_LOCAL_FOLDER_PATTERN` | Controls local folder access. Unset: auto-detect (allowed on localhost, denied elsewhere). `""`: deny all. `*`: allow all. `/prefix/`: allow only paths starting with the prefix. | unset |
