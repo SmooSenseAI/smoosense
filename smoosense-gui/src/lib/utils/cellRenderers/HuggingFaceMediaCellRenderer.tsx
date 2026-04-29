@@ -6,6 +6,7 @@ import { getFileType, FileType } from '../fileTypes'
 import { toHuggingFaceDataUrl, getHuggingFaceMediaPath } from '../huggingFaceMediaUtils'
 import { AudioCellContent } from './AudioCellRenderer'
 import { ImageCellContent } from './ImageCellRenderer'
+import { PdfCellContent } from './PdfCellRenderer'
 import { useAppSelector } from '@/lib/hooks'
 
 interface HuggingFaceMediaCellRendererProps {
@@ -58,6 +59,10 @@ const HuggingFaceMediaCellRenderer = memo(function HuggingFaceMediaCellRenderer(
         alt={path}
       />
     )
+  }
+
+  if (fileType === FileType.Pdf) {
+    return <PdfCellContent pdfUrl={dataUrl} copyValue={path} />
   }
 
   if (fileType === FileType.Video) {
