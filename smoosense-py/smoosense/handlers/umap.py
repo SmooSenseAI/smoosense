@@ -82,11 +82,11 @@ def compute_umap() -> Response:
 
     try:
         query = f"SELECT {select_clause} FROM '{table_path}' {where_clause}"
-        connection_maker = current_app.config["DUCKDB_CONNECTION_MAKER"]
-        con = connection_maker()
-        result = con.execute(query)
-        column_names = [desc[0] for desc in result.description] if result.description else []
-        rows = result.fetchall()
+        connection_maker = current_app.config["QUERY_CONNECTION_MAKER"]
+        cur = connection_maker()
+        cur.execute(query)
+        column_names = [desc[0] for desc in cur.description] if cur.description else []
+        rows = cur.fetchall()
 
         # Find column indices
         emb_idx = column_names.index(emb_column)

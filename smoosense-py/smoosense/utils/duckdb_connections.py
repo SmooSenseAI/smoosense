@@ -8,6 +8,8 @@ from botocore.client import BaseClient
 from duckdb import DuckDBPyConnection
 from pydantic import ConfigDict, validate_call
 
+from smoosense.utils.query_backends import check_permissions as check_permissions  # re-export
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,14 +106,6 @@ def duckdb_connection_using_one_zone_s3(
         return con
 
     return maker
-
-
-def check_permissions(query: str) -> None:
-    tokens = [w.lower() for w in query.split() if w]
-    forbidden = ["copy", "export", "delete", "attach", "update"]
-    if any(w in tokens for w in forbidden):
-        logger.warning(f"Forbidden query: {query}")
-        raise PermissionError("You are only allowed to run readonly queries")
 
 
 if __name__ == "__main__":

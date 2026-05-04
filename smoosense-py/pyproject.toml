@@ -55,6 +55,11 @@ daft = [
     "daft>=0.6.2",
 ]
 
+flightsql = [
+    "adbc-driver-flightsql>=1.0.0",
+    "adbc-driver-manager>=1.0.0",
+]
+
 emb = [
     "torch>=2.5.0",
     "pillow>=10.4.0",
@@ -142,5 +147,5 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["authlib.*", "boto3.*", "botocore.*", "cv2.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*", "torch.*", "PIL.*", "transformers.*", "tqdm.*", "umap.*"]
+module = ["adbc_driver_flightsql.*", "adbc_driver_manager.*", "authlib.*", "boto3.*", "botocore.*", "cv2.*", "pandas.*", "IPython.*", "daft.*", "lancedb.*", "pyarrow.*", "torch.*", "PIL.*", "transformers.*", "tqdm.*", "umap.*"]
 ignore_missing_imports = true

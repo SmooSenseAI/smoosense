@@ -17,6 +17,7 @@ A no-code GUI for exploring multi-modal AI/ML datasets — tabular data with ima
 | [patterns/hooks.md](patterns/hooks.md) | `shouldFetch` pattern and hook return conventions — extracted from rules.md |
 | [media-urls.md](media-urls.md) | How media asset URLs are resolved in the Query tab; points to `SqlQueryPanel.tsx` |
 | [product-define.md](product-define.md) | Product positioning and comparison with Tableau, Voxel51, W&B, ChatGPT, etc. |
+| [query-backends.md](query-backends.md) | Pluggable SQL backend (DuckDB or any Arrow Flight SQL service) — env vars and constructor wiring |
 
 ## User-facing docs
 
