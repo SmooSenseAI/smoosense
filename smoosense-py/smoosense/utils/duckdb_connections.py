@@ -19,6 +19,14 @@ def duckdb_connection_default() -> DuckdbConnectionMaker:
     def maker() -> DuckDBPyConnection:
         con = duckdb.connect()
 
+        # DuckDB's default temp_directory is ".tmp" relative to CWD, which fails
+        # when CWD is read-only (e.g. read-only mounted datasets).
+        home_directory = os.getenv("HOME", "/tmp")
+        temp_directory = os.path.join(home_directory, ".tmp")
+        os.makedirs(temp_directory, exist_ok=True)
+        con.execute(f"SET home_directory='{home_directory}'")
+        con.execute(f"SET temp_directory='{temp_directory}'")
+
         # Now install and load the extension
         con.execute("INSTALL httpfs")
         con.execute("LOAD httpfs")
@@ -53,22 +61,8 @@ def duckdb_connection_using_s3(
                 "or do not pass s3_client if you do not need S3 access."
             )
         con = duckdb_connection_default()()
-        home_directory = os.getenv("HOME", "/tmp")
-        temp_directory = os.path.join(home_directory, ".tmp")
-
-        # Ensure temp directory exists
-        os.makedirs(temp_directory, exist_ok=True)
-
-        # Set home_directory and temp_directory before httpfs auto-installs
-        con.execute(f"SET home_directory='{home_directory}'")
-        con.execute(f"SET temp_directory='{temp_directory}'")
         con.execute(f"SET memory_limit='{memory_limit}'")
 
-        # Now install and load the extension
-        con.execute("INSTALL httpfs")
-        con.execute("LOAD httpfs")
-        con.execute("INSTALL lance")
-        con.execute("LOAD lance")
         # Configure DuckDB S3 settings
         con.execute(f"SET s3_region='{region}'")
         con.execute(f"SET s3_access_key_id='{aws_key}'")
