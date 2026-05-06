@@ -6,7 +6,7 @@ from flask import Blueprint, Response, current_app, jsonify, request
 
 from smoosense.handlers.auth import requires_auth_api
 from smoosense.utils.api import handle_api_errors
-from smoosense.utils.duckdb_connections import check_permissions
+from smoosense.utils.query_backends import check_permissions
 from smoosense.utils.serialization import serialize
 
 logger = logging.getLogger(__name__)
@@ -33,12 +33,13 @@ def run_query() -> Response:
     error = None
 
     try:
-        # DuckDB query engine (default)
-        connection_maker = current_app.config["DUCKDB_CONNECTION_MAKER"]
-        con = connection_maker()
-        result = con.execute(query)
-        column_names = [desc[0] for desc in result.description] if result.description else []
-        rows = result.fetchall()
+        # DB-API 2.0 cursor from the configured backend (DuckDB by default,
+        # or any Arrow Flight SQL service when configured via env vars).
+        connection_maker = current_app.config["QUERY_CONNECTION_MAKER"]
+        cur = connection_maker()
+        cur.execute(query)
+        column_names = [desc[0] for desc in cur.description] if cur.description else []
+        rows = cur.fetchall()
 
     except Exception as e:
         error = str(e)

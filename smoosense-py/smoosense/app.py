@@ -17,6 +17,10 @@ from smoosense.handlers.s3 import s3_bp
 from smoosense.handlers.shell import shell_bp
 from smoosense.handlers.umap import umap_bp
 from smoosense.utils.duckdb_connections import duckdb_connection_default, duckdb_connection_using_s3
+from smoosense.utils.query_backends import (
+    QueryConnectionMaker,
+    build_query_connection_maker_from_env,
+)
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,26 +36,33 @@ class SmooSenseApp:
         s3_client: BaseClient | None = None,
         s3_prefix_to_save_shareable_link: str = "",
         folder_shortcuts: dict[str, str] | None = None,
+        query_connection_maker: QueryConnectionMaker | None = None,
     ):
         self.s3_client = s3_client if s3_client is not None else boto3.client("s3")
 
-        # Check if S3/AWS configuration is available
-        # This includes explicit s3_client, environment variables, or AWS config files
-        has_s3_config = any(
-            [
-                s3_client is not None,
-                os.getenv("S3_PROFILE") is not None,
-                os.getenv("AWS_ENDPOINT_URL") is not None,
-                os.getenv("AWS_ACCESS_KEY_ID") is not None,
-                os.getenv("AWS_SECRET_ACCESS_KEY") is not None,
-                os.path.exists(os.path.expanduser("~/.aws/credentials")),
-            ]
-        )
+        # Resolve the SQL query backend.
+        # Priority: explicit query_connection_maker > env-configured backend > DuckDB default.
+        if query_connection_maker is None:
+            query_connection_maker = build_query_connection_maker_from_env()
 
-        if has_s3_config:
-            self.duckdb_connection_maker = duckdb_connection_using_s3(s3_client=self.s3_client)
-        else:
-            self.duckdb_connection_maker = duckdb_connection_default()
+        if query_connection_maker is None:
+            # Default DuckDB engine — pick the variant that matches available AWS config.
+            has_s3_config = any(
+                [
+                    s3_client is not None,
+                    os.getenv("S3_PROFILE") is not None,
+                    os.getenv("AWS_ENDPOINT_URL") is not None,
+                    os.getenv("AWS_ACCESS_KEY_ID") is not None,
+                    os.getenv("AWS_SECRET_ACCESS_KEY") is not None,
+                    os.path.exists(os.path.expanduser("~/.aws/credentials")),
+                ]
+            )
+            if has_s3_config:
+                query_connection_maker = duckdb_connection_using_s3(s3_client=self.s3_client)
+            else:
+                query_connection_maker = duckdb_connection_default()
+
+        self.query_connection_maker: QueryConnectionMaker = query_connection_maker
 
         self.local_folder_prefix: str | None = os.environ.get("SMOOSENSE_LOCAL_FOLDER_PREFIX")
 
@@ -111,7 +122,7 @@ class SmooSenseApp:
 
         # Store the s3_client in app config so blueprints can access it
         app.config["S3_CLIENT"] = self.s3_client
-        app.config["DUCKDB_CONNECTION_MAKER"] = self.duckdb_connection_maker
+        app.config["QUERY_CONNECTION_MAKER"] = self.query_connection_maker
         app.config["PASSOVER_CONFIG"] = self.passover_config
 
         # Initialize Auth0 if configured
