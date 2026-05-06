@@ -16,6 +16,10 @@ DuckdbConnectionMaker = Callable[[], DuckDBPyConnection]
 
 @validate_call()
 def duckdb_connection_default() -> DuckdbConnectionMaker:
+    # Optional caps via env vars; if unset, DuckDB picks defaults from the cgroup / nproc.
+    memory_limit = os.getenv("SMOOSENSE_DUCKDB_MEMORY_LIMIT")
+    threads = os.getenv("SMOOSENSE_DUCKDB_THREADS")
+
     def maker() -> DuckDBPyConnection:
         con = duckdb.connect()
 
@@ -26,7 +30,11 @@ def duckdb_connection_default() -> DuckdbConnectionMaker:
         os.makedirs(temp_directory, exist_ok=True)
         con.execute(f"SET home_directory='{home_directory}'")
         con.execute(f"SET temp_directory='{temp_directory}'")
-
+        if memory_limit:
+            con.execute(f"SET memory_limit='{memory_limit}'")
+        if threads:
+            con.execute(f"SET threads={threads}")
+        con.execute("SET parquet_metadata_cache=true")
         # Now install and load the extension
         con.execute("INSTALL httpfs")
         con.execute("LOAD httpfs")
@@ -40,7 +48,6 @@ def duckdb_connection_default() -> DuckdbConnectionMaker:
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def duckdb_connection_using_s3(
     s3_client: BaseClient | None = None,
-    memory_limit: str = "3GB",
 ) -> DuckdbConnectionMaker:
     if s3_client is None:
         s3_client = boto3.client("s3")
@@ -61,7 +68,6 @@ def duckdb_connection_using_s3(
                 "or do not pass s3_client if you do not need S3 access."
             )
         con = duckdb_connection_default()()
-        con.execute(f"SET memory_limit='{memory_limit}'")
 
         # Configure DuckDB S3 settings
         con.execute(f"SET s3_region='{region}'")
@@ -72,8 +78,6 @@ def duckdb_connection_using_s3(
             aws_endpoint = aws_endpoint_url.replace("https://", "")
             con.execute(f"SET s3_endpoint='{aws_endpoint}'")
             logger.warning(f'Using AWS endpoint "{aws_endpoint}"')
-
-        con.execute("SET parquet_metadata_cache=true")
 
         if aws_token:
             con.execute(f"SET s3_session_token='{aws_token}'")

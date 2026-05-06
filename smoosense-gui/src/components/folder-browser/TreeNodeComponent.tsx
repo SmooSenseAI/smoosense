@@ -17,6 +17,8 @@ export interface ArboristNodeData {
   isDir: boolean
   size: number
   lastModified: number
+  isBrokenSymlink: boolean
+  symlinkTarget?: string
   isLoaded: boolean
   loading: boolean
   isExpanded: boolean
@@ -114,6 +116,10 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
   }, [nodeData.path, dispatch])
   
   const renderIcon = () => {
+    if (nodeData.isBrokenSymlink) {
+      return ICONS.BROKEN_SYMLINK
+    }
+
     if (nodeData.isDir) {
       return node.isOpen ? ICONS.FOLDER_OPEN : ICONS.FOLDER_CLOSED
     }
@@ -228,8 +234,19 @@ export default function TreeNodeComponent({ node, style }: TreeNodeComponentProp
     >
       {renderExpandIcon()}
       {renderIcon()}
-      <span className="truncate flex-1" title={nodeData.name}>
-        {nodeData.name}
+      <span
+        className={cn(
+          "truncate flex-1",
+          nodeData.isBrokenSymlink && "text-red-500",
+          nodeData.symlinkTarget && !nodeData.isBrokenSymlink && "text-blue-500",
+        )}
+        title={nodeData.symlinkTarget
+          ? `${nodeData.name} (→ ${nodeData.symlinkTarget})${nodeData.isBrokenSymlink ? ' (broken symlink)' : ''}`
+          : nodeData.name}
+      >
+        {nodeData.symlinkTarget
+          ? `${nodeData.name} (→ ${nodeData.symlinkTarget})`
+          : nodeData.name}
       </span>
       
       {/* File info display */}

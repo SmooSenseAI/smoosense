@@ -15,6 +15,8 @@ class FSItem(ImmutableBaseModel):
     size: int
     lastModified: int
     isDir: bool
+    isBrokenSymlink: bool = False
+    symlinkTarget: str = ""
 
 
 SortBy = Literal["name", "size", "modified"]

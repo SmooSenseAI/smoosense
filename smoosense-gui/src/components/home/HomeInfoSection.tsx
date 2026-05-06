@@ -6,19 +6,25 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ExternalLink, Play, Download, AlertCircle } from 'lucide-react'
 import { API_PREFIX } from '@/lib/utils/urlUtils'
+import { getLocalFolderPrefix, isRunningLocal } from '@/lib/utils/pathUtils'
 import { debounce } from 'lodash'
 import { useAppDispatch } from '@/lib/hooks'
 import { setRootFolder } from '@/lib/features/ui/uiSlice'
 
 type PathType = 's3' | 'local' | 'invalid' | 'empty'
 
-function getPathType(path: string, isLocal: boolean): PathType {
+function getPathType(path: string): PathType {
   const trimmed = path.trim()
   if (!trimmed) return 'empty'
   // Match partial s3:// prefix as user is typing
   if (trimmed.startsWith('s3://') || 's3://'.startsWith(trimmed)) return 's3'
   if (trimmed.startsWith('/') || trimmed.startsWith('~')) {
-    return isLocal ? 'local' : 'invalid'
+    const pattern = getLocalFolderPrefix()
+    if (pattern === '*') return 'local'                      // explicit allow all
+    if (pattern === null) return isRunningLocal() ? 'local' : 'invalid'  // auto-detect
+    if (pattern === '') return 'invalid'                     // explicit deny all
+    if (!trimmed.startsWith(pattern)) return 'invalid'      // outside allowed prefix
+    return 'local'
   }
   return 'invalid'
 }
@@ -27,17 +33,11 @@ export default function HomeInfoSection() {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const [folderPath, setFolderPath] = useState('')
-  const [isLocal, setIsLocal] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const url = window.location.href
-    setIsLocal(url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1'))
-  }, [])
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -57,8 +57,8 @@ export default function HomeInfoSection() {
 
   const fetchSuggestions = useMemo(
     () =>
-      debounce(async (path: string, local: boolean) => {
-        const pathType = getPathType(path, local)
+      debounce(async (path: string) => {
+        const pathType = getPathType(path)
         if (pathType === 'empty' || pathType === 'invalid') {
           setSuggestions([])
           return
@@ -99,7 +99,7 @@ export default function HomeInfoSection() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setFolderPath(value)
-    fetchSuggestions(value, isLocal)
+    fetchSuggestions(value)
   }
 
   const handleSelectSuggestion = (suggestion: string) => {
@@ -107,7 +107,7 @@ export default function HomeInfoSection() {
     setShowSuggestions(false)
     setSuggestions([])
     // Fetch new suggestions for the selected path
-    fetchSuggestions(suggestion, isLocal)
+    fetchSuggestions(suggestion)
     inputRef.current?.focus()
   }
 
@@ -133,13 +133,17 @@ export default function HomeInfoSection() {
     }
   }
 
-  const pathType = getPathType(folderPath, isLocal)
+  const localFolderPattern = getLocalFolderPrefix()
+  const localAccessEnabled =
+    localFolderPattern === '*' ||
+    (localFolderPattern === null ? isRunningLocal() : localFolderPattern !== '')
+  const pathType = getPathType(folderPath)
   const showError = pathType === 'invalid'
 
   return (
     <div className="max-w-4xl w-full mb-12">
       <h2 className="text-xl font-semibold text-foreground mb-6">
-        {isLocal ? 'Browse local or S3 folders' : 'Browse S3 folders'}
+        {localAccessEnabled ? 'Browse local or S3 folders' : 'Browse S3 folders'}
       </h2>
 
       <div className="flex gap-2 mb-2">
@@ -147,9 +151,10 @@ export default function HomeInfoSection() {
           <Input
             ref={inputRef}
             type="text"
-            placeholder={isLocal
-              ? "Enter folder path (e.g., /tmp/folder, ~/Downloads or s3://bucket/path)"
-              : "Enter S3 path (e.g., s3://bucket/path)"
+            placeholder={
+              localAccessEnabled
+                ? "Enter folder path (e.g., /tmp/folder, ~/Downloads or s3://bucket/path)"
+                : "Enter S3 path (e.g., s3://bucket/path)"
             }
             value={folderPath}
             onChange={handleInputChange}
@@ -185,10 +190,15 @@ export default function HomeInfoSection() {
       {showError && (
         <div className="flex items-center gap-2 text-red-500 text-sm mb-6">
           <AlertCircle className="h-4 w-4" />
-          {isLocal
-            ? 'Path must start with /, ~, or s3://'
-            : 'Path must start with s3:// (local paths not available on cloud)'
-          }
+          {(() => {
+            if (!localAccessEnabled) {
+              return 'Local paths are not supported on this server'
+            }
+            if (localFolderPattern === null || localFolderPattern === '*' || localFolderPattern === '/' || localFolderPattern === '~/') {
+              return 'Path must start with /, ~, or s3://'
+            }
+            return `Path must start with ${localFolderPattern} or s3://`
+          })()}
         </div>
       )}
       {!showError && <div className="mb-6" />}

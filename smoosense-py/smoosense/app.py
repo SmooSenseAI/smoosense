@@ -3,7 +3,7 @@ import os
 
 import boto3
 from botocore.client import BaseClient
-from flask import Flask
+from flask import Flask, Response, jsonify, request
 from pydantic import ConfigDict, validate_call
 
 from smoosense.handlers.auth import auth_bp, init_oauth
@@ -53,10 +53,58 @@ class SmooSenseApp:
         else:
             self.duckdb_connection_maker = duckdb_connection_default()
 
+        self.local_folder_prefix: str | None = os.environ.get("SMOOSENSE_LOCAL_FOLDER_PREFIX")
+
         self.passover_config = {
             "S3_PREFIX_TO_SAVE_SHAREABLE_LINK": s3_prefix_to_save_shareable_link,
             "FOLDER_SHORTCUTS": folder_shortcuts or {},
+            "LOCAL_FOLDER_PREFIX": self.local_folder_prefix,
         }
+
+    def _is_local_request(self) -> bool:
+        """Return True if the request is coming from a local (loopback) host."""
+        host = request.host.split(":")[0]
+        return host in ("localhost", "127.0.0.1", "::1")
+
+    def _check_local_path_access(self) -> tuple[Response, int] | None:
+        """Flask before_request hook: block local path access based on config.
+
+        SMOOSENSE_LOCAL_FOLDER_PREFIX semantics:
+          unset (None) → auto-detect: allow on localhost, deny elsewhere
+          "*"          → allow all local paths unconditionally
+          ""           → deny all local paths unconditionally
+          "/prefix"    → allow only paths starting with the given prefix
+        """
+        # Explicit wildcard → allow all unconditionally
+        if self.local_folder_prefix == "*":
+            return None
+
+        # Resolve effective pattern for this request
+        if self.local_folder_prefix is None:
+            if self._is_local_request():
+                return None  # local server, allow everything
+            effective_pattern = ""  # not local, deny all
+        else:
+            effective_pattern = self.local_folder_prefix
+
+        path_params = [
+            request.args.get("path", ""),
+            request.args.get("prefix", ""),
+            request.form.get("path", ""),
+        ]
+
+        for path in path_params:
+            if not path:
+                continue
+            # Only check local paths (absolute or tilde-relative)
+            if not (path.startswith("/") or path.startswith("~")):
+                continue
+            # Local path detected — enforce effective pattern
+            if not effective_pattern:
+                return jsonify({"error": "Local folder access is not allowed"}), 403
+            if not path.startswith(effective_pattern):
+                return jsonify({"error": "Path not allowed by server configuration"}), 403
+        return None
 
     def create_app(self) -> Flask:
         app = Flask(__name__, static_folder="statics", static_url_path="")
@@ -85,6 +133,8 @@ class SmooSenseApp:
         app.register_blueprint(s3_bp, url_prefix="/api")
         app.register_blueprint(shell_bp, url_prefix="/api")
         app.register_blueprint(umap_bp, url_prefix="/api")
+
+        app.before_request(self._check_local_path_access)
 
         return app
 

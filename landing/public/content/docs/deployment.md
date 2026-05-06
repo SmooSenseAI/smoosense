@@ -66,6 +66,33 @@ docker run --rm \
 
 See [Authentication](/docs/authentication/) for the full Auth0 setup guide.
 
+## With local folder access
+
+By default, local folder browsing is allowed when accessing SmooSense from localhost and denied from any other host. When deploying as a shared web service, you can control this explicitly with `SMOOSENSE_LOCAL_FOLDER_PREFIX`:
+
+**Deny all local paths** (recommended for public-facing deployments):
+
+```bash
+docker run --rm -p 8000:8000 -e SMOOSENSE_LOCAL_FOLDER_PREFIX="" smoosense-app
+```
+
+**Allow a specific mount point** (e.g. a shared NFS or EFS volume at `/mnt/data`):
+
+```bash
+docker run --rm -p 8000:8000 \
+  -v /mnt/data:/mnt/data:ro \
+  -e SMOOSENSE_LOCAL_FOLDER_PREFIX="/mnt/data/" \
+  smoosense-app
+```
+
+Users will only be able to browse paths that start with `/mnt/data/`; all other local paths are blocked.
+
+**Allow all local paths**:
+
+```bash
+docker run --rm -p 8000:8000 -e SMOOSENSE_LOCAL_FOLDER_PREFIX="*" smoosense-app
+```
+
 ## Environment variables
 
 | Variable | Description | Default |
@@ -79,3 +106,4 @@ See [Authentication](/docs/authentication/) for the full Auth0 setup guide.
 | `AUTH0_CLIENT_ID` | Auth0 application client ID | — |
 | `AUTH0_CLIENT_SECRET` | Auth0 application client secret | — |
 | `APP_SECRET_KEY` | Flask session secret key (auto-generated if unset) | — |
+| `SMOOSENSE_LOCAL_FOLDER_PREFIX` | Controls local folder access. Unset: auto-detect (allowed on localhost, denied elsewhere). `""`: deny all. `*`: allow all. `/prefix/`: allow only paths starting with the prefix. | unset |

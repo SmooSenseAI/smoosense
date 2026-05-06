@@ -2666,7 +2666,7 @@ wheels = [
 
 [[package]]
 name = "smoosense"
-version = "0.1.44"
+version = "0.1.48"
 source = { editable = "." }
 dependencies = [
     { name = "authlib" },

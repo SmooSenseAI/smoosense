@@ -158,3 +158,15 @@ export function pathRelative(targetPath: string, basePath: string): string {
 
 // Keep pathDirname as an alias for backward compatibility
 export const pathDirname = pathParent
+
+export function getLocalFolderPrefix(): string | null {
+  if (typeof window === 'undefined') return null
+  const w = window as Window & { LOCAL_FOLDER_PREFIX?: string | null }
+  return w.LOCAL_FOLDER_PREFIX ?? null
+}
+
+export function isRunningLocal(): boolean {
+  if (typeof window === 'undefined') return false
+  const href = window.location.href
+  return href.startsWith('http://localhost') || href.startsWith('http://127.0.0.1')
+}
